@@ -1,0 +1,2390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){var d;try{d=localStorage.getItem('jvq_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+<title>Japanese Verb Conjugation Quiz</title>
+<style>
+  :root{
+    --bg:#fafafa; --card:#fff; --text:#222; --muted:#777; --line:#e3e3e3;
+    --accent:#3b5bdb; --ok:#2b8a3e; --okbg:#ebfbee; --bad:#c92a2a; --badbg:#fff5f5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans",sans-serif;background:var(--bg);color:var(--text)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap;gap:10px}
+  header h1{font-size:18px;margin:0;font-weight:600}
+  nav button{background:none;border:none;padding:8px 14px;font-size:14px;color:var(--muted);cursor:pointer;border-radius:6px}
+  nav button.active{color:var(--accent);background:#edf2ff;font-weight:600}
+  .toggle{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer}
+  main{max-width:760px;margin:28px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px}
+  .hidden{display:none!important}
+
+  /* Quiz */
+  .scorebar{display:flex;gap:18px;justify-content:center;font-size:13px;color:var(--muted);margin-bottom:16px}
+  .scorebar b{color:var(--text)}
+  .verb{font-size:52px;text-align:center;margin:10px 0 4px;line-height:1.6}
+  .meaning{text-align:center;color:var(--muted);font-size:15px}
+  .target{text-align:center;margin:22px 0 18px;font-size:18px}
+  .target .form{font-weight:600;color:var(--accent)}
+  .target .cat{display:block;font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+  #answer{width:100%;font-size:28px;padding:12px 16px;border:2px solid var(--line);border-radius:10px;text-align:center;outline:none;font-family:inherit}
+  #answer:focus{border-color:var(--accent)}
+  #answer.ok{border-color:var(--ok);background:var(--okbg)}
+  #answer.bad{border-color:var(--bad);background:var(--badbg)}
+  .buttons{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  button.btn{font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-family:inherit}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:12px}
+  .feedback{margin-top:20px;padding:16px 18px;border-radius:10px;font-size:15px;line-height:1.6}
+  .feedback.ok{background:var(--okbg);border:1px solid #b2f2bb}
+  .feedback.bad{background:var(--badbg);border:1px solid #ffc9c9}
+  .feedback .head{font-weight:600;margin-bottom:4px}
+  .feedback.ok .head{color:var(--ok)} .feedback.bad .head{color:var(--bad)}
+  .feedback .correct{font-size:26px;line-height:1.7}
+  .feedback .rule{margin-top:8px;color:#333}
+  .feedback .note{margin-top:6px;color:#8a5a00;font-size:14px}
+  .pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:#f1f3f5;color:#555;margin-left:6px;vertical-align:middle}
+
+  ruby rt{font-size:.45em;color:var(--muted)}
+  body.nofuri ruby rt{visibility:hidden}
+
+  /* Filters */
+  h2{font-size:16px;margin:0 0 12px}
+  h3{font-size:13px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px}
+  .checks label{font-size:14px;display:flex;gap:8px;align-items:center;cursor:pointer}
+  .small-links{font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0}
+  .small-links a{color:var(--accent);cursor:pointer;margin-left:6px}
+  .poolinfo{margin-top:18px;font-size:13px;color:var(--muted)}
+
+  /* Stats */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+  th{font-size:12px;color:var(--muted);font-weight:600}
+  td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .bar{height:6px;background:#f1f3f5;border-radius:3px;width:90px;display:inline-block;vertical-align:middle;overflow:hidden}
+  .bar i{display:block;height:100%}
+  .totals{display:flex;gap:30px;margin-bottom:10px}
+  .totals div{font-size:13px;color:var(--muted)}
+  .totals b{display:block;font-size:24px;color:var(--text)}
+  .reset{margin-top:20px;font-size:12px}
+
+  /* ---- quality-of-life additions: dark mode, audio, review / wrap-up ---- */
+  :root{--accentbg:#edf2ff;--okline:#b2f2bb;--badline:#ffc9c9;--pill:#f1f3f5;--pilltext:#555;--warn:#8a5a00;--sub:#333}
+  :root.dark{--bg:#15171c;--card:#1e2128;--text:#e4e6ea;--muted:#9aa0aa;--line:#353a45;--accent:#7b93f7;--ok:#69db7c;--okbg:#17301f;
+    --bad:#ff8787;--badbg:#3a1d21;--accentbg:#262d48;--okline:#2b6a3a;--badline:#7a2e35;--pill:#2a2e37;--pilltext:#c8ccd3;--warn:#f0c14b;--sub:#cfd3da;color-scheme:dark}
+  :root.dark button.primary{background:#4c6ef5;border-color:#4c6ef5}
+  :root.dark #storeWarn{background:#3a3212!important;border-color:#6b5d1e!important;color:#f0c14b!important}
+  nav button.active{background:var(--accentbg)}
+  .feedback.ok{border-color:var(--okline)} .feedback.bad{border-color:var(--badline)}
+  .feedback .rule{color:var(--sub)} .feedback .note{color:var(--warn)}
+  .feedback .ex{border-top-color:var(--line)} .feedback .ex .en{color:var(--muted)}
+  .added,.fixnote{color:var(--warn)}
+  .pill{background:var(--pill);color:var(--pilltext)} .bar{background:var(--pill)}
+  #answer,#listSearch{background-color:var(--card);color:var(--text)}
+  button.btn:not(.primary){background-color:var(--card);color:var(--text)}
+  .toggles{display:flex;gap:14px;flex-wrap:wrap}
+  .modebar{display:flex;gap:8px;justify-content:center;margin:-4px 0 14px;flex-wrap:wrap}
+  button.btn.small{font-size:12px;padding:5px 12px}
+  button.btn.on{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+  .modeinfo{text-align:center;font-size:12px;color:var(--accent);margin:-6px 0 14px}
+  .modeinfo.warn{color:var(--warn)}
+  .speak{background:none;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:13px;padding:1px 7px;color:var(--text);vertical-align:middle;font-family:inherit;line-height:1.5}
+  .speak:hover{border-color:var(--accent)}
+  #summary h2{text-align:center;font-size:20px;margin:0 0 14px}
+  #summary .totals{justify-content:center;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>活用 Verb Conjugation Quiz</h1>
+  <nav>
+    <button data-tab="quiz" class="active">Quiz</button>
+    <button data-tab="filters">Filters</button>
+    <button data-tab="stats">Stats</button>
+  </nav>
+  <div class="toggles">
+    <label class="toggle"><input type="checkbox" id="furiToggle" checked> Furigana</label>
+    <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
+    <label class="toggle" title="Read the answer aloud as soon as you submit"><input type="checkbox" id="autoToggle"> Auto-play audio</label>
+  </div>
+</header>
+
+<main>
+  <!-- QUIZ -->
+  <section id="tab-quiz" class="card">
+    <div id="storeWarn" class="hidden" style="font-size:12px;color:#8a5a00;background:#fff9db;border:1px solid #ffe066;border-radius:8px;padding:8px 12px;margin-bottom:14px;text-align:center">This viewer blocks saving, so lifetime stats won&#39;t persist. Download the file and open it directly in Chrome to save progress.</div>
+    <div class="scorebar">
+      <span>Session: <b id="sScore">0 / 0</b></span>
+      <span>Streak: <b id="sStreak">0</b></span>
+    </div>
+    <div class="modebar" id="modebar">
+      <button class="btn small" id="reviewBtn" title="Drill only the items with your worst track record">Review weak spots</button>
+      <button class="btn small" id="wrapBtn" title="Finish with 5 more questions, then see a summary">Wrap up</button>
+    </div>
+    <div class="modeinfo hidden" id="modeInfo"></div>
+    <div id="quizBody">
+      <div class="verb" id="qVerb"></div>
+      <div class="meaning" id="qMeaning"></div>
+      <div class="target">Convert to <span class="form" id="qForm"></span><span class="cat" id="qCat"></span></div>
+      <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type in romaji…">
+      <div class="buttons">
+        <button class="btn primary" id="submitBtn">Check</button>
+        <button class="btn" id="revealBtn">Show answer</button>
+      </div>
+      <div class="hint">Enter = check / next · Type <b>nn</b> for ん · double consonant = っ (e.g. <i>matte</i> → まって)</div>
+      <div id="feedback"></div>
+    </div>
+    <div id="emptyPool" class="hidden" style="text-align:center;color:var(--muted)">No questions match your filters. Enable at least one form, level and verb group.</div>
+    <div id="summary" class="hidden">
+      <h2 id="sumTitle"></h2>
+      <div id="sumBody"></div>
+      <div class="buttons" style="margin-top:20px">
+        <button class="btn primary" id="newSessionBtn">Start new session</button>
+        <button class="btn" id="keepGoingBtn">Keep going</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <section id="tab-filters" class="card hidden">
+    <h2>Filters</h2>
+    <div id="filterBody"></div>
+    <div class="poolinfo" id="poolInfo"></div>
+  </section>
+
+  <!-- STATS -->
+  <section id="tab-stats" class="card hidden">
+    <h2>Stats</h2>
+    <div id="statsBody"></div>
+    <h3>Sync between devices</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Export a file here, open the quiz on another computer or phone, and import it there. Results are combined without double-counting, so you can sync back and forth as often as you like.</div>
+    <div class="buttons" style="justify-content:flex-start;margin-top:0">
+      <button class="btn" id="exportBtn">Export progress</button>
+      <button class="btn" id="importBtn">Import progress</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+    </div>
+    <div id="syncMsg" style="font-size:13px;margin-top:8px"></div>
+    <div id="syncInfo" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+    <button class="btn reset" id="resetBtn">Reset lifetime stats</button>
+  </section>
+</main>
+
+<script>
+//ENGINE-START
+/* ================= VERB DATA =================
+   format: word[reading] | meaning | group (u / ru / irr) | level | flags
+   flags: nv = non-volitional (skip want/volitional/potential/imperative etc.)
+          nx = also skip passive/causative                                  */
+const VERB_DATA = `
+会[あ]う|to meet|u|5
+開[あ]く|to open (intr.)|u|5|nv
+開[あ]ける|to open (tr.)|ru|5
+上[あ]げる|to give; to raise|ru|5
+遊[あそ]ぶ|to play|u|5
+浴[あ]びる|to bathe; to shower|ru|5
+洗[あら]う|to wash|u|5
+ある|to exist (things)|u|5|nv nx
+歩[ある]く|to walk|u|5
+言[い]う|to say|u|5
+行[い]く|to go|u|5
+要[い]る|to need|u|5|nv nx
+いる|to exist (living things)|ru|5
+入[い]れる|to put in|ru|5
+歌[うた]う|to sing|u|5
+生[う]まれる|to be born|ru|5|nv nx
+売[う]る|to sell|u|5
+起[お]きる|to get up|ru|5
+置[お]く|to put; to place|u|5
+教[おし]える|to teach|ru|5
+押[お]す|to push|u|5
+覚[おぼ]える|to remember|ru|5
+泳[およ]ぐ|to swim|u|5
+降[お]りる|to get off|ru|5
+終[お]わる|to end|u|5|nv
+買[か]う|to buy|u|5
+返[かえ]す|to return (something)|u|5
+帰[かえ]る|to go home|u|5
+かかる|to take (time/money)|u|5|nv nx
+書[か]く|to write|u|5
+掛[か]ける|to hang; to call|ru|5
+貸[か]す|to lend|u|5
+借[か]りる|to borrow|ru|5
+消[き]える|to go out (light)|ru|5|nv nx
+聞[き]く|to listen; to ask|u|5
+切[き]る|to cut|u|5
+着[き]る|to wear (upper body)|ru|5
+来[く]る|to come|irr|5
+消[け]す|to turn off; to erase|u|5
+答[こた]える|to answer|ru|5
+困[こま]る|to be troubled|u|5|nv
+咲[さ]く|to bloom|u|5|nv nx
+差[さ]す|to hold up (umbrella)|u|5
+死[し]ぬ|to die|u|5
+閉[し]まる|to close (intr.)|u|5|nv
+閉[し]める|to close (tr.)|ru|5
+締[し]める|to tie; to fasten|ru|5
+知[し]る|to know|u|5
+吸[す]う|to smoke; to inhale|u|5
+住[す]む|to live (reside)|u|5
+する|to do|irr|5
+座[すわ]る|to sit|u|5
+出[だ]す|to take out; to send|u|5
+立[た]つ|to stand|u|5
+頼[たの]む|to ask; to request|u|5
+食[た]べる|to eat|ru|5
+違[ちが]う|to differ|u|5|nv nx
+使[つか]う|to use|u|5
+疲[つか]れる|to get tired|ru|5|nv nx
+着[つ]く|to arrive|u|5
+作[つく]る|to make|u|5
+勤[つと]める|to work for|ru|5
+出[で]かける|to go out|ru|5
+できる|to be able to|ru|5|nv nx
+出[で]る|to leave; to exit|ru|5
+飛[と]ぶ|to fly|u|5
+止[と]まる|to stop (intr.)|u|5
+取[と]る|to take|u|5
+撮[と]る|to take (a photo)|u|5
+鳴[な]く|to cry (animal); to ring|u|5|nv
+無[な]くす|to lose|u|5
+習[なら]う|to learn|u|5
+並[なら]ぶ|to line up (intr.)|u|5
+並[なら]べる|to line up (tr.)|ru|5
+なる|to become|u|5
+脱[ぬ]ぐ|to take off (clothes)|u|5
+寝[ね]る|to sleep; to go to bed|ru|5
+登[のぼ]る|to climb|u|5
+飲[の]む|to drink|u|5
+乗[の]る|to ride; to board|u|5
+入[はい]る|to enter|u|5
+履[は]く|to wear (shoes, pants)|u|5
+始[はじ]まる|to begin (intr.)|u|5|nv
+走[はし]る|to run|u|5
+働[はたら]く|to work|u|5
+話[はな]す|to speak|u|5
+貼[は]る|to stick; to paste|u|5
+晴[は]れる|to clear up (weather)|ru|5|nv nx
+弾[ひ]く|to play (instrument)|u|5
+引[ひ]く|to pull|u|5
+吹[ふ]く|to blow|u|5
+降[ふ]る|to fall (rain, snow)|u|5|nv nx
+曲[ま]がる|to turn|u|5
+待[ま]つ|to wait|u|5
+磨[みが]く|to brush; to polish|u|5
+見[み]せる|to show|ru|5
+見[み]る|to see; to watch|ru|5
+持[も]つ|to hold; to have|u|5
+休[やす]む|to rest|u|5
+やる|to do (casual)|u|5
+呼[よ]ぶ|to call|u|5
+読[よ]む|to read|u|5
+分[わ]かる|to understand|u|5|nv nx
+忘[わす]れる|to forget|ru|5
+渡[わた]す|to hand over|u|5
+渡[わた]る|to cross|u|5
+勉強[べんきょう]する|to study|irr|5
+散歩[さんぽ]する|to take a walk|irr|5
+掃除[そうじ]する|to clean|irr|5
+洗濯[せんたく]する|to do laundry|irr|5
+結婚[けっこん]する|to marry|irr|5
+質問[しつもん]する|to ask a question|irr|5
+電話[でんわ]する|to phone|irr|5
+料理[りょうり]する|to cook|irr|5
+上[あ]がる|to rise; to go up|u|4
+集[あつ]める|to collect|ru|4
+謝[あやま]る|to apologize|u|4
+生[い]きる|to live|ru|4
+急[いそ]ぐ|to hurry|u|4
+祈[いの]る|to pray|u|4
+植[う]える|to plant|ru|4
+受[う]ける|to receive; to take (exam)|ru|4
+動[うご]く|to move|u|4
+写[うつ]す|to copy|u|4
+選[えら]ぶ|to choose|u|4
+送[おく]る|to send|u|4
+遅[おく]れる|to be late|ru|4
+起[お]こす|to wake (someone)|u|4
+怒[おこ]る|to get angry|u|4
+落[お]ちる|to fall|ru|4
+落[お]とす|to drop|u|4
+踊[おど]る|to dance|u|4
+驚[おどろ]く|to be surprised|u|4
+思[おも]う|to think|u|4
+折[お]る|to fold; to break|u|4
+変[か]える|to change (tr.)|ru|4
+飾[かざ]る|to decorate|u|4
+勝[か]つ|to win|u|4
+噛[か]む|to bite; to chew|u|4
+乾[かわ]く|to dry|u|4|nv nx
+変[か]わる|to change (intr.)|u|4
+考[かんが]える|to think; to consider|ru|4
+頑張[がんば]る|to do one's best|u|4
+決[き]める|to decide|ru|4
+比[くら]べる|to compare|ru|4
+暮[く]れる|to get dark|ru|4|nv nx
+壊[こわ]す|to break (tr.)|u|4
+壊[こわ]れる|to break (intr.)|ru|4|nv nx
+探[さが]す|to search for|u|4
+下[さ]げる|to lower|ru|4
+騒[さわ]ぐ|to make noise|u|4
+触[さわ]る|to touch|u|4
+調[しら]べる|to investigate|ru|4
+信[しん]じる|to believe|ru|4
+捨[す]てる|to throw away|ru|4
+滑[すべ]る|to slip|u|4
+育[そだ]てる|to raise; to bring up|ru|4
+倒[たお]れる|to collapse|ru|4|nv
+足[た]りる|to be enough|ru|4|nv nx
+捕[つか]まえる|to catch|ru|4
+付[つ]ける|to attach; to turn on|ru|4
+続[つづ]ける|to continue|ru|4
+包[つつ]む|to wrap|u|4
+手伝[てつだ]う|to help|u|4
+届[とど]ける|to deliver|ru|4
+泊[と]まる|to stay overnight|u|4
+直[なお]す|to fix|u|4
+治[なお]る|to get well|u|4|nv
+泣[な]く|to cry|u|4
+投[な]げる|to throw|ru|4
+慣[な]れる|to get used to|ru|4
+似[に]る|to resemble|ru|4|nv nx
+逃[に]げる|to run away|ru|4
+盗[ぬす]む|to steal|u|4
+塗[ぬ]る|to paint; to apply|u|4
+眠[ねむ]る|to sleep|u|4
+残[のこ]る|to remain|u|4
+運[はこ]ぶ|to carry|u|4
+払[はら]う|to pay|u|4
+冷[ひ]える|to get cold|ru|4|nv nx
+開[ひら]く|to open; to hold (event)|u|4
+拾[ひろ]う|to pick up|u|4
+増[ふ]える|to increase|ru|4|nv nx
+踏[ふ]む|to step on|u|4
+褒[ほ]める|to praise|ru|4
+間[ま]に合[あ]う|to be in time|u|4|nv
+守[まも]る|to protect|u|4
+回[まわ]る|to go around|u|4
+見[み]つける|to find|ru|4
+迎[むか]える|to welcome; to pick up|ru|4
+戻[もど]る|to return|u|4
+もらう|to receive|u|4
+焼[や]く|to bake; to grill|u|4
+止[や]める|to quit|ru|4
+役[やく]に立[た]つ|to be useful|u|4|nv nx
+喜[よろこ]ぶ|to be glad|u|4
+沸[わ]かす|to boil|u|4
+笑[わら]う|to laugh|u|4
+割[わ]れる|to break; to crack|ru|4|nv nx
+心配[しんぱい]する|to worry|irr|4
+準備[じゅんび]する|to prepare|irr|4
+運転[うんてん]する|to drive|irr|4
+説明[せつめい]する|to explain|irr|4
+連絡[れんらく]する|to contact|irr|4
+案内[あんない]する|to guide|irr|4
+持[も]って来[く]る|to bring|irr|4
+意味[いみ]する|meaning (+する)|irr|5
+買[か]い物[もの]する|shopping (+する)|irr|5
+曇[くも]る|to become cloudy; to become dim|u|5|nv
+コピーする|to copy|irr|5
+作文[さくぶん]する|composition; writing (+する)|irr|5
+仕事[しごと]する|job (+する)|irr|5
+授業[じゅぎょう]する|lesson; class work (+する)|irr|5
+テストする|test (+する)|irr|5
+旅行[りょこう]する|travel (+する)|irr|5
+練習[れんしゅう]する|to practice|irr|5
+あいさつする|to greet|irr|4
+合[あ]う|to match|u|4
+空[あ]く|to open; to become empty|u|4
+集[あつ]まる|to gather|u|4
+アルバイトする|part-time job (+する)|irr|4
+安心[あんしん]する|relief (+する)|irr|4
+いじめる|to tease|ru|4
+致[いた]す|(humble) to do|u|4
+いただく|(humble) to receive|u|4
+うかがう|to visit|u|4
+受付[うけつけ]する|receipt (+する)|irr|4
+打[う]つ|to hit|u|4
+移[うつ]る|to move house or transfer|u|4
+運動[うんどう]する|to exercise|irr|4
+遠慮[えんりょ]する|to be reserved; to be restrained|irr|4
+おいでになる|(respectful) to be|u|4
+行[おこな]う|to do|u|4
+思[おも]い出[だ]す|to remember|u|4
+下[お]りる|to get off|ru|4
+折[お]れる|to break or be folded|ru|4
+会議[かいぎ]する|meeting (+する)|irr|4
+会話[かいわ]する|conversation (+する)|irr|4
+片付[かたづ]ける|to tidy up|ru|4
+かまう|to mind|u|4
+通[かよ]う|to commute|u|4
+関係[かんけい]する|relationship (+する)|irr|4
+聞[き]こえる|to be heard|ru|4|nv nx
+決[き]まる|to be decided|u|4|nv
+教育[きょういく]する|education (+する)|irr|4
+競争[きょうそう]する|competition (+する)|irr|4
+計画[けいかく]する|to plan|irr|4
+経験[けいけん]する|to experience|irr|4
+けがする|to injure|irr|4
+下宿[げしゅく]する|lodging (+する)|irr|4
+原因[げんいん]する|cause; source (+する)|irr|4
+けんかする|to quarrel|irr|4
+研究[けんきゅう]する|research (+する)|irr|4
+見物[けんぶつ]する|sightseeing (+する)|irr|4
+講義[こうぎ]する|lecture (+する)|irr|4
+交通[こうつう]する|traffic; transportation (+する)|irr|4
+故障[こしょう]する|to break-down|irr|4
+込[こ]む|to be crowded|u|4|nv
+ごらんになる|(respectful) to see|u|4
+下[さ]がる|to get down; to descend|u|4
+差[さ]し上[あ]げる|(polite) to give|ru|4
+試合[しあい]する|match; game (+する)|irr|4
+試験[しけん]する|examination (+する)|irr|4
+支度[したく]する|to prepare|irr|4
+しっかりする|firmly; steadily (+する)|irr|4
+失敗[しっぱい]する|failure; mistake (+する)|irr|4
+じゃまする|hindrance; intrusion (+する)|irr|4
+出席[しゅっせき]する|to attend|irr|4
+出発[しゅっぱつ]する|to depart|irr|4
+紹介[しょうかい]する|introduction (+する)|irr|4
+招待[しょうたい]する|to invite|irr|4
+承知[しょうち]する|to consent|irr|4
+食事[しょくじ]する|to have a meal|irr|4
+知[し]らせる|to notify|ru|4
+水泳[すいえい]する|swimming (+する)|irr|4
+過[す]ぎる|to exceed|ru|4
+すく|to become empty|u|4|nv
+進[すす]む|to make progress|u|4
+済[す]む|to finish|u|4
+生活[せいかつ]する|to live|irr|4
+生産[せいさん]する|to produce|irr|4
+世話[せわ]する|to look after|irr|4
+戦争[せんそう]する|war (+する)|irr|4
+相談[そうだん]する|to discuss|irr|4
+卒業[そつぎょう]する|graduation (+する)|irr|4
+退院[たいいん]する|to leave hospital|irr|4
+足[た]す|to add a number|u|4
+尋[たず]ねる|to ask|ru|4
+訪[たず]ねる|to visit|ru|4
+建[た]てる|to build|ru|4
+立[た]てる|to stand something up|ru|4
+楽[たの]しむ|to enjoy oneself|u|4
+暖房[だんぼう]する|heating (+する)|irr|4
+注意[ちゅうい]する|caution (+する)|irr|4
+注射[ちゅうしゃ]する|injection (+する)|irr|4
+付[つ]く|to be attached|u|4|nv
+漬[つ]ける|to soak; to pickle|ru|4
+伝[つた]える|to report|ru|4
+続[つづ]く|to be continued|u|4|nv
+釣[つ]る|to fish|u|4
+連[つ]れる|to lead|ru|4
+通[とお]る|to go through|u|4
+止[と]める|to stop something|ru|4
+取[と]り替[か]える|to exchange|ru|4
+直[なお]る|to be fixed; to be repaired|u|4|nv
+亡[な]くなる|to die|u|4
+無[な]くなる|to disappear; to get lost|u|4
+鳴[な]る|to sound|u|4
+入院[にゅういん]する|to hospitalise|irr|4
+入学[にゅうがく]する|to enter school or university|irr|4
+ぬれる|to get wet|ru|4|nv
+寝坊[ねぼう]する|sleeping in late (+する)|irr|4
+乗[の]り換[か]える|to change between buses or trains|ru|4
+拝見[はいけん]する|(humble) to look at (+する)|irr|4
+始[はじ]める|to begin|ru|4
+発音[はつおん]する|pronunciation (+する)|irr|4
+花見[はなみ]する|cherry-blossom viewing (+する)|irr|4
+反対[はんたい]する|opposition (+する)|irr|4
+光[ひか]る|to shine; to glitter|u|4
+引[ひ]き出[だ]す|to withdraw|u|4
+びっくりする|to be surprised|irr|4|nv
+引[ひ]っ越[こ]す|to move house|u|4
+ファックスする|fax (+する)|irr|4
+復習[ふくしゅう]する|revision (+する)|irr|4
+太[ふと]る|to become fat|u|4|nv
+降[ふ]り出[だ]す|to start to rain|u|4
+プレゼントする|present (+する)|irr|4
+返事[へんじ]する|reply (+する)|irr|4
+貿易[ぼうえき]する|trade (+する)|irr|4
+放送[ほうそう]する|to broadcast|irr|4
+翻訳[ほんやく]する|translation (+する)|irr|4
+参[まい]る|(humble) to go; to come|u|4
+負[ま]ける|to lose|ru|4
+間違[まちが]える|to make a mistake|ru|4
+見[み]える|to be in sight|ru|4|nv nx
+見[み]つかる|to be discovered|u|4|nv
+向[む]かう|to face|u|4
+召[め]し上[あ]がる|(polite) to eat|u|4
+申[もう]し上[あ]げる|(humble) to say; to tell|ru|4
+申[もう]す|(humble) to be called; to say|u|4
+約束[やくそく]する|promise (+する)|irr|4
+焼[や]ける|to burn; to be roasted|ru|4
+痩[や]せる|to become thin|ru|4|nv
+止[や]む|to stop|u|4
+輸出[ゆしゅつ]する|to export|irr|4
+輸入[ゆにゅう]する|to import|irr|4
+揺[ゆ]れる|to shake; to sway|ru|4
+用意[ようい]する|preparation (+する)|irr|4
+汚[よご]れる|to get dirty|ru|4|nv
+予習[よしゅう]する|preparation for a lesson (+する)|irr|4
+予定[よてい]する|arrangement (+する)|irr|4
+予約[よやく]する|reservation (+する)|irr|4
+寄[よ]る|to visit|u|4
+利用[りよう]する|utilization (+する)|irr|4
+留守[るす]する|absence (+する)|irr|4
+冷房[れいぼう]する|air conditioning (+する)|irr|4
+レポートする|report (+する)|irr|4
+別[わか]れる|to separate|ru|4
+沸[わ]く|to boil; to grow hot|u|4
+挨拶[あいさつ]する|greeting; salutation (+する)|irr|3
+合図[あいず]する|sign; signal (+する)|irr|3
+愛[あい]する|to love|irr|3
+諦[あきら]める|to give up; to abandon|ru|3
+飽[あ]きる|to get tired of; to lose interest in|ru|3|nv
+握手[あくしゅ]する|handshake (+する)|irr|3
+明[あ]ける|to dawn; to become daylight|ru|3
+預[あず]ける|to give into custody; to entrust|ru|3
+与[あた]える|to give; to present|ru|3
+当[あ]たる|to be hit; to be successful|u|3|nv
+あちこちする|here and there (+する)|irr|3
+扱[あつか]う|to handle; to deal with|u|3
+当[あ]てる|to hit; to apply a patch|ru|3
+現[あらわ]す|to show; to indicate|u|3
+表[あらわ]す|to express; to show|u|3
+現[あらわ]れる|to appear; to come in sight|ru|3|nv
+合[あ]わせる|to join together; to be opposite|ru|3
+暗記[あんき]する|memorization; learning by heart (+する)|irr|3
+安定[あんてい]する|stability; equilibrium (+する)|irr|3
+維持[いじ]する|maintenance; preservation (+する)|irr|3
+意識[いしき]する|consciousness; senses (+する)|irr|3
+抱[いだ]く|(slang) to embrace; to hug|u|3
+いたずらする|tease; prank (+する)|irr|3
+至[いた]る|to come; to arrive|u|3
+位置[いち]する|place; situation (+する)|irr|3
+一致[いっち]する|coincidence; agreement (+する)|irr|3
+移動[いどう]する|removal; migration (+する)|irr|3
+居眠[いねむ]りする|dozing; nodding off (+する)|irr|3
+違反[いはん]する|violation (of law); transgression (+する)|irr|3
+依頼[いらい]する|request; commission (+する)|irr|3
+いらいらする|getting nervous; irritation (+する)|irr|3
+祝[いわ]う|to congratulate; to celebrate|u|3
+印刷[いんさつ]する|printing (+する)|irr|3
+引退[いんたい]する|retire (+する)|irr|3
+引用[いんよう]する|quotation; citation (+する)|irr|3
+うがいする|gargle; rinse mouth (+する)|irr|3
+受[う]け取[と]る|to receive; to get|u|3
+動[うご]かす|to move; to shift|u|3
+失[うしな]う|to lose; to part with|u|3
+疑[うたが]う|to doubt; to distrust|u|3
+撃[う]つ|to attack; to defeat|u|3
+移[うつ]す|to remove; to transfer|u|3
+訴[うった]える|to sue (a person); to resort to|ru|3
+うなる|to groan; to moan|u|3
+奪[うば]う|to snatch away|u|3
+裏切[うらぎ]る|to betray; to turn traitor to|u|3
+売[う]れる|to be sold|ru|3|nv
+噂[うわさ]する|rumour; report (+する)|irr|3
+影響[えいきょう]する|influence; effect (+する)|irr|3
+営業[えいぎょう]する|business; trade (+する)|irr|3
+描[えが]く|to draw; to paint|u|3
+得[え]る|to get; to gain|ru|3
+延期[えんき]する|postponement; adjournment (+する)|irr|3
+演技[えんぎ]する|acting; performance (+する)|irr|3
+援助[えんじょ]する|assistance; aid (+する)|irr|3
+演説[えんぜつ]する|speech; address (+する)|irr|3
+演奏[えんそう]する|musical performance (+する)|irr|3
+追[お]い付[つ]く|to overtake; to catch up (with)|u|3
+追[お]う|to chase; to run after|u|3
+応[おう]じる|to respond; to satisfy|ru|3
+横断[おうだん]する|crossing (+する)|irr|3
+終[お]える|to finish|ru|3
+覆[おお]う|to cover; to hide|u|3
+贈[おく]る|to send; to give to|u|3
+起[お]こる|to occur; to happen|u|3|nv
+収[おさ]める|to obtain; to reap|ru|3
+おしゃべりする|chattering; talk (+する)|irr|3
+汚染[おせん]する|pollution; contamination (+する)|irr|3
+恐[おそ]れる|to fear; to be afraid of|ru|3
+劣[おと]る|to fall behind; to be inferior to|u|3
+溺[おぼ]れる|to be drowned; to indulge in|ru|3|nv
+お目[め]に掛[か]かる|to meet (someone of higher status)|u|3
+及[およ]ぼす|to exert; to cause|u|3
+居[お]る|to be (animate); to be|u|3
+降[お]ろす|to take down; to launch|u|3
+会計[かいけい]する|account; finance (+する)|irr|3
+解決[かいけつ]する|settlement; solution (+する)|irr|3
+会合[かいごう]する|meeting; assembly (+する)|irr|3
+開始[かいし]する|start; commencement (+する)|irr|3
+解釈[かいしゃく]する|explanation; interpretation (+する)|irr|3
+外出[がいしゅつ]する|outing; going out (+する)|irr|3
+改善[かいぜん]する|betterment; improvement (+する)|irr|3
+回復[かいふく]する|recovery (from illness); improvement (+する)|irr|3
+飼[か]う|to keep; to raise|u|3
+換[か]える|to exchange; to interchange|ru|3
+替[か]える|to exchange; to interchange|ru|3
+抱[かか]える|to hold or carry under or in the arms|ru|3
+輝[かがや]く|to shine; to glitter|u|3
+罹[かか]る|to suffer from|u|3
+限[かぎ]る|to restrict; to limit|u|3
+覚悟[かくご]する|resolution; resignation (+する)|irr|3
+学習[がくしゅう]する|study; learning (+する)|irr|3
+隠[かく]す|to hide; to conceal|u|3
+拡大[かくだい]する|magnification; enlargement (+する)|irr|3
+確認[かくにん]する|affirmation; confirmation (+する)|irr|3
+学問[がくもん]する|scholarship; study (+する)|irr|3
+隠[かく]れる|to hide; to be hidden|ru|3
+欠[か]ける|to be lacking|ru|3|nv
+加減[かげん]する|addition and subtraction; allowance for (+する)|irr|3
+囲[かこ]む|to surround; to encircle|u|3
+稼[かせ]ぐ|to earn income; to labor|u|3
+数[かぞ]える|to count|ru|3
+語[かた]る|to talk; to tell|u|3
+がっかりする|feel disappointed; be dejected (+する)|irr|3
+活動[かつどう]する|action; activity (+する)|irr|3
+活用[かつよう]する|conjugation; practical use (+する)|irr|3
+悲[かな]しむ|to be sad; to mourn for|u|3
+被[かぶ]る|to put on (one's head); to wear|u|3
+我慢[がまん]する|patience; endurance (+する)|irr|3
+刈[か]る|to cut (hair); to mow (grass)|u|3
+感覚[かんかく]する|sense; sensation (+する)|irr|3
+歓迎[かんげい]する|welcome; reception (+する)|irr|3
+観光[かんこう]する|sightseeing (+する)|irr|3
+観察[かんさつ]する|observation; survey (+する)|irr|3
+感謝[かんしゃ]する|thanks; gratitude (+する)|irr|3
+勘定[かんじょう]する|calculation; counting (+する)|irr|3
+感[かん]じる|to feel; to sense|ru|3
+感心[かんしん]する|admiration; Well done! (+する)|irr|3
+関[かん]する|to concern; to be related|irr|3
+完成[かんせい]する|complete; completion (+する)|irr|3
+感動[かんどう]する|being deeply moved; excitement (+する)|irr|3
+監督[かんとく]する|supervision; control (+する)|irr|3
+管理[かんり]する|control (+する)|irr|3
+完了[かんりょう]する|completion; conclusion (+する)|irr|3
+関連[かんれん]する|relation; connection (+する)|irr|3
+記憶[きおく]する|memory; recollection (+する)|irr|3
+効[き]く|to be effective|u|3|nv
+期待[きたい]する|expectation; anticipation (+する)|irr|3
+帰宅[きたく]する|returning home (+する)|irr|3
+気付[きづ]く|to notice; to recognize|u|3
+気[き]に入[い]る|to be pleased with; to suit|u|3
+記入[きにゅう]する|entry; filling in of forms (+する)|irr|3
+記念[きねん]する|commemoration; memory (+する)|irr|3
+機能[きのう]する|function; faculty (+する)|irr|3
+寄付[きふ]する|contribution; donation (+する)|irr|3
+希望[きぼう]する|hope; wish (+する)|irr|3
+キャンプする|camp (+する)|irr|3
+休憩[きゅうけい]する|rest; break (+する)|irr|3
+吸収[きゅうしゅう]する|absorption; suction (+する)|irr|3
+救助[きゅうじょ]する|relief; aid (+する)|irr|3
+競技[きょうぎ]する|game; match (+する)|irr|3
+供給[きょうきゅう]する|supply; provision (+する)|irr|3
+教授[きょうじゅ]する|teaching; instruction (+する)|irr|3
+強調[きょうちょう]する|emphasis; stress (+する)|irr|3
+共同[きょうどう]する|cooperation; association (+する)|irr|3
+恐怖[きょうふ]する|be afraid; dread (+する)|irr|3
+協力[きょうりょく]する|cooperation; collaboration (+する)|irr|3
+許可[きょか]する|permission; approval (+する)|irr|3
+嫌[きら]う|to hate; to dislike|u|3
+切[き]れる|to cut well; to be sharp|ru|3
+記録[きろく]する|record; minutes (+する)|irr|3
+議論[ぎろん]する|argument; discussion (+する)|irr|3
+禁止[きんし]する|prohibition; ban (+する)|irr|3
+緊張[きんちょう]する|tension; mental strain (+する)|irr|3
+食[く]う|(male) (vulgar) to eat|u|3
+腐[くさ]る|to rot; to go bad|u|3|nv
+下[くだ]す|to lower; to let go down|u|3
+区別[くべつ]する|distinction; differentiation (+する)|irr|3
+組[く]む|to put together|u|3
+暮[く]らす|to live; to get along|u|3
+繰[く]り返[かえ]す|to repeat; to do something over again|u|3
+狂[くる]う|to go mad; to get out of order|u|3
+苦[くる]しむ|to suffer; to groan|u|3
+苦労[くろう]する|troubles; hardships (+する)|irr|3
+加[くわ]える|to append; to sum up|ru|3
+加[くわ]わる|to join in; to accede to|u|3
+訓練[くんれん]する|practice; training (+する)|irr|3
+経営[けいえい]する|management; administration (+する)|irr|3
+警告[けいこく]する|warning; advice (+する)|irr|3
+計算[けいさん]する|calculation; reckoning (+する)|irr|3
+掲示[けいじ]する|notice; bulletin (+する)|irr|3
+契約[けいやく]する|contract; compact (+する)|irr|3
+経由[けいゆ]する|go by the way; via (+する)|irr|3
+怪我[けが]する|injury (to animate object); hurt (+する)|irr|3
+化粧[けしょう]する|make-up (cosmetic) (+する)|irr|3
+結果[けっか]する|result; consequence (+する)|irr|3
+決心[けっしん]する|determination; resolution (+する)|irr|3
+欠席[けっせき]する|absence; non-attendance (+する)|irr|3
+決定[けってい]する|decision; determination (+する)|irr|3
+結論[けつろん]する|conclusion (+する)|irr|3
+喧嘩[けんか]する|quarrel; (drunken) brawl (+する)|irr|3
+検査[けんさ]する|inspection (e.g. customs, factory) (+する)|irr|3
+建設[けんせつ]する|construction; establishment (+する)|irr|3
+建築[けんちく]する|construction; architecture (+する)|irr|3
+検討[けんとう]する|consideration; examination (+する)|irr|3
+講演[こうえん]する|lecture; address (+する)|irr|3
+合格[ごうかく]する|success; passing (e.g. exam) (+する)|irr|3
+交換[こうかん]する|exchange; interchange (+する)|irr|3
+合計[ごうけい]する|sum total; total amount (+する)|irr|3
+攻撃[こうげき]する|attack; strike (+する)|irr|3
+貢献[こうけん]する|contribution; services (+する)|irr|3
+広告[こうこく]する|advertisement (+する)|irr|3
+交際[こうさい]する|company; friendship (+する)|irr|3
+構成[こうせい]する|organization; composition (+する)|irr|3
+行動[こうどう]する|action; conduct (+する)|irr|3
+考慮[こうりょ]する|consideration; taking into account (+する)|irr|3
+越[こ]える|to exceed; to cross over|ru|3
+コーチする|coach (+する)|irr|3
+凍[こお]る|to freeze; to be frozen over|u|3
+ゴールする|goal (+する)|irr|3
+誤解[ごかい]する|misunderstanding (+する)|irr|3
+呼吸[こきゅう]する|breath; respiration (+する)|irr|3
+克服[こくふく]する|subjugation; conquest (+する)|irr|3
+越[こ]す|to go over (e.g. with audience)|u|3
+骨折[こっせつ]する|bone fracture (+する)|irr|3
+異[こと]なる|to differ; to vary|u|3|nv nx
+断[ことわ]る|to refuse; to decline|u|3
+好[この]む|to like; to prefer|u|3
+殺[ころ]す|to kill|u|3
+転[ころ]ぶ|to fall down; to fall over|u|3
+混雑[こんざつ]する|confusion; congestion (+する)|irr|3
+婚約[こんやく]する|engagement; betrothal (+する)|irr|3
+混乱[こんらん]する|disorder; chaos (+する)|irr|3
+サービスする|service; support system (+する)|irr|3
+裁判[さいばん]する|trial; judgement (+する)|irr|3
+サインする|autograph; sign (+する)|irr|3
+逆[さか]らう|to go against; to oppose|u|3
+作業[さぎょう]する|work; operation (+する)|irr|3
+叫[さけ]ぶ|to shout; to cry|u|3
+避[さ]ける|to avoid (physical contact )|ru|3
+支[ささ]える|to be blocked; to choke|ru|3
+指[さ]す|to point; to put up umbrella|u|3
+誘[さそ]う|to invite; to ask|u|3
+作曲[さっきょく]する|composition; setting (of music) (+する)|irr|3
+さっぱりする|feeling refreshed; feeling relieved (+する)|irr|3
+差別[さべつ]する|discrimination; distinction (+する)|irr|3
+覚[さ]ます|to awaken|u|3
+覚[さ]める|to wake; to wake up|ru|3
+左右[さゆう]する|left and right; influence (+する)|irr|3
+去[さ]る|to leave; to go away|u|3
+参加[さんか]する|participation (+する)|irr|3
+賛成[さんせい]する|approval; agreement (+する)|irr|3
+叱[しか]る|to scold|u|3
+支給[しきゅう]する|payment; allowance (+する)|irr|3
+刺激[しげき]する|stimulus; impetus (+する)|irr|3
+自殺[じさつ]する|suicide (+する)|irr|3
+支出[ししゅつ]する|expenditure; expenses (+する)|irr|3
+沈[しず]む|to sink; to feel depressed|u|3
+従[したが]う|to abide (by the rules); to obey|u|3
+実験[じっけん]する|experiment (+する)|irr|3
+実現[じつげん]する|implementation; materialization (+する)|irr|3
+実行[じっこう]する|practice; performance (+する)|irr|3
+実施[じっし]する|enforcement; enact (+する)|irr|3
+失望[しつぼう]する|disappointment; despair (+する)|irr|3
+指導[しどう]する|leadership; guidance (+する)|irr|3
+支配[しはい]する|rule; control (+する)|irr|3
+支払[しはら]う|to pay|u|3
+死亡[しぼう]する|death; mortality (+する)|irr|3
+自慢[じまん]する|pride; boast (+する)|irr|3
+示[しめ]す|to denote; to show|u|3
+占[し]める|to comprise; to account for|ru|3
+借金[しゃっきん]する|debt; loan (+する)|irr|3
+しゃべる|to talk; to chat|u|3
+収穫[しゅうかく]する|harvest; crop (+する)|irr|3
+重視[じゅうし]する|importance; stress (+する)|irr|3
+就職[しゅうしょく]する|finding employment; inauguration (+する)|irr|3
+修正[しゅうせい]する|amendment; correction (+する)|irr|3
+渋滞[じゅうたい]する|congestion (e.g. traffic); delay (+する)|irr|3
+集中[しゅうちゅう]する|concentration; focusing the mind (+する)|irr|3
+修理[しゅうり]する|repairing; mending (+する)|irr|3
+宿泊[しゅくはく]する|lodging (+する)|irr|3
+手術[しゅじゅつ]する|surgical operation (+する)|irr|3
+主張[しゅちょう]する|claim; request (+する)|irr|3
+出版[しゅっぱん]する|publication (+する)|irr|3
+使用[しよう]する|use; application (+する)|irr|3
+障害[しょうがい]する|obstacle; impediment (fault) (+する)|irr|3
+上京[じょうきょう]する|proceeding to the capital (Tokyo) (+する)|irr|3
+生[しょう]じる|to produce; to yield|ru|3
+上達[じょうたつ]する|improvement; advance (+する)|irr|3
+衝突[しょうとつ]する|collision; conflict (+する)|irr|3
+承認[しょうにん]する|recognition; acknowledgement (+する)|irr|3
+商売[しょうばい]する|trade; business (+する)|irr|3
+消費[しょうひ]する|consumption; expenditure (+する)|irr|3
+証明[しょうめい]する|proof; verification (+する)|irr|3
+署名[しょめい]する|signature (+する)|irr|3
+処理[しょり]する|processing; dealing with (+する)|irr|3
+進学[しんがく]する|going on to university (+する)|irr|3
+信仰[しんこう]する|(religious) faith; belief (+する)|irr|3
+診察[しんさつ]する|medical examination (+する)|irr|3
+進歩[しんぽ]する|progress; development (+する)|irr|3
+信用[しんよう]する|confidence; dependence (+する)|irr|3
+信頼[しんらい]する|reliance; trust (+する)|irr|3
+推薦[すいせん]する|recommendation (+する)|irr|3
+救[すく]う|to rescue from; to help out of|u|3
+優[すぐ]れる|to surpass; to outstrip|ru|3
+スケートする|skate(s); skating (+する)|irr|3
+過[す]ごす|to pass; to spend|u|3
+勧[すす]める|to recommend; to advise|ru|3
+進[すす]める|to advance; to promote|ru|3
+済[す]ませる|to be finished|ru|3
+請求[せいきゅう]する|claim; demand (+する)|irr|3
+制限[せいげん]する|restriction; restraint (+する)|irr|3
+成功[せいこう]する|success; hit (+する)|irr|3
+製造[せいぞう]する|manufacture; production (+する)|irr|3
+成長[せいちょう]する|growth; grow to adulthood (+する)|irr|3
+整理[せいり]する|sorting; arrangement (+する)|irr|3
+設計[せっけい]する|plan; design (+する)|irr|3
+設備[せつび]する|equipment; device (+する)|irr|3
+絶滅[ぜつめつ]する|destruction; extinction (+する)|irr|3
+節約[せつやく]する|economising; saving (+する)|irr|3
+責[せ]める|to condemn; to blame|ru|3
+専攻[せんこう]する|major subject; special study (+する)|irr|3
+前進[ぜんしん]する|advance; drive (+する)|irr|3
+選択[せんたく]する|selection; choice (+する)|irr|3
+増加[ぞうか]する|increase; addition (+する)|irr|3
+操作[そうさ]する|operation; management (+する)|irr|3
+想像[そうぞう]する|imagination; guess (+する)|irr|3
+相続[そうぞく]する|succession; inheritance (+する)|irr|3
+装置[そうち]する|equipment; installation (+する)|irr|3
+組織[そしき]する|organization; structure (+する)|irr|3
+注[そそ]ぐ|to pour (into); to irrigate|u|3
+育[そだ]つ|to raise (child); to be brought up|u|3
+備[そな]える|to furnish; to provide for|ru|3
+損[そん]する|loss; disadvantage (+する)|irr|3
+損害[そんがい]する|damage; injury (+する)|irr|3
+尊敬[そんけい]する|respect; esteem (+する)|irr|3
+存在[そんざい]する|existence; being (+する)|irr|3|nv
+尊重[そんちょう]する|respect; esteem (+する)|irr|3
+滞在[たいざい]する|stay; sojourn (+する)|irr|3
+対[たい]する|to face; to confront|irr|3
+代表[だいひょう]する|representative; representation (+する)|irr|3
+逮捕[たいほ]する|arrest; apprehension (+する)|irr|3
+代理[だいり]する|representation; agency (+する)|irr|3
+倒[たお]す|to throw down; to beat|u|3
+確[たし]かめる|to ascertain|ru|3
+助[たす]ける|to help; to save|ru|3
+戦[たたか]う|to fight; to battle|u|3
+叩[たた]く|to strike; to clap|u|3
+立[た]ち上[あ]がる|to stand up|u|3
+経[た]つ|to pass; to lapse|u|3
+達[たっ]する|to reach; to get to|irr|3
+黙[だま]る|to be silent|u|3
+試[ため]す|to attempt; to test|u|3
+便[たよ]りする|news; tidings (+する)|irr|3
+頼[たよ]る|to rely on; to have recourse to|u|3
+誕生[たんじょう]する|birth (+する)|irr|3
+ダンスする|dance (+する)|irr|3
+担当[たんとう]する|(in) charge (+する)|irr|3
+遅刻[ちこく]する|lateness; late coming (+する)|irr|3
+注[ちゅう]する|annotation; explanatory note (+する)|irr|3
+中止[ちゅうし]する|suspension; stoppage (+する)|irr|3
+駐車[ちゅうしゃ]する|parking (e.g. car) (+する)|irr|3
+注目[ちゅうもく]する|notice; attention (+する)|irr|3
+注文[ちゅうもん]する|order; request (+する)|irr|3
+調査[ちょうさ]する|investigation; examination (+する)|irr|3
+貯金[ちょきん]する|(bank) savings (+する)|irr|3
+通過[つうか]する|passage through; passing (+する)|irr|3
+通学[つうがく]する|commuting to school (+する)|irr|3
+通行[つうこう]する|passage; passing (+する)|irr|3
+通[つう]じる|to run to; to lead to|ru|3
+通信[つうしん]する|correspondence; communication (+する)|irr|3
+捕[つか]まる|to be caught; to be arrested|u|3
+掴[つか]む|to seize; to catch|u|3
+就[つ]く|to settle in (place)|u|3
+繋[つな]ぐ|to tie; to fasten|u|3
+詰[つ]める|to pack; to shorten|ru|3
+積[つ]もる|to pile up|u|3
+出会[であ]う|to meet by chance; to come across|u|3
+提案[ていあん]する|proposal; proposition (+する)|irr|3
+抵抗[ていこう]する|electrical resistance; resistance (+する)|irr|3
+提出[ていしゅつ]する|presentation; submission (+する)|irr|3
+デートする|date; go on a date (+する)|irr|3
+適[てき]する|to fit; to suit|irr|3
+適用[てきよう]する|applying (+する)|irr|3
+徹底[てってい]する|thoroughness; completeness (+する)|irr|3
+徹夜[てつや]する|all night; all night vigil (+する)|irr|3
+到着[とうちゃく]する|arrival (+する)|irr|3
+投票[とうひょう]する|voting; poll (+する)|irr|3
+通[とお]す|to let pass; to overlook|u|3
+通[とお]り過[す]ぎる|to pass; to pass through|ru|3
+解[と]く|to unfasten|u|3
+読書[どくしょ]する|reading (+する)|irr|3
+独立[どくりつ]する|independence (e.g. Ind. Day) (+する)|irr|3
+解[と]ける|to come untied; to come apart|ru|3
+登山[とざん]する|mountain-climbing (+する)|irr|3
+閉[と]じる|to close (e.g. book, eyes); to shut|ru|3
+届[とど]く|to reach|u|3
+飛[と]ばす|to skip over; to omit|u|3
+飛[と]び出[だ]す|to jump out; to rush out|u|3
+留[と]める|to fasten; to turn off|ru|3
+取[と]り上[あ]げる|to take up; to pick up|ru|3
+努力[どりょく]する|great effort; exertion (+する)|irr|3
+取[と]れる|to come off; to be taken off|ru|3
+流[なが]す|to drain; to float|u|3
+眺[なが]める|to view; to gaze at|ru|3
+流[なが]れる|to stream; to flow|ru|3
+納得[なっとく]する|consent; assent (+する)|irr|3
+怠[なま]ける|to be idle; to neglect|ru|3
+悩[なや]む|to be worried; to be troubled|u|3
+何[なん]とかする|somehow; anyhow (+する)|irr|3
+似合[にあ]う|to suit; to match|u|3
+握[にぎ]る|to grasp; to seize|u|3
+にっこりする|smile sweetly; smile (+する)|irr|3
+入場[にゅうじょう]する|entrance; admission (+する)|irr|3
+抜[ぬ]く|to extract; to omit|u|3
+抜[ぬ]ける|to come out; to fall out|ru|3
+願[ねが]う|to desire; to wish|u|3
+熱中[ねっちゅう]する|nuts!; enthusiasm (+する)|irr|3
+残[のこ]す|to leave (behind, over); to bequeath|u|3
+乗[の]せる|to place on (something)|ru|3
+除[のぞ]く|to remove; to exclude|u|3
+望[のぞ]む|to desire; to wish for|u|3
+ノックする|knock; fungo (baseball) (+する)|irr|3
+伸[の]ばす|to lengthen; to stretch|u|3
+伸[の]びる|to stretch; to extend|ru|3
+述[の]べる|to state; to express|ru|3
+昇[のぼ]る|to arise; to ascend|u|3
+ハイキングする|hiking (+する)|irr|3
+配達[はいたつ]する|delivery; distribution (+する)|irr|3
+計[はか]る|to measure; to weigh|u|3
+吐[は]く|to breathe; to tell (lies)|u|3
+拍手[はくしゅ]する|clapping hands; applause (+する)|irr|3
+爆発[ばくはつ]する|explosion; detonation (+する)|irr|3
+破産[はさん]する|(personal) bankruptcy (+する)|irr|3
+外[はず]す|to unfasten; to remove|u|3
+発見[はっけん]する|discovery; detection (+する)|irr|3
+発行[はっこう]する|issue (publications) (+する)|irr|3
+発車[はっしゃ]する|departure of a vehicle (+する)|irr|3
+罰[ばっ]する|to punish; to penalize|irr|3
+発達[はったつ]する|development; growth (+する)|irr|3
+発展[はってん]する|development; growth (+する)|irr|3
+発表[はっぴょう]する|announcement; publication (+する)|irr|3
+発明[はつめい]する|invention (+する)|irr|3
+話[はな]し合[あ]う|to discuss; to talk together|u|3
+放[はな]す|to separate; to set free|u|3
+離[はな]す|to part; divide|u|3
+離[はな]れる|to be separated from; to leave|ru|3
+省[はぶ]く|to omit; to eliminate|u|3
+張[は]る|to stick; to paste|u|3
+反抗[はんこう]する|opposition; resistance (+する)|irr|3
+判断[はんだん]する|judgement; decision (+する)|irr|3
+販売[はんばい]する|sale; selling (+する)|irr|3
+比較[ひかく]する|comparison (+する)|irr|3
+轢[ひ]く|to run somebody over (with vehicle)|u|3
+飛行[ひこう]する|aviation (+する)|irr|3
+ぴったりする|exactly; neatly (+する)|irr|3
+引[ひ]っ張[ぱ]る|to pull; to draw|u|3
+否定[ひてい]する|negation; denial (+する)|irr|3
+一言[ひとこと]する|single word (+する)|irr|3
+批判[ひはん]する|criticism; judgement (+する)|irr|3
+批評[ひひょう]する|criticism; review (+する)|irr|3
+評価[ひょうか]する|valuation; estimation (+する)|irr|3
+表現[ひょうげん]する|expression; presentation (+する)|irr|3
+広[ひろ]がる|to spread (out); to extend|u|3
+含[ふく]む|to hold in the mouth; to bear in mind|u|3
+不自由[ふじゆう]する|discomfort; disability (+する)|irr|3
+防[ふせ]ぐ|to defend (against); to protect|u|3
+不足[ふそく]する|insufficiency; shortage (+する)|irr|3
+打[ぶ]つ|to hit; to strike|u|3
+プラスする|plus (+する)|irr|3
+振[ふ]る|to wave; to shake|u|3
+震[ふる]える|to shiver; to shake|ru|3
+触[ふ]れる|to touch; to be touched|ru|3
+分析[ぶんせき]する|analysis (+する)|irr|3
+平均[へいきん]する|equilibrium; balance (+する)|irr|3
+減[へ]らす|to abate; to decrease|u|3
+減[へ]る|to decrease (in size or number)|u|3
+変化[へんか]する|change; variation (+する)|irr|3
+変更[へんこう]する|change; modification (+する)|irr|3
+冒険[ぼうけん]する|risk; venture (+する)|irr|3
+報告[ほうこく]する|report; information (+する)|irr|3
+訪問[ほうもん]する|call; visit (+する)|irr|3
+吠[ほ]える|to bark; to bay|ru|3
+保証[ほしょう]する|guarantee; security (+する)|irr|3
+保存[ほぞん]する|preservation; conservation (+する)|irr|3
+微笑[ほほえ]む|to smile|u|3
+ぼんやりする|absent-minded; block-head (+する)|irr|3
+任[まか]せる|to entrust to another; to leave to|ru|3
+増[ま]す|to increase; to grow|u|3
+学[まな]ぶ|to study (in depth); to learn|u|3
+真似[まね]する|mimicry; imitation (+する)|irr|3
+招[まね]く|to invite|u|3
+回[まわ]す|to turn; to revolve|u|3
+満足[まんぞく]する|satisfaction (+する)|irr|3
+ミスする|miss (mistake, error, failure); Miss (+する)|irr|3
+満[み]ちる|to be full; to rise (tide)|ru|3|nv
+認[みと]める|to recognize; to appreciate|ru|3
+向[む]く|to face|u|3
+向[む]ける|to turn towards; to point|ru|3
+無視[むし]する|disregard; ignore (+する)|irr|3
+結[むす]ぶ|to tie; to bind|u|3
+命[めい]じる|to order; to command|ru|3
+命令[めいれい]する|order; command (+する)|irr|3
+メモする|memorandum (+する)|irr|3
+免許[めんきょ]する|license; permit (+する)|irr|3
+申[もう]し込[こ]む|to apply for; to make an application|u|3
+申[もう]し訳[わけ]する|apology; excuse (+する)|irr|3
+燃[も]える|to burn|ru|3
+持[も]ち上[あ]げる|to raise; to lift up|ru|3
+用[もち]いる|to use; to make use of|ru|3
+戻[もど]す|to restore; to put back|u|3
+基[もと]づく|to be grounded on; to be based on|u|3|nv
+求[もと]める|to seek; to request|ru|3
+雇[やと]う|to employ; to hire|u|3
+破[やぶ]る|to tear; to violate|u|3
+辞[や]める|to retire|ru|3
+言[ゆ]う|to say|u|3
+優勝[ゆうしょう]する|overall victory; championship (+する)|irr|3
+譲[ゆず]る|to turn over; to assign|u|3
+ゆっくりする|slowly; at ease (+する)|irr|3
+許[ゆる]す|to permit; to allow|u|3
+酔[よ]う|to get drunk; to become intoxicated|u|3
+要求[ようきゅう]する|request; demand (+する)|irr|3
+用心[ようじん]する|care; precaution (+する)|irr|3
+予期[よき]する|expectation; assume will happen (+する)|irr|3
+横切[よこぎ]る|to cross (e.g. arms); to traverse|u|3
+予算[よさん]する|estimate; budget (+する)|irr|3
+止[よ]す|to cease; to abolish|u|3
+予測[よそく]する|prediction; estimation (+する)|irr|3
+予報[よほう]する|forecast; prediction (+する)|irr|3
+予防[よぼう]する|prevention; precaution (+する)|irr|3
+理解[りかい]する|understanding; comprehension (+する)|irr|3
+離婚[りこん]する|divorce (+する)|irr|3
+留学[りゅうがく]する|studying abroad (+する)|irr|3
+流行[りゅうこう]する|fashionable; fad (+する)|irr|3
+両替[りょうがえ]する|change; money exchange (+する)|irr|3
+連想[れんそう]する|association (of ideas); suggestion (+する)|irr|3
+連続[れんぞく]する|serial; consecutive (+する)|irr|3
+労働[ろうどう]する|manual labor; toil (+する)|irr|3
+論[ろん]じる|to argue; to discuss|ru|3
+論争[ろんそう]する|controversy; dispute (+する)|irr|3
+分[わ]ける|to divide; to separate|ru|3
+割[わ]る|to divide; to cut|u|3
+遭[あ]う|to meet|u|2
+扇[あお]ぐ|to fan; to flap|u|2
+あきれる|to be amazed; to be shocked|ru|2|nv
+あくびする|yawn (+する)|irr|2
+挙[あ]げる|to raise; to fly|ru|2
+揚[あ]げる|to lift; to fry|ru|2
+憧[あこが]れる|to long for; to yearn after|ru|2
+味[あじ]わう|to taste; to savor|u|2
+預[あず]かる|to keep in custody|u|2
+暖[あたた]まる|to warm up; to get warm|u|2
+暖[あたた]める|to warm; to heat|ru|2
+あちらこちらする|here and there (+する)|irr|2
+圧縮[あっしゅく]する|compression; condensation (+する)|irr|2
+あてはまる|to be applicable|u|2|nv nx
+あてはめる|to apply; to adapt|ru|2
+暴[あば]れる|to act violently; to rage|ru|2
+あぶる|to scorch|u|2
+あふれる|to flood; to overflow|ru|2
+甘[あま]やかす|to pamper; to spoil|u|2
+余[あま]る|to remain; to be left over|u|2
+編[あ]む|to knit|u|2
+争[あらそ]う|to dispute; to argue|u|2
+改[あらた]める|to change; to alter|ru|2
+著[あらわ]す|to write; to publish|u|2
+あわてる|to become confused|ru|2|nv
+言[い]い出[だ]す|to start talking; to speak|u|2
+言[い]い付[つ]ける|to tell; to tell on (someone)|ru|2
+生[い]き生[い]きする|vividly; lively (+する)|irr|2
+育児[いくじ]する|childcare; nursing (+する)|irr|2
+移転[いてん]する|moving; transfer (+する)|irr|2
+威張[いば]る|to be proud; to swagger|u|2
+嫌[いや]がる|to hate; to dislike|u|2
+煎[い]る|to parch; to fry|u|2
+炒[い]る|to roast; to parch|u|2
+インタビューする|interview (+する)|irr|2
+飢[う]える|to starve|ru|2
+浮[う]かぶ|to float; to rise to surface|u|2
+浮[う]かべる|to float; to express|ru|2
+浮[う]く|to float; to become merry|u|2
+承[うけたまわ]る|(humble) to hear; to be told|u|2
+受[う]け持[も]つ|to take (be in) charge of|u|2
+薄[うす]める|to dilute; to water down|ru|2
+打合[うちあわ]せする|business meeting; previous arrangement (+する)|irr|2
+打[う]ち消[け]す|to deny; to negate|u|2
+討[う]つ|to attack; to avenge|u|2
+うっかりする|carelessly; thoughtlessly (+する)|irr|2
+映[うつ]す|to project; to reflect|u|2
+映[うつ]る|to be reflected; to harmonize with|u|2
+写[うつ]る|to be photographed; to be projected|u|2
+埋[う]める|to bury; to fill up|ru|2
+敬[うやま]う|to show respect; to honour|u|2
+裏返[うらがえ]す|to turn inside out|u|2
+占[うらな]う|to forecast; to predict|u|2
+恨[うら]む|to curse; to feel bitter|u|2
+羨[うらや]む|to envy|u|2
+売[う]り切[き]れる|to be sold out|ru|2|nv
+遠足[えんそく]する|trip; hike (+する)|irr|2
+延長[えんちょう]する|extension; elongation (+する)|irr|2
+追[お]い掛[か]ける|to chase or run after someone|ru|2
+追[お]い越[こ]す|to pass (e.g. car); to outdistance|u|2
+応援[おうえん]する|aid; assistance (+する)|irr|2
+応接[おうせつ]する|reception (+する)|irr|2
+応対[おうたい]する|receiving; dealing with (+する)|irr|2
+往復[おうふく]する|(colloquial) round trip (+する)|irr|2
+応用[おうよう]する|application; put to practical use (+する)|irr|2
+拝[おが]む|to worship; to beg|u|2
+お代[か]わりする|second helping; another cup (+する)|irr|2
+補[おぎな]う|to compensate for|u|2
+怠[おこた]る|to neglect; to be off guard|u|2
+押[おさ]える|to stop; to restrain|ru|2
+治[おさ]める|to govern; to manage|ru|2
+納[おさ]める|to obtain; to reap|ru|2
+御辞儀[おじぎ]する|bow (+する)|irr|2
+教[おそ]わる|to be taught|u|2
+落着[おちつ]く|to calm down; to settle down|u|2
+おどかす|to threaten; to coerce|u|2
+驚[おどろ]かす|to surprise; to frighten|u|2
+お参[まい]りする|worship; shrine visit (+する)|irr|2
+思[おも]い込[こ]む|to be under impression that|u|2
+思[おも]い付[つ]く|to think of; to hit upon|u|2
+卸[おろ]す|to sell wholesale; grated (vegetables)|u|2
+カーブする|curve; curve ball (baseball) (+する)|irr|2
+開会[かいかい]する|opening of a meeting (+する)|irr|2
+改札[かいさつ]する|examination of tickets (+する)|irr|2
+解散[かいさん]する|breakup; dissolution (+する)|irr|2
+改正[かいせい]する|revision; amendment (+する)|irr|2
+解説[かいせつ]する|explanation; commentary (+する)|irr|2
+改造[かいぞう]する|remodeling; modding (comp) (+する)|irr|2
+開通[かいつう]する|opening; open (+する)|irr|2
+回転[かいてん]する|rotation; revolution (+する)|irr|2|nv
+解答[かいとう]する|answer; solution (+する)|irr|2
+回答[かいとう]する|reply; answer (+する)|irr|2
+解放[かいほう]する|release; liberation (+する)|irr|2
+開放[かいほう]する|open; throw open (+する)|irr|2
+概論[がいろん]する|intro; outline (+する)|irr|2
+帰[かえ]す|to send back|u|2
+代[か]える|to exchange; to interchange|ru|2
+係[かか]わる|to concern oneself in|u|2
+掻[か]く|to scratch; to perspire|u|2
+嗅[か]ぐ|to sniff; to smell|u|2
+拡充[かくじゅう]する|expansion (+する)|irr|2
+拡張[かくちょう]する|expansion; extension (+する)|irr|2
+可決[かけつ]する|approval; adoption (e.g. motion, bill) (+する)|irr|2
+下降[かこう]する|downward; descent (+する)|irr|2
+重[かさ]なる|to be piled up|u|2
+重[かさ]ねる|to pile up; to put something on another|ru|2
+貸[か]し出[だ]しする|lending; loaning (+する)|irr|2
+かじる|to chew; to bite (at)|u|2
+課税[かぜい]する|taxation (+する)|irr|2
+加速[かそく]する|acceleration (+する)|irr|2
+片付[かたづ]く|to put in order; to dispose of|u|2
+固[かた]まる|to harden; to solidify|u|2
+傾[かたむ]く|to incline toward; to slant|u|2
+片寄[かたよ]る|to be one-sided; to incline|u|2
+担[かつ]ぐ|to shoulder; to carry on shoulder|u|2
+括弧[かっこ]する|parenthesis; brackets (+する)|irr|2
+活躍[かつやく]する|activity (+する)|irr|2
+仮定[かてい]する|assumption; supposition (+する)|irr|2
+加熱[かねつ]する|heating (+する)|irr|2
+兼[か]ねる|to hold (position); to serve|ru|2
+被[かぶ]せる|to cover (with something)|ru|2
+からかう|to ridicule; to tease|u|2
+枯[か]れる|to wither; to die (plant)|ru|2|nv nx
+かわいがる|to love; to be affectionate|u|2
+乾[かわ]かす|to dry (clothes, etc.); to desiccate|u|2
+渇[かわ]く|to be thirsty|u|2
+代[かわ]る|to take the place of; to relieve|u|2
+換気[かんき]する|ventilation (+する)|irr|2
+感激[かんげき]する|deep emotion; impression (+する)|irr|2
+鑑賞[かんしょう]する|appreciation (+する)|irr|2
+乾燥[かんそう]する|dry; arid (+する)|irr|2
+観測[かんそく]する|observation (+する)|irr|2
+勘違[かんちが]いする|misunderstanding; wrong guess (+する)|irr|2
+乾杯[かんぱい]する|toast (drink) (+する)|irr|2
+看病[かんびょう]する|nursing (a patient) (+する)|irr|2
+着替[きが]えする|changing clothes; change of clothes (+する)|irr|2
+刻[きざ]む|to mince; to carve|u|2
+起床[きしょう]する|rising; getting out of bed (+する)|irr|2
+着[き]せる|to put on clothes|ru|2
+休業[きゅうぎょう]する|closed (e.g. store); business suspended (+する)|irr|2
+休講[きゅうこう]する|lecture cancelled (+する)|irr|2
+休息[きゅうそく]する|rest; relief (+する)|irr|2
+給与[きゅうよ]する|allowance; grant (+する)|irr|2
+休養[きゅうよう]する|rest; break (+する)|irr|2
+強化[きょうか]する|strengthen; intensify (+する)|irr|2
+恐縮[きょうしゅく]する|shame; very kind of you (+する)|irr|2
+行列[ぎょうれつ]する|line; procession (+する)|irr|2
+斬[き]る|to behead; to murder|u|2
+気[き]を付[つ]ける|to be careful; to pay attention|ru|2
+空想[くうそう]する|daydream; fantasy (+する)|irr|2
+区切[くぎ]る|to punctuate; to cut off|u|2
+くしゃみする|sneeze (+する)|irr|2
+苦心[くしん]する|pain; trouble (+する)|irr|2
+崩[くず]す|to destroy; to pull down|u|2
+崩[くず]れる|to collapse; to crumble|ru|2
+砕[くだ]く|to break; to smash|u|2
+砕[くだ]ける|to break; to be broken|ru|2
+くたびれる|to get tired; to wear out|ru|2|nv
+下[くだ]る|to get down; to descend|u|2
+くっつく|to adhere to; to keep close to|u|2
+くっつける|to attach|ru|2
+配[くば]る|to distribute; to deliver|u|2
+工夫[くふう]する|labourer; worker (+する)|irr|2
+区分[くぶん]する|division; section (+する)|irr|2
+組[く]み立[た]てる|to assemble; to set up|ru|2
+汲[く]む|to draw (water); to dip|u|2
+酌[く]む|to serve sake|u|2
+悔[く]やむ|to mourn|u|2
+クリーニングする|cleaning; dry cleaning (+する)|irr|2
+くるむ|to be engulfed in; to be enveloped by|u|2
+咥[くわ]える|to hold in one's mouth|ru|2
+稽古[けいこ]する|practice; training (+する)|irr|2
+継続[けいぞく]する|continuation (+する)|irr|2
+警備[けいび]する|defense; guard (+する)|irr|2
+激増[げきぞう]する|sudden increase (+する)|irr|2
+下車[げしゃ]する|alighting; getting off (+する)|irr|2
+削[けず]る|to cut down little by little|u|2
+蹴[け]る|to kick|u|2
+見学[けんがく]する|inspection; study by observation (+する)|irr|2
+研修[けんしゅう]する|training (+する)|irr|2
+謙遜[けんそん]する|humble; humility (+する)|irr|2
+孝行[こうこう]する|filial piety (+する)|irr|2
+交差[こうさ]する|cross (+する)|irr|2
+工事[こうじ]する|construction work (+する)|irr|2
+交替[こうたい]する|alternation; change (+する)|irr|2
+肯定[こうてい]する|positive; affirmation (+する)|irr|2
+合同[ごうどう]する|combination; incorporation (+する)|irr|2
+公表[こうひょう]する|official announcement; proclamation (+する)|irr|2
+紅葉[こうよう]する|leaves turning red (in autumn) (+する)|irr|2
+交流[こうりゅう]する|alternating current; intercourse (+する)|irr|2
+合流[ごうりゅう]する|confluence; union (+する)|irr|2
+超[こ]える|to exceed; to cross over|ru|2
+焦[こ]がす|to burn; to scorch|u|2
+焦[こ]げる|to burn; to be burned|ru|2
+凍[こご]える|to freeze; to be chilled|ru|2
+心得[こころえ]る|to be informed|ru|2
+腰掛[こしか]ける|to sit (down)|ru|2
+こしらえる|to make; to manufacture|ru|2
+超[こ]す|to cross; to pass|u|2
+擦[こす]る|to rub; to chafe|u|2
+言付[ことづ]ける|to send word; to send a message|ru|2
+御無沙汰[ごぶさた]する|not writing or contacting for a while (+する)|irr|2
+こぼす|to spill|u|2
+こぼれる|to overflow; to spill|ru|2
+こらえる|to bear; to stand|ru|2
+娯楽[ごらく]する|pleasure; amusement (+する)|irr|2
+コレクションする|collection; correction (+する)|irr|2
+転[ころ]がす|to roll|u|2
+転[ころ]がる|to roll; to tumble|u|2
+混合[こんごう]する|mixing; mixture (+する)|irr|2
+在学[ざいがく]する|(enrolled) in school (+する)|irr|2
+催促[さいそく]する|request; demand (+する)|irr|2
+採点[さいてん]する|marking; grading (+する)|irr|2
+裁縫[さいほう]する|sewing (+する)|irr|2
+捜[さが]す|to search; to seek|u|2
+遡[さかのぼ]る|to go back; to go upstream|u|2
+裂[さ]く|to tear; to split|u|2
+削除[さくじょ]する|elimination; cancellation (+する)|irr|2
+作成[さくせい]する|frame; draw up (+する)|irr|2
+作製[さくせい]する|manufacture (+する)|irr|2
+探[さぐ]る|to search; to look for|u|2
+囁[ささや]く|to whisper; to murmur|u|2
+刺[さ]さる|to stick; to be stuck|u|2
+差[さ]し引[ひ]きする|deduction; subtraction (+する)|irr|2
+刺[さ]す|to pierce; to stab|u|2
+射[さ]す|to shine; to strike|u|2
+挿[さ]す|to insert; to put in|u|2
+注[さ]す|to pour (drink); to serve (drinks)|u|2
+撮影[さつえい]する|photographing (+する)|irr|2
+錆[さ]びる|to rust; to become rusty|ru|2|nv nx
+冷[さ]ます|to cool; to dampen|u|2
+妨[さまた]げる|to disturb; to prevent|ru|2
+冷[さ]める|to become cool; to wear off|ru|2|nv
+仕上[しあ]がる|to be finished|u|2|nv
+自衛[じえい]する|self-defense (+する)|irr|2
+司会[しかい]する|chairmanship (+する)|irr|2
+敷[し]く|to spread out; to lay out|u|2
+茂[しげ]る|to grow thick; to luxuriate|u|2
+持参[じさん]する|bringing; taking (+する)|irr|2
+四捨五入[ししゃごにゅう]する|rounding up (fractions) (+する)|irr|2
+自習[じしゅう]する|self-study (+する)|irr|2
+静[しず]まる|to quieten down; to calm down|u|2
+下書[したが]きする|rough copy; draft (+する)|irr|2
+実習[じっしゅう]する|practice; training (+する)|irr|2
+執筆[しっぴつ]する|writing (+する)|irr|2
+失恋[しつれん]する|disappointed love; broken heart (+する)|irr|2
+指定[してい]する|designation; specification (+する)|irr|2
+縛[しば]る|to tie; to bind|u|2
+しびれる|to become numb|ru|2|nv
+しぼむ|to wither; to fade (away)|u|2|nv nx
+絞[しぼ]る|to press; to wring|u|2
+締[し]め切[き]る|to shut up|u|2
+湿[しめ]る|to be wet; to become wet|u|2
+しゃがむ|to squat|u|2
+写生[しゃせい]する|sketching; drawing from nature (+する)|irr|2
+しゃっくりする|hiccough; hiccup (+する)|irr|2
+しゃぶる|to suck; to chew|u|2
+じゃんけんする|rock-scissors-paper game (+する)|irr|2
+集会[しゅうかい]する|meeting; assembly (+する)|irr|2
+住居[じゅうきょ]する|dwelling; house (+する)|irr|2
+集金[しゅうきん]する|money collection (+する)|irr|2
+集合[しゅうごう]する|gathering; assembly (+する)|irr|2
+修繕[しゅうぜん]する|repair; mending (+する)|irr|2
+就任[しゅうにん]する|inauguration; assumption of office (+する)|irr|2
+終了[しゅうりょう]する|end; close (+する)|irr|2
+縮小[しゅくしょう]する|reduction; curtailment (+する)|irr|2
+受験[じゅけん]する|taking an examination (+する)|irr|2
+出勤[しゅっきん]する|going to work; at work (+する)|irr|2
+出張[しゅっちょう]する|official tour; business trip (+する)|irr|2
+循環[じゅんかん]する|circulation; rotation (+する)|irr|2
+消化[しょうか]する|digestion (+する)|irr|2
+乗車[じょうしゃ]する|taking a train; entraining (+する)|irr|2
+消毒[しょうどく]する|disinfection; sterilization (+する)|irr|2
+蒸発[じょうはつ]する|evaporation; unexplained disappearance (+する)|irr|2
+勝負[しょうぶ]する|victory or defeat; match (+する)|irr|2
+小便[しょうべん]する|(colloquial) urine; piss (+する)|irr|2
+消耗[しょうもう]する|exhaustion; consumption (+する)|irr|2
+省略[しょうりゃく]する|omission; abbreviation (+する)|irr|2
+申請[しんせい]する|application; request (+する)|irr|2
+診断[しんだん]する|diagnosis (+する)|irr|2
+侵入[しんにゅう]する|penetration; invasion (+する)|irr|2
+炊事[すいじ]する|cooking; culinary arts (+する)|irr|2
+推定[すいてい]する|presumption; assumption (+する)|irr|2
+透[す]き通[とお]る|to be(come) transparent|u|2
+涼[すず]む|to cool oneself; to cool off|u|2
+スタートする|start (+する)|irr|2
+すっきりする|shapely; clear (+する)|irr|2
+ストップする|stop (+する)|irr|2
+澄[す]む|to clear (e.g. weather)|u|2
+清[す]む|to become clear (water, air, etc.)|u|2|nv
+ずらす|to put off; to delay|u|2
+刷[す]る|to print|u|2
+すれちがう|to pass by one another; to disagree|u|2
+ずれる|to slide; to slip off|ru|2
+制作[せいさく]する|work (film, book) (+する)|irr|2
+製作[せいさく]する|manufacture; production (+する)|irr|2
+清書[せいしょ]する|clean copy (+する)|irr|2
+清掃[せいそう]する|cleaning (+する)|irr|2
+生存[せいぞん]する|existence; being (+する)|irr|2|nv
+生長[せいちょう]する|growth; increment (+する)|irr|2
+整備[せいび]する|adjustment; completion (+する)|irr|2
+成立[せいりつ]する|coming into existence; arrangements (+する)|irr|2
+背負[せお]う|to be burdened with|u|2
+接近[せっきん]する|getting closer; drawing nearer (+する)|irr|2
+接[せっ]する|to come in contact with; to connect|irr|2
+接続[せつぞく]する|connection; union (+する)|irr|2
+迫[せま]る|to draw near; to press|u|2
+攻[せ]める|to attack; to assault|ru|2
+専制[せんせい]する|despotism; autocracy (+する)|irr|2
+宣伝[せんでん]する|propaganda; publicity (+する)|irr|2
+相違[そうい]する|difference; discrepancy (+する)|irr|2|nv
+増減[ぞうげん]する|increase and decrease; fluctuation (+する)|irr|2
+創作[そうさく]する|production; literary creation (+する)|irr|2
+造船[ぞうせん]する|shipbuilding (+する)|irr|2
+増大[ぞうだい]する|enlargement (+する)|irr|2
+送別[そうべつ]する|farewell; send-off (+する)|irr|2
+属[ぞく]する|to belong to; to come under|irr|2
+速達[そくたつ]する|express; special delivery (+する)|irr|2
+測定[そくてい]する|measurement (+する)|irr|2
+測量[そくりょう]する|measurement; surveying (+する)|irr|2
+剃[そ]る|to shave|u|2
+反[そ]る|to warp; to be warped|u|2
+逸[そ]れる|to stray (turn) from subject|ru|2
+揃[そろ]う|to become complete; to be equal|u|2|nv
+揃[そろ]える|to put things in order; to arrange|ru|2
+存[ぞん]じる|(humble) to know|ru|2
+対照[たいしょう]する|contrast; antithesis (+する)|irr|2
+体操[たいそう]する|gymnastics; physical exercises (+する)|irr|2
+ダイヤルする|dial (+する)|irr|2
+対立[たいりつ]する|confrontation; opposition (+する)|irr|2
+高[たか]める|to raise; to lift|ru|2
+耕[たがや]す|to till; to plow|u|2
+炊[た]く|to boil; to cook|u|2
+焚[た]く|to burn; to kindle|u|2
+蓄[たくわ]える|to store; to lay in stock|ru|2
+助[たす]かる|to be saved; to be rescued|u|2
+畳[たた]む|to fold (clothes)|u|2
+立[た]ち止[ど]まる|to stop; to halt|u|2
+建[た]つ|to erect; to be erected|u|2
+発[た]つ|to depart (on a plane, train, etc.)|u|2
+脱線[だっせん]する|derailment; digression (+する)|irr|2
+妥当[だとう]する|valid; proper (+する)|irr|2
+例[たと]える|to compare; to liken|ru|2
+だます|to trick; to cheat|u|2
+溜[た]まる|to collect; to gather|u|2
+ためらう|to hesitate|u|2
+溜[た]める|to amass; to accumulate|ru|2
+足[た]る|to be sufficient; to be enough|u|2|nv nx
+断水[だんすい]する|water outage (+する)|irr|2
+断定[だんてい]する|conclusion; decision (+する)|irr|2
+誓[ちか]う|to swear; to vow|u|2
+近付[ちかづ]ける|to bring near; to put close|ru|2
+近寄[ちかよ]る|to approach; to draw near|u|2
+ちぎる|to cut up fine; to pick (fruit)|u|2
+縮[ちぢ]む|to shrink; to be contracted|u|2
+縮[ちぢ]める|to shorten; to reduce|ru|2
+縮[ちぢ]れる|to be wavy; to be curled|ru|2
+抽象[ちゅうしょう]する|abstract (+する)|irr|2
+超過[ちょうか]する|excess; being more than (+する)|irr|2
+彫刻[ちょうこく]する|carving; engraving (+する)|irr|2
+調整[ちょうせい]する|regulation; adjustment (+する)|irr|2
+調節[ちょうせつ]する|regulation; adjustment (+する)|irr|2
+直通[ちょくつう]する|direct communication (+する)|irr|2
+貯蔵[ちょぞう]する|storage; preservation (+する)|irr|2
+散[ち]らかす|to scatter around; to leave untidy|u|2
+散[ち]らかる|to be in disorder|u|2
+散[ち]らす|to scatter; to disperse|u|2
+散[ち]る|to fall; to scatter (e.g. blossoms)|u|2
+追加[ついか]する|addition; supplement (+する)|irr|2
+通勤[つうきん]する|commuting to work (+する)|irr|2
+通知[つうち]する|notice; notification (+する)|irr|2
+通訳[つうやく]する|interpretation (+する)|irr|2
+通用[つうよう]する|popular use; circulation (+する)|irr|2
+付[つ]き合[あ]う|to associate with; to keep company with|u|2
+突[つ]き当[あ]たる|to run into; to collide with|u|2
+点[つ]く|to catch fire; (electricity) comes on|u|2
+突[つ]く|to thrust; to strike|u|2
+次[つ]ぐ|to rank next to; to come after|u|2
+浸[つ]ける|to dip in; to soak|ru|2
+着[つ]ける|to attach; to join|ru|2
+伝[つた]わる|to be handed down; to be introduced|u|2
+突[つ]っ込[こ]む|to plunge into; to go into deeply|u|2
+努[つと]める|to serve; to fill a post|ru|2
+務[つと]める|to serve; to fill a post|ru|2
+繋[つな]がる|to be tied together; to be connected to|u|2
+繋[つな]げる|to connect|ru|2
+潰[つぶ]す|to smash; to waste|u|2
+潰[つぶ]れる|to be smashed; to go bankrupt|ru|2
+つまずく|to stumble; to trip|u|2
+詰[つ]まる|to be blocked; to be packed|u|2
+積[つ]む|to pile up; to stack|u|2
+釣[つ]り合[あ]う|to balance; to be in harmony|u|2
+吊[つ]る|to hang|u|2
+吊[つる]す|to hang|u|2
+低下[ていか]する|fall; decline (+する)|irr|2
+停止[ていし]する|suspension; interruption (+する)|irr|2
+停車[ていしゃ]する|stopping (e.g. train) (+する)|irr|2
+停電[ていでん]する|failure of electricity (+する)|irr|2
+出入[でい]りする|in and out; coming and going (+する)|irr|2
+手入[てい]れする|repairs; maintenance (+する)|irr|2
+出来上[できあ]がる|to be finished; to be ready|u|2|nv
+凸凹[でこぼこ]する|unevenness; roughness (+する)|irr|2
+出迎[でむか]える|to meet; to greet|ru|2
+照[て]らす|to shine on; to illuminate|u|2
+照[て]る|to shine|u|2
+展開[てんかい]する|develop (+する)|irr|2
+伝染[でんせん]する|contagion (+する)|irr|2
+転々[てんてん]する|moving from place to place (+する)|irr|2
+統一[とういつ]する|unity; consolidation (+する)|irr|2
+統計[とうけい]する|scattering; a scatter (+する)|irr|2
+投書[とうしょ]する|letter to the editor (+する)|irr|2
+登場[とうじょう]する|entry (on stage) (+する)|irr|2
+等分[とうぶん]する|division into equal parts (+する)|irr|2
+通[とお]り掛[か]かる|to happen to pass by|u|2|nv
+溶[と]かす|to melt; to dissolve|u|2
+尖[とが]る|to taper to a point; to become sharp|u|2
+どきどきする|throb; beat (fast) (+する)|irr|2
+溶[と]く|to dissolve (paint)|u|2
+退[ど]く|to step aside; to move (out of the way)|u|2
+特売[とくばい]する|special sale (+する)|irr|2
+溶[と]け込[こ]む|to melt into|u|2|nv nx
+溶[と]ける|to melt; to thaw|ru|2|nv nx
+退[ど]ける|to remove; to take away|ru|2
+整[ととの]う|to be prepared; to be in order|u|2
+留[とど]まる|to be fixed; to abide|u|2|nv
+どなる|to shout; to yell|u|2
+飛[と]び込[こ]む|to jump in; to leap in|u|2
+跳[と]ぶ|to jump; to fly|u|2
+泊[と]める|to give shelter to; to lodge|ru|2
+捕[とら]える|to seize; to grasp|ru|2
+取[と]り入[い]れる|to harvest; to take in|ru|2
+取[と]り消[け]す|to cancel|u|2
+取[と]り出[だ]す|to take out; to produce|u|2
+採[と]る|to adopt (measure, proposal)|u|2
+捕[と]る|to take; to catch (fish)|u|2
+トレーニングする|training (+する)|irr|2
+治[なお]す|to cure; to heal|u|2
+仲直[なかなお]りする|reconciliation; make peace with (+する)|irr|2
+長引[ながび]く|to be prolonged; to drag on|u|2
+慰[なぐさ]める|to comfort; to console|ru|2
+亡[な]くす|to lose (a family member, e.g. a wife or child)|u|2
+なぐる|to strike; to hit|u|2
+為[な]す|to accomplish; to do|u|2
+撫[な]でる|to brush gently; to stroke|ru|2
+倣[なら]う|to imitate; to follow|u|2
+鳴[な]らす|to ring; to sound|u|2
+生[な]る|to bear fruit|u|2
+馴[な]れる|to become domesticated; to become tame|ru|2|nv
+煮[に]える|to boil; to cook|ru|2
+匂[にお]う|to be fragrant; to smell|u|2
+逃[に]がす|to let loose; to set free|u|2
+憎[にく]む|to hate; to detest|u|2
+にこにこする|with a friendly grin; smilingly (+する)|irr|2
+濁[にご]る|to become muddy; to get impure|u|2|nv
+入社[にゅうしゃ]する|entry to a company (+する)|irr|2
+睨[にら]む|to glare at; to scowl at|u|2
+煮[に]る|to boil; to cook|ru|2
+縫[ぬ]う|to sew|u|2
+濡[ぬ]らす|to wet; to soak|u|2
+捩[ねじ]る|to twist|u|2
+熱[ねっ]する|to heat|irr|2
+狙[ねら]う|to aim at|u|2
+載[の]せる|to place on (something)|ru|2
+覗[のぞ]く|to peep in; to look in|u|2
+延[の]ばす|to lengthen; to stretch|u|2
+延[の]びる|to be prolonged|ru|2
+上[のぼ]る|to ascend; to go up|u|2
+乗換[のりかえ]する|transfer (trains, buses, etc.) (+する)|irr|2
+載[の]る|to appear (in print); to be recorded|u|2|nv
+のろのろする|slowly; sluggishly (+する)|irr|2
+売買[ばいばい]する|trade; buying and selling (+する)|irr|2
+這[は]う|to creep; to crawl|u|2
+生[は]える|to grow; to spring up|ru|2
+はがす|to tear off; to peel off|u|2
+測[はか]る|to measure; to weigh|u|2
+量[はか]る|to measure; to weigh|u|2
+はきはきする|lucidly (+する)|irr|2
+掃[は]く|to sweep; to brush|u|2
+挟[はさ]まる|to get between; to be caught in|u|2
+挟[はさ]む|to interpose; to hold between|u|2
+外[はず]れる|to be disconnected; to get out of place|ru|2
+発揮[はっき]する|exhibition; demonstration (+する)|irr|2
+発射[はっしゃ]する|firing; shooting (+する)|irr|2
+発電[はつでん]する|generation (e.g. power) (+する)|irr|2
+発売[はつばい]する|sale (+する)|irr|2
+話合[はなしあ]いする|discussion; conference (+する)|irr|2
+話[はな]し掛[か]ける|to accost a person|ru|2
+放[はな]れる|to leave; to get free|ru|2
+跳[は]ねる|to jump; to leap|ru|2
+はめる|(colloquial) to get in; to insert|ru|2
+流行[はや]る|to flourish; to thrive|u|2
+払[はら]い込[こ]む|to deposit; to pay in|u|2
+払[はら]い戻[もど]す|to repay; to pay back|u|2
+バランスする|balance (+する)|irr|2
+張[は]り切[き]る|to be in high spirits|u|2
+反映[はんえい]する|reflection; influence (+する)|irr|2
+万歳[ばんざい]する|hurrah; cheers (+する)|irr|2
+反省[はんせい]する|reflection; reconsideration (+する)|irr|2
+日帰[ひがえ]りする|day trip (+する)|irr|2
+ぴかぴかする|glitter; sparkle (+する)|irr|2
+引[ひ]き受[う]ける|to undertake; to take up|ru|2
+引[ひ]き返[かえ]す|to repeat; to send back|u|2
+引算[ひきざん]する|subtraction (+する)|irr|2
+引[ひ]き止[と]める|to detain; to check|ru|2
+ぴたりする|tightly; closely (+する)|irr|2
+引[ひ]っ掛[か]かる|to be caught in; to be stuck in|u|2
+筆記[ひっき]する|(taking) notes; copying (+する)|irr|2
+ひっくり返[かえ]す|to turn over; to overturn|u|2
+引[ひ]っ繰[く]り返[かえ]る|to be overturned; to be upset|u|2
+引越[ひっこ]しする|moving (dwelling etc.) (+する)|irr|2
+引[ひ]っ込[こ]む|to draw back; to sink|u|2
+一休[ひとやす]みする|a rest (+する)|irr|2
+捻[ひね]る|to turn (a switch) on or off; to twist|u|2
+響[ひび]く|to resound|u|2
+冷[ひ]やす|to cool; to refrigerate|u|2
+評論[ひょうろん]する|criticism; critique (+する)|irr|2
+昼寝[ひるね]する|nap (at home); siesta (+する)|irr|2
+広[ひろ]げる|to spread; to extend|ru|2
+広々[ひろびろ]する|extensive; spacious (+する)|irr|2
+広[ひろ]める|to broaden; to propagate|ru|2
+瓶詰[びんづめ]する|bottling; bottled (+する)|irr|2
+殖[ふ]える|to increase; to multiply|ru|2
+深[ふか]まる|to deepen; to heighten|u|2
+普及[ふきゅう]する|diffusion; spread (+する)|irr|2
+拭[ふ]く|to wipe; to dry|u|2
+複写[ふくしゃ]する|copy; duplicate (+する)|irr|2
+含[ふく]める|to include; to instruct|ru|2
+膨[ふく]らます|to swell; to expand|u|2
+膨[ふく]らむ|to expand; to swell (out)|u|2
+更[ふ]ける|to get late; to advance|ru|2
+塞[ふさ]がる|to be plugged up; to be shut up|u|2
+塞[ふさ]ぐ|to stop up; to close up|u|2
+ふざける|to romp; to gambol|ru|2
+無沙汰[ぶさた]する|neglecting to stay in contact (+する)|irr|2
+附属[ふぞく]する|attached; belonging (+する)|irr|2
+ぶつかる|to strike; to collide with|u|2
+ぶつける|to knock; to run into|ru|2
+増[ふ]やす|to increase; to add to|u|2
+ぶらさげる|to hang; to suspend|ru|2
+プリントする|print; handout (+する)|irr|2
+振舞[ふるま]う|to behave; to conduct oneself|u|2
+ふわふわする|light; soft (+する)|irr|2
+噴火[ふんか]する|eruption (+する)|irr|2
+分解[ぶんかい]する|analysis; disassembly (+する)|irr|2
+分布[ぶんぷ]する|distribution (+する)|irr|2
+分類[ぶんるい]する|classification (+する)|irr|2
+閉会[へいかい]する|closure (+する)|irr|2
+並行[へいこう]する|(going) side by side; concurrent (+する)|irr|2
+凹[へこ]む|to be dented; to be indented|u|2
+隔[へだ]てる|to be shut out|ru|2
+編集[へんしゅう]する|editing; compilation (+する)|irr|2
+防止[ぼうし]する|prevention; check (+する)|irr|2
+包装[ほうそう]する|packing; wrapping (+する)|irr|2
+包帯[ほうたい]する|bandage; dressing (+する)|irr|2
+放[ほう]る|to let go|u|2
+募集[ぼしゅう]する|recruiting; taking applications (+する)|irr|2
+干[ほ]す|to air; to dry|u|2
+ほどく|to unfasten|u|2
+掘[ほ]る|to dig; to excavate|u|2
+彫[ほ]る|to carve; to engrave|u|2
+マイナスする|minus (+する)|irr|2
+巻[ま]く|to wind; to coil|u|2
+撒[ま]く|to scatter; to sprinkle|u|2
+蒔[ま]く|to sow (seeds)|u|2
+曲[ま]げる|to bend; to crook|ru|2
+まごまごする|confused (+する)|irr|2
+交[ま]ざる|to be mixed; to be blended with|u|2
+混[ま]ざる|to be mixed; to be blended with|u|2
+交[ま]じる|to be mixed; to be blended with|u|2
+混[ま]じる|to be mixed; to be blended with|u|2
+交[ま]ぜる|to be mixed; to be blended with|ru|2
+混[ま]ぜる|to mix; to stir|ru|2
+またぐ|to straddle|u|2
+待[ま]ち合[あ]わせる|to rendezvous|ru|2
+祭[まつ]る|to deify; to enshrine|u|2
+纏[まと]まる|to be collected; to be settled|u|2
+まとめる|to put in order; to collect|ru|2
+真似[まね]る|to mimic; to imitate|ru|2
+回[まわ]り道[みち]する|detour (+する)|irr|2
+見送[みおく]る|to see off; to farewell|u|2
+見下[みお]ろす|to overlook; to command a view of|u|2
+見直[みなお]す|to look again|u|2
+見慣[みな]れる|to become used to seeing|ru|2|nv
+実[みの]る|to bear fruit; to ripen|u|2
+見舞[みま]う|to ask after (health); to visit|u|2
+診[み]る|to examine (medical)|ru|2
+剥[む]く|to peel; to skin|u|2
+矛盾[むじゅん]する|contradiction; inconsistency (+する)|irr|2
+蒸[む]す|to steam; to poultice|u|2
+恵[めぐ]まれる|to be blessed with; to be rich in|ru|2
+巡[めぐ]る|to go around|u|2
+目指[めざ]す|to aim at; to have an eye on|u|2
+目立[めだ]つ|to be conspicuous; to stand out|u|2
+免税[めんぜい]する|tax exemption; duty exemption (+する)|irr|2
+面接[めんせつ]する|interview (+する)|irr|2
+儲[もう]かる|to be profitable; to yield a profit|u|2
+儲[もう]ける|to get; to earn|ru|2
+潜[もぐ]る|to dive (into or under water)|u|2
+もたれる|to lean against; to lean on|ru|2
+物語[ものがた]る|to tell; to indicate|u|2
+揉[も]む|to rub; to crumple (up)|u|2
+燃[も]やす|to burn|u|2
+盛[も]る|to serve (food, etc.); to fill up|u|2
+問答[もんどう]する|questions and answers; dialogue (+する)|irr|2
+訳[やく]す|to translate|u|2
+火傷[やけど]する|burn; scald (+する)|irr|2
+夜行[やこう]する|walking around at night; night train (+する)|irr|2
+やっつける|to attack (an enemy); to beat|ru|2
+破[やぶ]く|to tear; to rip|u|2
+破[やぶ]れる|to get torn; to wear out|ru|2
+郵送[ゆうそう]する|mailing (+する)|irr|2
+輸血[ゆけつ]する|blood transfusion (+する)|irr|2
+輸送[ゆそう]する|transport; transportation (+する)|irr|2
+油断[ゆだん]する|negligence; unpreparedness (+する)|irr|2
+ゆでる|to boil|ru|2
+よこす|to send; to forward|u|2
+汚[よご]す|to disgrace; to dishonour|u|2
+寄[よ]せる|to collect; to gather|ru|2
+呼[よ]び掛[か]ける|to call out to; to accost|ru|2
+呼[よ]び出[だ]す|to summon; to call (e.g. phone)|u|2
+蘇[よみがえ]る|to be resurrected; to be revived|u|2
+よる|to come from|u|2
+来日[らいにち]する|arrival in Japan; coming to Japan (+する)|irr|2
+落第[らくだい]する|failure; dropping out of a class (+する)|irr|2
+リポートする|report; paper (+する)|irr|2
+略[りゃく]す|to abbreviate|u|2
+領収[りょうしゅう]する|receipt; voucher (+する)|irr|2
+留守番[るすばん]する|care-taking; caretaker (+する)|irr|2
+冷凍[れいとう]する|freezing; cold storage (+する)|irr|2
+連合[れんごう]する|union; alliance (+する)|irr|2
+録音[ろくおん]する|(audio) recording (+する)|irr|2
+分[わ]かれる|to branch off; to diverge from|ru|2
+湧[わ]く|to boil; to grow hot|u|2
+詫[わ]びる|to apologize|ru|2
+割算[わりざん]する|division (math) (+する)|irr|2
+`;
+
+const VERBS = VERB_DATA.trim().split('\n').map(line => {
+  const [b, m, g, l, flags=''] = line.split('|');
+  const v = {b, m, g, lvl: 'N' + l, flags: flags.split(' ').filter(Boolean)};
+  if (g === 'irr') v.irr = b.endsWith('する') ? 'suru' : 'kuru';
+  return v;
+});
+
+/* ================= FORMS ================= */
+const FORMS = [
+  {id:'masu',   cat:'Polite', label:'Polite present',          jp:'〜ます'},
+  {id:'masen',  cat:'Polite', label:'Polite negative',         jp:'〜ません'},
+  {id:'mashita',cat:'Polite', label:'Polite past',             jp:'〜ました'},
+  {id:'masendeshita',cat:'Polite', label:'Polite past negative', jp:'〜ませんでした'},
+  {id:'mashou', cat:'Polite', label:'Polite volitional (let\'s)', jp:'〜ましょう'},
+  {id:'nai',    cat:'Casual', label:'Casual negative',         jp:'〜ない'},
+  {id:'ta',     cat:'Casual', label:'Casual past',             jp:'〜た'},
+  {id:'nakatta',cat:'Casual', label:'Casual past negative',    jp:'〜なかった'},
+  {id:'te',     cat:'Other',  label:'て-form',                 jp:'〜て'},
+  {id:'tai',    cat:'Other',  label:'Want to',                 jp:'〜たい'},
+  {id:'vol',    cat:'Other',  label:'Volitional (let\'s / I\'ll)', jp:'〜よう / 〜おう'},
+  {id:'ba',     cat:'Other',  label:'ば-conditional',          jp:'〜ば'},
+  {id:'tara',   cat:'Other',  label:'たら-conditional',        jp:'〜たら'},
+  {id:'pot',    cat:'N4 forms', label:'Potential (can)',       jp:'〜える / 〜られる'},
+  {id:'pass',   cat:'N4 forms', label:'Passive',               jp:'〜れる / 〜られる'},
+  {id:'caus',   cat:'N4 forms', label:'Causative (make/let)',  jp:'〜せる / 〜させる'},
+  {id:'imp',    cat:'N4 forms', label:'Imperative (command)',  jp:'〜え / 〜ろ'},
+  {id:'proh',   cat:'N4 forms', label:'Prohibitive (don\'t!)', jp:'〜な'},
+];
+const FORM_BY_ID = Object.fromEntries(FORMS.map(f => [f.id, f]));
+const NV_SKIP = ['mashou','tai','vol','pot','imp','proh'];
+const NX_SKIP = ['pass','caus'];
+
+function allowed(v, fid){
+  if (v.flags.includes('nv') && NV_SKIP.includes(fid)) return false;
+  if (v.flags.includes('nx') && NX_SKIP.includes(fid)) return false;
+  return true;
+}
+
+/* ================= CONJUGATION ENGINE ================= */
+const I_ROW={う:'い',く:'き',ぐ:'ぎ',す:'し',つ:'ち',ぬ:'に',ぶ:'び',む:'み',る:'り'};
+const A_ROW={う:'わ',く:'か',ぐ:'が',す:'さ',つ:'た',ぬ:'な',ぶ:'ば',む:'ま',る:'ら'};
+const E_ROW={う:'え',く:'け',ぐ:'げ',す:'せ',つ:'て',ぬ:'ね',ぶ:'べ',む:'め',る:'れ'};
+const O_ROW={う:'お',く:'こ',ぐ:'ご',す:'そ',つ:'と',ぬ:'の',ぶ:'ぼ',む:'も',る:'ろ'};
+const TE_END={う:'って',つ:'って',る:'って',む:'んで',ぶ:'んで',ぬ:'んで',く:'いて',ぐ:'いで',す:'して'};
+const KANJI_RE=/([\u4e00-\u9fff々]+)\[([^\]]+)\]/g;
+
+const toReading = b => b.replace(KANJI_RE, '$2');
+const toKanji   = b => b.replace(KANJI_RE, '$1');
+const toRuby    = b => b.replace(KANJI_RE, '<ruby>$1<rt>$2</rt></ruby>');
+
+const isIku = v => toReading(v.b) === 'いく';
+const isAru = v => v.b === 'ある';
+
+function godan(v, f){
+  const b=v.b, e=b.slice(-1), pre=b.slice(0,-1);
+  const te = isIku(v) ? pre+'って' : pre+TE_END[e];
+  const ta = te.replace(/て$/,'た').replace(/で$/,'だ');
+  const i = pre+I_ROW[e];
+  switch(f){
+    case 'masu': return i+'ます';
+    case 'masen': return i+'ません';
+    case 'mashita': return i+'ました';
+    case 'masendeshita': return i+'ませんでした';
+    case 'mashou': return i+'ましょう';
+    case 'nai': return isAru(v) ? 'ない' : pre+A_ROW[e]+'ない';
+    case 'nakatta': return isAru(v) ? 'なかった' : pre+A_ROW[e]+'なかった';
+    case 'ta': return ta;
+    case 'te': return te;
+    case 'tai': return i+'たい';
+    case 'vol': return pre+O_ROW[e]+'う';
+    case 'ba': return pre+E_ROW[e]+'ば';
+    case 'tara': return ta+'ら';
+    case 'pot': return pre+E_ROW[e]+'る';
+    case 'pass': return pre+A_ROW[e]+'れる';
+    case 'caus': return pre+A_ROW[e]+'せる';
+    case 'imp': return pre+E_ROW[e];
+    case 'proh': return b+'な';
+  }
+}
+const RU_SUFFIX={masu:'ます',masen:'ません',mashita:'ました',masendeshita:'ませんでした',mashou:'ましょう',
+  nai:'ない',nakatta:'なかった',ta:'た',te:'て',tai:'たい',vol:'よう',ba:'れば',tara:'たら',
+  pot:'られる',pass:'られる',caus:'させる',imp:'ろ'};
+function ichidan(v,f){ return f==='proh' ? v.b+'な' : v.b.slice(0,-1)+RU_SUFFIX[f]; }
+
+const SURU={masu:'します',masen:'しません',mashita:'しました',masendeshita:'しませんでした',mashou:'しましょう',
+  nai:'しない',nakatta:'しなかった',ta:'した',te:'して',tai:'したい',vol:'しよう',ba:'すれば',tara:'したら',
+  pot:'できる',pass:'される',caus:'させる',imp:'しろ',proh:'するな'};
+// 来る: [reading of 来, rest]
+const KURU={masu:['き','ます'],masen:['き','ません'],mashita:['き','ました'],masendeshita:['き','ませんでした'],
+  mashou:['き','ましょう'],nai:['こ','ない'],nakatta:['こ','なかった'],ta:['き','た'],te:['き','て'],
+  tai:['き','たい'],vol:['こ','よう'],ba:['く','れば'],tara:['き','たら'],pot:['こ','られる'],
+  pass:['こ','られる'],caus:['こ','させる'],imp:['こ','い'],proh:['く','るな']};
+
+function conjugate(v,f){
+  if (v.g==='u') return godan(v,f);
+  if (v.g==='ru') return ichidan(v,f);
+  if (v.irr==='suru') return v.b.slice(0,-2)+SURU[f];
+  const pre=v.b.slice(0,-'来[く]る'.length), [r,rest]=KURU[f];
+  return pre+'来['+r+']'+rest;
+}
+
+/* ================= EXPLANATIONS ================= */
+const GODAN_RULE = {
+  masu:['い','ます'], masen:['い','ません'], mashita:['い','ました'], masendeshita:['い','ませんでした'],
+  mashou:['い','ましょう'], tai:['い','たい'], nai:['あ','ない'], nakatta:['あ','なかった'],
+  vol:['お','う'], ba:['え','ば'], pot:['え','る'], pass:['あ','れる'], caus:['あ','せる'], imp:['え','']
+};
+const ROWMAP = {い:I_ROW, あ:A_ROW, お:O_ROW, え:E_ROW};
+const FORM_USE = {
+  masu:'Polite non-past: "I do / will do".', masen:'Polite non-past negative: "I don\'t / won\'t".',
+  mashita:'Polite past: "I did".', masendeshita:'Polite past negative: "I didn\'t".',
+  mashou:'Polite "let\'s do" / "shall we?".', nai:'Plain negative: "don\'t".', nakatta:'Plain past negative: "didn\'t".',
+  ta:'Plain past: "did".', te:'Connects actions, requests (〜てください), progressive (〜ている).',
+  tai:'"Want to do" — conjugates like an い-adjective (〜たくない, 〜たかった).',
+  vol:'Plain "let\'s" / "I think I\'ll" (〜ようと思う).', ba:'"If…" — general / hypothetical condition.',
+  tara:'"If / when…" — happens after the condition is met.', pot:'"Can do". Object often takes が.',
+  pass:'"Is done (to)". Agent marked with に.', caus:'"Make / let someone do".',
+  imp:'Blunt command. Rare in polite speech.', proh:'Blunt "Don\'t do!".'
+};
+const LOOKALIKE_ROW = 'いきぎしじちぢにひびぴみりえけげせぜてでねへべぺめれ';
+
+function explain(v,f){
+  const d=toKanji(v.b), e=v.b.slice(-1), r=toReading(v.b);
+  let group, rule, notes=[];
+  if (v.g==='u'){
+    group='う-verb (godan)';
+    if (['te','ta','tara'].includes(f)){
+      const te=TE_END[e], ta=te.replace(/て$/,'た').replace(/で$/,'だ');
+      const ending = f==='te'? te : ta;
+      rule = `Ending <b>${e}</b> → <b>${ending}</b>${f==='tara'?' then add <b>ら</b>':''}. `+
+        `Pattern: う・つ・る → っ${f==='te'?'て':'た'} · む・ぶ・ぬ → ん${f==='te'?'で':'だ'} · く → い${f==='te'?'て':'た'} · ぐ → い${f==='te'?'で':'だ'} · す → し${f==='te'?'て':'た'}.`;
+      if (isIku(v)) notes.push('Exception: 行く uses って/った (行って, 行った), not いて/いた.');
+    } else if (f==='proh'){
+      rule = 'Dictionary form + <b>な</b>.';
+    } else {
+      const [row,suf]=GODAN_RULE[f];
+      rule = `Change final <b>${e}</b> to the ${row}-row (<b>${ROWMAP[row][e]}</b>)${suf?` and add <b>${suf}</b>`:''}.`;
+      if (e==='う' && row==='あ') notes.push('Verbs ending in う use <b>わ</b>, not あ (買う → 買わない).');
+      if (isAru(v) && (f==='nai'||f==='nakatta')) notes.push('Exception: the negative of ある is simply ない / なかった.');
+    }
+    if (e==='る' && LOOKALIKE_ROW.includes(r.slice(-2,-1)) )
+      notes.push(`Careful: ${d} looks like a る-verb (-iru/-eru), but it's an う-verb, so る changes instead of being dropped.`);
+  } else if (v.g==='ru'){
+    group='る-verb (ichidan)';
+    rule = f==='proh' ? 'Dictionary form + <b>な</b>.' : `Drop <b>る</b> and add <b>${RU_SUFFIX[f]}</b>.`;
+    if (f==='pot') notes.push('Casual speech often drops ら (食べれる), but the standard form is 〜られる.');
+    if (f==='pot'||f==='pass') notes.push('For る-verbs, potential and passive look identical (〜られる).');
+  } else if (v.irr==='suru'){
+    group='Irregular (する)';
+    rule = `する → <b>${SURU[f]}</b>.` + (d!=='する' ? ' For noun + する verbs, conjugate only the する part.' : '');
+    if (f==='pot') notes.push('する has no regular potential — it uses できる.');
+  } else {
+    group='Irregular (来る)';
+    const [k,rest]=KURU[f];
+    rule = `来る → <b>来${rest}</b> read <b>${k}${rest}</b>. The reading of 来 changes: き (ます/た/て/たい/たら), こ (ない/よう/られる/させる/い), く (る/れば).`;
+  }
+  return {group, rule, use:FORM_USE[f], notes};
+}
+//ENGINE-END
+
+/* ================= ROMAJI → KANA ================= */
+const ROMA = (() => {
+  const t = {a:'あ',i:'い',u:'う',e:'え',o:'お'};
+  const rows = {k:'かきくけこ',g:'がぎぐげご',s:'さしすせそ',z:'ざじずぜぞ',t:'たちつてと',d:'だぢづでど',
+    n:'なにぬねの',h:'はひふへほ',b:'ばびぶべぼ',p:'ぱぴぷぺぽ',m:'まみむめも',r:'らりるれろ'};
+  const V='aiueo';
+  for (const c in rows) for (let i=0;i<5;i++) t[c+V[i]] = rows[c][i];
+  Object.assign(t,{ya:'や',yu:'ゆ',yo:'よ',wa:'わ',wo:'を',wi:'うぃ',we:'うぇ',
+    shi:'し',chi:'ち',tsu:'つ',fu:'ふ',ji:'じ',
+    fa:'ふぁ',fi:'ふぃ',fe:'ふぇ',fo:'ふぉ',
+    xa:'ぁ',xi:'ぃ',xu:'ぅ',xe:'ぇ',xo:'ぉ',la:'ぁ',li:'ぃ',lu:'ぅ',le:'ぇ',lo:'ぉ',
+    xya:'ゃ',xyu:'ゅ',xyo:'ょ',lya:'ゃ',lyu:'ゅ',lyo:'ょ',xtu:'っ',ltu:'っ',xtsu:'っ',ltsu:'っ',
+    'nn':'ん',"n'":'ん','-':'ー'});
+  const small={a:'ゃ',u:'ゅ',o:'ょ'};
+  for (const c of 'kgnhbpmr') for (const v in small) t[c+'y'+v]=rows[c][1]+small[v];
+  for (const v in small){
+    t['sh'+v]='し'+small[v]; t['sy'+v]='し'+small[v]; t['zy'+v]='じ'+small[v]; t['jy'+v]='じ'+small[v];
+    t['j'+v]='じ'+small[v]; t['ch'+v]='ち'+small[v]; t['ty'+v]='ち'+small[v]; t['cy'+v]='ち'+small[v]; t['dy'+v]='ぢ'+small[v];
+  }
+  t.she='しぇ'; t.je='じぇ'; t.che='ちぇ'; t.ti='ち'; t.tu='つ'; t.si='し'; t.zi='じ'; t.hu='ふ';
+  t.di='ぢ'; t.du='づ'; t.ja='じゃ'; t.ju='じゅ'; t.jo='じょ';
+  return t;
+})();
+const ROMA_PREFIX = new Set();
+for (const k in ROMA) for (let i=1;i<=k.length;i++) ROMA_PREFIX.add(k.slice(0,i));
+
+function romajiToKana(str, final){
+  let out='', i=0;
+  const s=str.toLowerCase();
+  while (i<s.length){
+    const ch=s[i];
+    if (!/[a-z'\-]/.test(ch)){ out+=str[i]; i++; continue; }
+    if (ch==='n'){
+      const nx=s[i+1];
+      if (nx===undefined){ out+= final?'ん':'n'; i++; continue; }
+      if (nx==='n'){
+        const n2=s[i+2];
+        if (n2===undefined){ out+='ん'; i+=2; continue; }
+        if ('aiueoy'.includes(n2)){ out+='ん'; i+=1; continue; }
+        out+='ん'; i+=2; continue;
+      }
+      if (nx==="'"){ out+='ん'; i+=2; continue; }
+      if (!'aiueoy'.includes(nx)){ out+='ん'; i++; continue; }
+    }
+    // double consonant → っ
+    if (/[bcdfghjkmprstvwz]/.test(ch) && (s[i+1]===ch || (ch==='t' && s[i+1]==='c' && s[i+2]==='h'))){
+      out+='っ'; i++; continue;
+    }
+    let matched=false;
+    for (let len=4;len>=1;len--){
+      const sub=s.substr(i,len);
+      if (sub.length===len && ROMA[sub]){ out+=ROMA[sub]; i+=len; matched=true; break; }
+    }
+    if (matched) continue;
+    const rest=s.slice(i);
+    if (ROMA_PREFIX.has(rest)){ out+=str.slice(i); break; }  // still typing
+    out+=str[i]; i++;
+  }
+  return out;
+}
+
+/* ================= STORAGE / STATE ================= */
+/* Safe storage: falls back to memory if localStorage is blocked (e.g. sandboxed previews) */
+const store = (() => {
+  const mem = {};
+  let ok = false;
+  try { const k='__jvq_test'; window.localStorage.setItem(k,'1'); window.localStorage.removeItem(k); ok = true; } catch(e) {}
+  return {
+    persistent: ok,
+    get(k){ try { return ok ? window.localStorage.getItem(k) : (k in mem ? mem[k] : null); } catch(e){ return null; } },
+    set(k,v){ try { if (ok) window.localStorage.setItem(k,v); else mem[k]=v; } catch(e){ mem[k]=v; } }
+  };
+})();
+function loadJSON(k){ try { return JSON.parse(store.get(k) || 'null'); } catch(e){ return null; } }
+
+const LS_STATS='jvq_stats_v1', LS_FILTERS='jvq_filters_v1', LS_FURI='jvq_furi_v1';
+const blankStats = () => ({c:0,t:0,forms:{},groups:{},verbs:{},pairs:{}});
+let lifetime = loadJSON(LS_STATS) || blankStats();
+if (!lifetime.pairs) lifetime.pairs={};   // per verb+form record (added in v7)
+let session = blankStats();
+let streak = 0;
+let filters = loadJSON(LS_FILTERS) || {
+  forms: FORMS.map(f=>f.id), levels:['N5','N4'], groups:['u','ru','irr']
+};
+/* ---- Light spaced repetition ----
+   Each verb+form pair has a level (0 = last missed, higher = correct streak).
+   Weight decides how likely it is to be picked. Unseen pairs = 1.       */
+const LS_SRS='jvq_srs_v1';
+let srs = loadJSON(LS_SRS) || {};
+/* ---- Multi-device sync ----
+   lifetime = answers given on THIS device. peers = latest snapshot of every other device
+   we've heard about. Displayed totals = this device + peers, so re-importing never double-counts.
+   srsT = when each weak-spot level last changed; on import the newer one wins.          */
+const LS_SRS_T='jvq_srs_time_v1', LS_PEERS='jvq_peers_v1', LS_DEVICE='jvq_device_v1';
+let srsT = loadJSON(LS_SRS_T) || {};
+let peers = loadJSON(LS_PEERS) || {};
+let deviceId = store.get(LS_DEVICE);
+if (!deviceId){ deviceId = Math.random().toString(36).slice(2,10); store.set(LS_DEVICE, deviceId); }
+function addStats(a,b){
+  const out={c:a.c+b.c,t:a.t+b.t,forms:{},groups:{},verbs:{},pairs:{}};
+  for (const k of ['forms','groups','verbs','pairs']) for (const src of [a[k],b[k]]) for (const key in (src||{})){
+    const o=out[k][key]||(out[k][key]={c:0,t:0}); o.c+=src[key].c; o.t+=src[key].t;
+  }
+  return out;
+}
+let combined;
+function recombine(){ combined = Object.values(peers).reduce((acc,p)=>addStats(acc,p.stats), addStats(blankStats(), lifetime)); }
+recombine();
+if (filters.srs===undefined) filters.srs = true;
+const SRS_WEIGHT = [5, 2, 1, 0.5, 0.25];          // by level; 4+ = mastered
+const pairKey = (v,f) => v.b+'|'+f;
+function pairWeight(v,f){
+  if (!filters.srs) return 1;
+  const lvl = srs[pairKey(v,f)];
+  let w = lvl===undefined ? 1 : SRS_WEIGHT[Math.min(lvl,4)];
+  const fs = combined.forms[f];                    // small nudge for weak forms
+  if (fs && fs.t>=5) w *= 1 + (1 - fs.c/fs.t);     // up to 2x
+  return w;
+}
+function updateSrs(v,f,ok){
+  const k=pairKey(v,f), prev=srs[k];
+  srs[k] = !ok ? 0 : prev===undefined ? 2 : Math.min(prev+1, 4);  // new + correct starts at 2
+  srsT[k] = Date.now();
+  store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
+}
+const sessionSeen = new Set();   // pairs already asked this session (no repeats)
+let recentVerbs = [];            // last few verbs, to avoid back-to-back same verb
+const GROUP_LABEL = {u:'う-verbs (godan)', ru:'る-verbs (ichidan)', irr:'Irregular (する / 来る)'};
+
+function record(st, v, f, ok){
+  const bump = (obj,key) => { obj[key]=obj[key]||{c:0,t:0}; obj[key].t++; if(ok) obj[key].c++; };
+  st.t++; if(ok) st.c++;
+  bump(st.forms,f); bump(st.groups,v.g); bump(st.verbs,v.b); bump(st.pairs||(st.pairs={}),pairKey(v,f));
+}
+
+/* ================= QUIZ ================= */
+let current=null, answered=false, lastKey='';
+const $ = id => document.getElementById(id);
+
+function buildPool(){
+  const pool=[];
+  for (const v of VERBS){
+    if (!filters.levels.includes(v.lvl) || !filters.groups.includes(v.g)) continue;
+    for (const f of filters.forms) if (allowed(v,f)) pool.push([v,f]);
+  }
+  return pool;
+}
+
+function nextQuestion(){
+  TTS.stop();
+  if (wrapLeft===0 || reviewDone()){ showSummary(); return; }
+  let picked;
+  if (reviewState){
+    picked = pickReview();
+    $('quizBody').classList.remove('hidden'); $('emptyPool').classList.add('hidden');
+  } else {
+    const pool=buildPool();
+    $('quizBody').classList.toggle('hidden', !pool.length);
+    $('emptyPool').classList.toggle('hidden', !!pool.length);
+    if (!pool.length){ updateModeUI(); return; }
+    let cand = pool.filter(([v,f]) => !sessionSeen.has(pairKey(v,f)));
+    if (!cand.length){ sessionSeen.clear(); cand = pool; }        // whole pool done: start over
+    const fresh = cand.filter(([v]) => !recentVerbs.includes(v.b));
+    if (fresh.length) cand = fresh;
+    const weights = cand.map(([v,f]) => pairWeight(v,f));
+    let r = Math.random() * weights.reduce((a,b)=>a+b,0), idx = 0;
+    while (idx < cand.length-1 && (r -= weights[idx]) > 0) idx++;
+    picked = cand[idx];
+  }
+  const [v,f]=picked; lastKey=v.b+f;
+  sessionSeen.add(pairKey(v,f));
+  recentVerbs = [v.b, ...recentVerbs].slice(0,5);
+  current={v,f,answer:conjugate(v,f)};
+  answered=false;
+  $('qVerb').innerHTML=toRuby(v.b);
+  $('qMeaning').textContent=v.m+'  ·  '+v.lvl;
+  $('qForm').textContent=FORM_BY_ID[f].label+' ('+FORM_BY_ID[f].jp+')';
+  $('qCat').textContent=FORM_BY_ID[f].cat;
+  const inp=$('answer'); inp.value=''; inp.className=''; inp.readOnly=false; inp.focus();
+  $('feedback').innerHTML='';
+  $('submitBtn').textContent='Check';
+  updateModeUI();
+}
+function check(reveal){
+  if (!current || summaryOpen) return;
+  if (answered){ nextQuestion(); return; }
+  const inp=$('answer');
+  const given=romajiToKana(inp.value.trim(), true);
+  if (!given && !reveal) return;
+  inp.value=given;
+  const {v,f,answer}=current;
+  const ok = !reveal && (given===toReading(answer) || given===toKanji(answer));
+  answered=true;
+  record(session,v,f,ok); record(lifetime,v,f,ok); updateSrs(v,f,ok);
+  store.set(LS_STATS, JSON.stringify(lifetime)); recombine();
+  streak = ok ? streak+1 : 0; bestStreak = Math.max(bestStreak, streak);
+  sessionLog.push({v,f,answer,given:reveal?'':given,ok});
+  if (reviewState && ok) reviewState.cleared.add(pairKey(v,f));
+  if (wrapLeft) wrapLeft--;
+  inp.className = ok?'ok':'bad'; inp.readOnly=true;
+  setNextLabel();
+  const ex=explain(v,f), say=toReading(answer);
+  let html=`<div class="feedback ${ok?'ok':'bad'}">
+    <div class="head">${ok?'Correct!':(reveal?'Answer':'Not quite')}${!ok&&!reveal?` — you wrote ${escH(given)}`:''}</div>
+    <div class="correct">${toRuby(answer)} <span class="pill">${toReading(answer)}</span> ${speakBtn(say)}</div>`;
+  if (!ok){
+    html+=`<div class="rule"><b>${toKanji(v.b)}</b> is a ${ex.group}. ${ex.rule}</div>`;
+    html+=ex.notes.map(n=>`<div class="note">⚠ ${n}</div>`).join('');
+  }
+  html+=`<div class="rule" style="color:var(--muted);font-size:13px">${ex.use}</div></div>`;
+  $('feedback').innerHTML=html;
+  updateScore(); updateModeUI();
+  if (autoT.checked) TTS.say(say);
+}
+function updateScore(){
+  $('sScore').textContent=`${session.c} / ${session.t}`;
+  $('sStreak').textContent=streak;
+}
+
+/* ================= FILTERS UI ================= */
+function renderFilters(){
+  const cats=[...new Set(FORMS.map(f=>f.cat))];
+  let html='';
+  html+=`<h3>Conjugations<span class="small-links"><a data-all="forms">all</a><a data-none="forms">none</a></span></h3>`;
+  for (const c of cats){
+    html+=`<div style="font-size:13px;font-weight:600;margin:10px 0 4px">${c}</div><div class="checks">`;
+    for (const f of FORMS.filter(x=>x.cat===c))
+      html+=`<label><input type="checkbox" data-k="forms" value="${f.id}" ${filters.forms.includes(f.id)?'checked':''}> ${f.label} <span style="color:var(--muted)">${f.jp}</span></label>`;
+    html+='</div>';
+  }
+  html+=`<h3>Level</h3><div class="checks">`+['N5','N4','N3','N2'].map(l=>
+    `<label><input type="checkbox" data-k="levels" value="${l}" ${filters.levels.includes(l)?'checked':''}> ${l} (${VERBS.filter(v=>v.lvl===l).length} verbs)</label>`).join('')+'</div>';
+  html+=`<h3>Verb group</h3><div class="checks">`+Object.keys(GROUP_LABEL).map(g=>
+    `<label><input type="checkbox" data-k="groups" value="${g}" ${filters.groups.includes(g)?'checked':''}> ${GROUP_LABEL[g]}</label>`).join('')+'</div>';
+  html+=`<h3>Practice mode</h3><div class="checks"><label style="grid-column:1/-1"><input type="checkbox" id="srsToggle" ${filters.srs?'checked':''}> Focus on weak spots <span style="color:var(--muted)">— verbs/forms you've missed show up more often; ones you know show up less</span></label></div>`;
+  $('filterBody').innerHTML=html;
+  $('poolInfo').textContent=`${buildPool().length} possible questions with current filters.`;
+}
+$('filterBody').addEventListener('change', e=>{
+  if (e.target.id==='srsToggle'){ filters.srs=e.target.checked; store.set(LS_FILTERS, JSON.stringify(filters)); return; }
+  const k=e.target.dataset.k; if(!k) return;
+  filters[k]=[...document.querySelectorAll(`input[data-k="${k}"]:checked`)].map(x=>x.value);
+  store.set(LS_FILTERS, JSON.stringify(filters));
+  $('poolInfo').textContent=`${buildPool().length} possible questions with current filters.`;
+});
+$('filterBody').addEventListener('click', e=>{
+  const all=e.target.dataset.all, none=e.target.dataset.none;
+  if (all) filters[all]=FORMS.map(f=>f.id);
+  else if (none) filters[none]=[];
+  else return;
+  store.set(LS_FILTERS, JSON.stringify(filters));
+  renderFilters();
+});
+
+/* ================= STATS UI ================= */
+function pct(o){ return o&&o.t ? Math.round(100*o.c/o.t) : null; }
+function bar(p){
+  if (p===null) return '<span style="color:var(--muted)">—</span>';
+  const col = p>=80?'var(--ok)':p>=60?'#e8a300':'var(--bad)';
+  return `<span class="bar"><i style="width:${p}%;background:${col}"></i></span> ${p}%`;
+}
+function cell(o){ return o&&o.t ? `${o.c}/${o.t}` : '—'; }
+
+function renderStats(){
+  const lifetime = combined;   // stats page shows all devices combined
+  renderSyncInfo();
+  let html=`<div class="totals">
+    <div>Session<b>${session.c} / ${session.t}</b>${pct(session)!==null?pct(session)+'%':''}</div>
+    <div>Lifetime<b>${lifetime.c} / ${lifetime.t}</b>${pct(lifetime)!==null?pct(lifetime)+'%':''}</div></div>`;
+  const lv=Object.values(srs);
+  html+=`<div style="font-size:13px;color:var(--muted);margin:4px 0 6px">Review queue: <b style="color:var(--bad)">${lv.filter(x=>x===0).length}</b> to review · <b style="color:#e8a300">${lv.filter(x=>x>0&&x<4).length}</b> learning · <b style="color:var(--ok)">${lv.filter(x=>x>=4).length}</b> mastered</div>`;
+  html+=`<h3>By conjugation (weakest first, lifetime)</h3>
+    <table><tr><th>Form</th><th class="num">Session</th><th class="num">Lifetime</th><th>Accuracy</th></tr>`;
+  const sorted=[...FORMS].sort((a,b)=>{
+    const pa=pct(lifetime.forms[a.id]), pb=pct(lifetime.forms[b.id]);
+    return (pa===null?101:pa)-(pb===null?101:pb);
+  });
+  for (const f of sorted)
+    html+=`<tr><td>${f.label} <span style="color:var(--muted)">${f.jp}</span></td><td class="num">${cell(session.forms[f.id])}</td><td class="num">${cell(lifetime.forms[f.id])}</td><td>${bar(pct(lifetime.forms[f.id]))}</td></tr>`;
+  html+='</table>';
+  html+=`<h3>By verb group</h3><table><tr><th>Group</th><th class="num">Session</th><th class="num">Lifetime</th><th>Accuracy</th></tr>`;
+  for (const g in GROUP_LABEL)
+    html+=`<tr><td>${GROUP_LABEL[g]}</td><td class="num">${cell(session.groups[g])}</td><td class="num">${cell(lifetime.groups[g])}</td><td>${bar(pct(lifetime.groups[g]))}</td></tr>`;
+  html+='</table>';
+  const missed=Object.entries(lifetime.verbs).map(([b,o])=>[b,o,o.t-o.c]).filter(x=>x[2]>0)
+    .sort((a,b)=>b[2]-a[2]).slice(0,10);
+  html+=`<h3>Most-missed verbs (lifetime)</h3>`;
+  html+= missed.length ? `<table><tr><th>Verb</th><th class="num">Missed</th><th>Accuracy</th></tr>`+
+    missed.map(([b,o,m])=>`<tr><td>${toRuby(b)} <span style="color:var(--muted)">${VERBS.find(v=>v.b===b)?.m||''}</span></td><td class="num">${m}</td><td>${bar(pct(o))}</td></tr>`).join('')+'</table>'
+    : '<div style="color:var(--muted);font-size:14px">None yet.</div>';
+  $('statsBody').innerHTML=html;
+}
+$('resetBtn').addEventListener('click',()=>{
+  if (!confirm('Reset all lifetime stats? This cannot be undone.')) return;
+  lifetime=blankStats(); store.set(LS_STATS, JSON.stringify(lifetime)); srs={}; store.set(LS_SRS, '{}');
+  srsT={}; store.set(LS_SRS_T,'{}'); peers={}; store.set(LS_PEERS,'{}'); recombine();
+  renderStats(); updateScore();
+});
+
+/* ================= SYNC (export / import) ================= */
+const fmtDate = ms => new Date(ms).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+function renderSyncInfo(){
+  const ids=Object.keys(peers);
+  $('syncInfo').innerHTML = `This device: ${lifetime.t} answers` +
+    (ids.length ? ` · Imported from ${ids.length} other device${ids.length>1?'s':''}: ` +
+      ids.map(id=>`${peers[id].stats.t} answers (as of ${fmtDate(peers[id].at)})`).join(', ') : ' · No other devices imported yet');
+}
+$('exportBtn').addEventListener('click',()=>{
+  const data={app:'jvq-verb-quiz', version:1, exportedAt:Date.now(), device:deviceId,
+              own:lifetime, peers, srs, srsT};
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`verb-quiz-progress-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  $('syncMsg').innerHTML='<span style="color:var(--ok)">Exported. Import this file on your other device.</span>';
+});
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async e=>{
+  const file=e.target.files[0]; e.target.value='';
+  if (!file) return;
+  let d;
+  try { d=JSON.parse(await file.text()); } catch(err){ d=null; }
+  if (!d || d.app!=='jvq-verb-quiz' || !d.own){
+    $('syncMsg').innerHTML='<span style="color:var(--bad)">That file isn\'t a verb quiz export.</span>'; return;
+  }
+  if (d.device===deviceId){
+    $('syncMsg').innerHTML='<span style="color:var(--bad)">That file came from this device, so there\'s nothing new to add.</span>'; return;
+  }
+  // stats: keep the newest snapshot of every device (never our own; ours is always current)
+  const incoming={...(d.peers||{}), [d.device]:{at:d.exportedAt, stats:d.own}};
+  let devs=0;
+  for (const id in incoming){
+    if (id===deviceId || !incoming[id] || !incoming[id].stats) continue;
+    if (!peers[id] || incoming[id].at > peers[id].at){ peers[id]=incoming[id]; devs++; }
+  }
+  // weak-spot levels: the most recently updated one wins
+  let pairs=0;
+  for (const k in (d.srs||{})){
+    const t=(d.srsT||{})[k]||0;
+    if (srs[k]===undefined || t > (srsT[k]||0)){ srs[k]=d.srs[k]; srsT[k]=t; pairs++; }
+  }
+  store.set(LS_PEERS, JSON.stringify(peers)); store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
+  recombine(); renderStats();
+  $('syncMsg').innerHTML = devs||pairs
+    ? `<span style="color:var(--ok)">Imported: updated results from ${devs} device${devs===1?'':'s'} and ${pairs} weak-spot entr${pairs===1?'y':'ies'}.</span>`
+    : '<span style="color:var(--muted)">Already up to date. Nothing new in that file.</span>';
+});
+
+/* ================= WIRING ================= */
+document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));
+  for (const t of ['quiz','filters','stats']) $('tab-'+t).classList.toggle('hidden', t!==btn.dataset.tab);
+  if (btn.dataset.tab==='filters') renderFilters();
+  if (btn.dataset.tab==='stats') renderStats();
+  if (btn.dataset.tab==='quiz'){
+    const stillValid = current && filters.forms.includes(current.f) && filters.levels.includes(current.v.lvl) && filters.groups.includes(current.v.g);
+    if (summaryOpen) return;
+    if (reviewState){ if (answered || !current) nextQuestion(); else $('answer').focus(); return; }
+    if (!stillValid || answered) nextQuestion(); else $('answer').focus();
+  }
+}));
+
+const inp=$('answer');
+let composing=false;
+inp.addEventListener('compositionstart',()=>composing=true);
+inp.addEventListener('compositionend',()=>composing=false);
+// nnIdx: position of a ん that was just created from "nn". If a vowel/y is typed right after it,
+// the second n is restored so "onna" still gives おんな (like a standard IME).
+let nnIdx=null;
+inp.addEventListener('input',e=>{
+  if (composing || answered) return;
+  let raw=inp.value;
+  if (nnIdx!==null && e.inputType==='insertText' && raw.length===nnIdx+2 &&
+      raw[nnIdx]==='ん' && /[aiueoy]/i.test(raw[nnIdx+1])){
+    raw=raw.slice(0,nnIdx+1)+'n'+raw.slice(nnIdx+1);
+  }
+  nnIdx=null;
+  const conv=romajiToKana(raw,false);
+  if (/nn$/i.test(raw) && conv.endsWith('ん')) nnIdx=conv.length-1;
+  if (conv!==inp.value){ inp.value=conv; inp.setSelectionRange(conv.length,conv.length); }
+});
+document.addEventListener('keydown',e=>{
+  if (e.key==='Enter' && !$('tab-quiz').classList.contains('hidden') && !composing){ e.preventDefault(); check(false); }
+});
+$('submitBtn').addEventListener('click',()=>check(false));
+$('revealBtn').addEventListener('click',()=>{ if(!answered) check(true); });
+
+const furi=$('furiToggle');
+furi.checked = store.get(LS_FURI)!=='off';
+document.body.classList.toggle('nofuri',!furi.checked);
+furi.addEventListener('change',()=>{
+  document.body.classList.toggle('nofuri',!furi.checked);
+  store.set(LS_FURI, furi.checked?'on':'off');
+});
+
+
+/* ================= DARK MODE + AUDIO ================= */
+const LS_DARK='jvq_dark_v1', LS_AUTO='jvq_autoplay_v1';
+const darkT=$('darkToggle');
+darkT.checked=document.documentElement.classList.contains('dark');
+darkT.addEventListener('change',()=>{ document.documentElement.classList.toggle('dark',darkT.checked); store.set(LS_DARK, darkT.checked?'on':'off'); });
+const TTS=(()=>{
+  const ok = typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined';
+  let voice=null;
+  const pick=()=>{ const ja=speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang));
+    voice = ja.find(v=>/natural|online|google|nanami|kyoko|o-ren|haruka/i.test(v.name)) || ja[0] || null; };
+  if (ok){ pick(); speechSynthesis.onvoiceschanged=pick; }
+  return { ok,
+    say(text){ if(!ok||!text) return; speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; if(voice) u.voice=voice; u.rate=0.9; speechSynthesis.speak(u); },
+    stop(){ if(ok) try{ speechSynthesis.cancel(); }catch(e){} } };
+})();
+const escH = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const speakBtn = (text,label) => TTS.ok&&text ? `<button type="button" class="speak" data-say="${escH(text)}" title="Play audio">🔊${label?' '+label:''}</button>` : '';
+const autoT=$('autoToggle');
+autoT.checked = store.get(LS_AUTO)==='on';
+if (!TTS.ok){ autoT.disabled=true; autoT.parentElement.title='This browser has no speech support'; }
+autoT.addEventListener('change',()=>store.set(LS_AUTO, autoT.checked?'on':'off'));
+for (const id of ['feedback','summary']) $(id).addEventListener('click',e=>{
+  const b=e.target.closest('.speak'); if(!b) return; TTS.say(b.dataset.say); if (id==='feedback') $('answer').focus();
+});
+
+/* ================= REVIEW MODE · WRAP UP · SESSION SUMMARY ================= */
+const REVIEW_SIZE=25, REVIEW_MIN=0.3, WRAP_COUNT=5;
+let reviewState=null, wrapLeft=null, summaryOpen=false, sessionLog=[], bestStreak=0;
+const reviewDone = () => !!reviewState && reviewState.cleared.size>=reviewState.total;
+const errRate = o => o && o.t ? (o.t-o.c+0.5)/(o.t+1) : null;   // smoothed miss rate
+function setNextLabel(){ if (answered) $('submitBtn').textContent = (wrapLeft===0 || reviewDone()) ? 'Finish →' : 'Next →'; }
+function pickWeighted(list, w){
+  const tot=list.reduce((a,x)=>a+w(x),0); let r=Math.random()*tot;
+  for (const x of list){ r-=w(x); if (r<=0) return x; }
+  return list[list.length-1];
+}
+function updateModeUI(){
+  $('reviewBtn').textContent = reviewState ? 'Exit review' : 'Review weak spots';
+  $('reviewBtn').classList.toggle('on', !!reviewState);
+  $('wrapBtn').textContent = wrapLeft===null ? 'Wrap up' : 'Cancel wrap-up';
+  $('wrapBtn').classList.toggle('on', wrapLeft!==null);
+  const bits=[];
+  if (reviewState) bits.push(`Review mode · ${reviewState.total-reviewState.cleared.size} of ${reviewState.total} weak items left${reviewState.focus?' · focus: '+reviewState.focus:''}`);
+  if (wrapLeft!==null) bits.push(wrapLeft>0 ? `Wrapping up · ${wrapLeft} question${wrapLeft===1?'':'s'} left` : 'Done. Press Finish to see your summary');
+  const mi=$('modeInfo'); mi.classList.remove('warn');
+  mi.textContent=bits.join('  ·  '); mi.classList.toggle('hidden', !bits.length || summaryOpen);
+}
+function modeMsg(t){ const mi=$('modeInfo'); mi.textContent=t; mi.classList.add('warn'); mi.classList.remove('hidden'); }
+function closeSummary(reset){
+  summaryOpen=false; reviewState=null; wrapLeft=null;
+  $('summary').classList.add('hidden'); $('modebar').classList.remove('hidden');
+  if (reset) resetSession();
+  updateScore(); nextQuestion();
+}
+function openSummary(title, statsHtml, missHtml){
+  summaryOpen=true; current=null; TTS.stop();
+  for (const id of ['quizBody','emptyPool','modebar','modeInfo']) $(id).classList.add('hidden');
+  $('summary').classList.remove('hidden');
+  $('sumTitle').textContent=title;
+  $('sumBody').innerHTML=statsHtml+missHtml;
+}
+function summaryTotals(){
+  const p=pct(session);
+  let h=`<div class="totals"><div>Score<b>${session.c} / ${session.t}</b>${p!==null?p+'%':''}</div><div>Best streak<b>${bestStreak}</b></div>`;
+  if (reviewState) h+=`<div>Weak items cleared<b>${reviewState.cleared.size} / ${reviewState.total}</b></div>`;
+  return h+'</div>';
+}
+$('reviewBtn').addEventListener('click',()=>{
+  if (reviewState){ reviewState=null; setNextLabel(); updateModeUI(); $('answer').focus(); return; }
+  const items=buildReview();
+  if (!items.length){ modeMsg('No weak spots yet with your current filters. Answer some more questions first, then try again.'); return; }
+  reviewState={items, cleared:new Set(), total:items.length, focus:reviewFocus(items)};
+  nextQuestion();
+});
+$('wrapBtn').addEventListener('click',()=>{
+  wrapLeft = wrapLeft===null ? WRAP_COUNT : null;
+  setNextLabel(); updateModeUI(); $('answer').focus();
+});
+$('newSessionBtn').addEventListener('click',()=>closeSummary(true));
+$('keepGoingBtn').addEventListener('click',()=>closeSummary(false));
+
+const SRS_ERR=[1,0.6,0.3,0.15,0.05];
+// How shaky is this verb+form? Mostly the exact pair's record, nudged by the verb's and the form's overall record.
+function weakness(v,f){
+  const k=pairKey(v,f), lvl=srs[k];
+  const pe=errRate(combined.pairs[k]), se = lvl===undefined ? null : SRS_ERR[Math.min(lvl,4)];
+  const pair = pe!==null && se!==null ? (pe+se)/2 : (pe ?? se);
+  const ve=errRate(combined.verbs[v.b]), fe=errRate(combined.forms[f]);
+  const ps=combined.pairs[k], missed=(ps && ps.t>ps.c) || (lvl!==undefined && lvl<=1);
+  if (pair!==null && !missed) return null;   // only ever answered correctly: not a weak spot
+  if (pair===null){   // never asked this exact pair: only include it if both the verb and the form have a shaky record
+    const vs=combined.verbs[v.b], fs=combined.forms[f];
+    if (!vs || !fs || vs.t<2 || fs.t<3 || ve<0.4 || fe<0.4) return null;
+    return 0.35 + 0.3*(ve+fe)/2;     // ranks below pairs you've actually missed
+  }
+  return 0.6*pair + 0.2*(ve ?? pair) + 0.2*(fe ?? pair);
+}
+function buildReview(){
+  return buildPool().map(([v,f])=>[v,f,weakness(v,f)]).filter(x=>x[2]!==null && x[2]>=REVIEW_MIN)
+    .sort((a,b)=>b[2]-a[2]).slice(0,REVIEW_SIZE);
+}
+function reviewFocus(items){
+  const n={}; for (const [,f] of items) n[f]=(n[f]||0)+1;
+  return Object.keys(n).sort((a,b)=>n[b]-n[a]).slice(0,3).map(f=>FORM_BY_ID[f].label).join(', ');
+}
+function pickReview(){
+  const left=reviewState.items.filter(([v,f])=>!reviewState.cleared.has(pairKey(v,f)));
+  let cand = left.length>1 ? left.filter(([v,f])=>v.b+f!==lastKey) : left;
+  const fresh=cand.filter(([v])=>v.b!==recentVerbs[0]); if (fresh.length) cand=fresh;
+  return pickWeighted(cand, x=>x[2]);
+}
+function resetSession(){ session=blankStats(); streak=0; bestStreak=0; sessionLog=[]; sessionSeen.clear(); recentVerbs=[]; }
+function showSummary(){
+  const miss=new Map();
+  for (const e of sessionLog){ if (e.ok) continue; const k=pairKey(e.v,e.f), m=miss.get(k)||{...e,n:0}; m.n++; m.given=e.given; miss.set(k,m); }
+  const rows=[...miss.values()].sort((a,b)=>b.n-a.n);
+  const missHtml = rows.length
+    ? `<h3>To review (${rows.length})</h3><table><tr><th>Verb</th><th>Form</th><th>Correct</th><th>You wrote</th></tr>`+rows.map(e=>`<tr>
+        <td>${toRuby(e.v.b)}</td><td>${FORM_BY_ID[e.f].label}</td>
+        <td>${toRuby(e.answer)} ${speakBtn(toReading(e.answer))}</td>
+        <td>${e.given?escH(e.given):'<span style="color:var(--muted)">(revealed)</span>'}${e.n>1?` <span class="pill">missed ×${e.n}</span>`:''}</td></tr>`).join('')+'</table>'
+    : (session.t ? '<div style="text-align:center;color:var(--muted)">No misses this session. Nice work.</div>' : '');
+  openSummary(reviewDone() ? 'Review complete' : 'Session complete', summaryTotals(), missHtml);
+}
+
+if (!store.persistent) $('storeWarn').classList.remove('hidden');
+updateScore();
+nextQuestion();
+</script>
+</body>
+</html>
