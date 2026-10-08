@@ -123,6 +123,8 @@
   .sitefoot a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .sitefoot a.donate{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
   @media (max-width:520px){.sitefoot{justify-content:center;text-align:center}}
+  .word{white-space:nowrap}  /* keep the quiz word on one line; script shrinks it to fit */
+  @media (max-width:420px){main{padding:0 10px}.card{padding:22px 14px}}
 </style>
 </head>
 <body>
@@ -824,6 +826,24 @@ function showSummary(){
 if (!store.persistent) $('storeWarn').classList.remove('hidden');
 updateScore(); nextQuestion();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ---- keep the quiz word on one line: shrink it when it's wider than the card ---- */
+(function(){
+  const el=document.getElementById('qWord');
+  if (!el) return;
+  const fit=()=>{
+    el.style.fontSize='';
+    const w=el.clientWidth, sw=el.scrollWidth;
+    if (w && sw>w){
+      const base=parseFloat(getComputedStyle(el).fontSize);
+      el.style.fontSize=Math.max(22, Math.floor(base*w/sw*0.97))+'px';
+    }
+  };
+  new MutationObserver(fit).observe(el,{childList:true,subtree:true,characterData:true});
+  window.addEventListener('resize',fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  fit();
+})();
 </script>
 </body>
 </html>
