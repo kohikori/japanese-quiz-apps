@@ -1145,7 +1145,7 @@ document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click
   if (btn.dataset.tab==='filters') renderFilters();
   if (btn.dataset.tab==='stats') renderStats();
   if (btn.dataset.tab==='quiz'){
-    const stillValid = current && filters.forms.includes(current.f) && filters.levels.includes(current.v.lvl) && filters.groups.includes(current.v.g);
+    const stillValid = current && filters.forms.includes(current.f) && filters.levels.includes(current.v.lvl) && filters.groups.includes(groupOf(current.v)) && allowed(current.v,current.f);
     if (summaryOpen) return;
     if (reviewState){ if (answered || !current) nextQuestion(); else $('answer').focus(); return; }
     if (!stillValid || answered) nextQuestion(); else $('answer').focus();

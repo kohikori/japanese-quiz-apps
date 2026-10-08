@@ -1,7 +1,7 @@
 {
   "name": "Kohikori · Japanese Practice",
   "short_name": "Kohikori",
-  "description": "Verb and adjective conjugation and JLPT vocabulary quizzes.",
+  "description": "Verb and adjective conjugation, counters and JLPT vocabulary quizzes.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -44,6 +44,17 @@
       "icons": [
         {
           "src": "icon-adj-180.png",
+          "sizes": "180x180"
+        }
+      ]
+    },
+    {
+      "name": "Counters Quiz",
+      "short_name": "Counters",
+      "url": "counters.html",
+      "icons": [
+        {
+          "src": "icon-cnt-180.png",
           "sizes": "180x180"
         }
       ]

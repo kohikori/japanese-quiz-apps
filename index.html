@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kohikori · Japanese Practice</title>
-<meta name="description" content="Free Japanese practice apps: verb and adjective conjugation and JLPT vocabulary quizzes, made by a learner for learners.">
+<meta name="description" content="Free Japanese practice apps: verb and adjective conjugation, counters and JLPT vocabulary quizzes, made by a learner for learners.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-favicon-64.png">
 <link rel="apple-touch-icon" href="icon-home-180.png">
@@ -128,6 +128,16 @@
       </div>
       <span class="go" aria-hidden="true">›</span>
     </a>
+    <a class="app" href="counters.html">
+      <div class="tile" style="background:#e67700">数</div>
+      <div>
+        <h2><span class="jp">助数詞</span>Counters Quiz</h2>
+        <p>Count pencils, people, cats and cups: 3本 is さんぼん, 6匹 is ろっぴき. Starts with 6 core counters, with charts that highlight the sound changes.</p>
+        <div class="chips"><span class="chip">Beginner friendly</span><span class="chip">Learn tab</span><span class="chip">Multiple choice</span></div>
+        <div class="progress none" id="pCnt">Not started yet</div>
+      </div>
+      <span class="go" aria-hidden="true">›</span>
+    </a>
     <a class="app" href="vocab.html">
       <div class="tile" style="background:#0b7285">語</div>
       <div>
@@ -172,6 +182,7 @@ function showProgress(el, {c,t}){
 showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
 showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
 showProgress($('pAdj'),   total('jadj_stats_v1','jadj_peers_v1'));
+showProgress($('pCnt'),   total('jcnt_stats_v1','jcnt_peers_v1'));
 
 /* ---- install help ---- */
 const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;

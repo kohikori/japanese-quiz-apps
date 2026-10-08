@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon-favicon-64.png">
+<link rel="apple-touch-icon" href="icon-cnt-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Counters">
+<meta name="theme-color" content="#e67700">
+<script>(function(){var d;try{d=localStorage.getItem('jcnt_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+<title>Japanese Counters Quiz</title>
+<style>
+  :root{
+    --bg:#fafafa; --card:#fff; --text:#222; --muted:#777; --line:#e3e3e3;
+    --accent:#3b5bdb; --ok:#2b8a3e; --okbg:#ebfbee; --bad:#c92a2a; --badbg:#fff5f5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans",sans-serif;background:var(--bg);color:var(--text)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap;gap:10px}
+  header h1{font-size:18px;margin:0;font-weight:600}
+  nav button{background:none;border:none;padding:8px 14px;font-size:14px;color:var(--muted);cursor:pointer;border-radius:6px}
+  nav button.active{color:var(--accent);background:#edf2ff;font-weight:600}
+  .toggle{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer}
+  main{max-width:760px;margin:28px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px}
+  .hidden{display:none!important}
+
+  /* Quiz */
+  .scorebar{display:flex;gap:18px;justify-content:center;font-size:13px;color:var(--muted);margin-bottom:16px}
+  .scorebar b{color:var(--text)}
+  .verb{font-size:52px;text-align:center;margin:10px 0 4px;line-height:1.6}
+  .meaning{text-align:center;color:var(--muted);font-size:15px}
+  .target{text-align:center;margin:22px 0 18px;font-size:18px}
+  .target .form{font-weight:600;color:var(--accent)}
+  .target .cat{display:block;font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+  #answer{width:100%;font-size:28px;padding:12px 16px;border:2px solid var(--line);border-radius:10px;text-align:center;outline:none;font-family:inherit}
+  #answer:focus{border-color:var(--accent)}
+  #answer.ok{border-color:var(--ok);background:var(--okbg)}
+  #answer.bad{border-color:var(--bad);background:var(--badbg)}
+  .buttons{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  button.btn{font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-family:inherit}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:12px}
+  .feedback{margin-top:20px;padding:16px 18px;border-radius:10px;font-size:15px;line-height:1.6}
+  .feedback.ok{background:var(--okbg);border:1px solid #b2f2bb}
+  .feedback.bad{background:var(--badbg);border:1px solid #ffc9c9}
+  .feedback .head{font-weight:600;margin-bottom:4px}
+  .feedback.ok .head{color:var(--ok)} .feedback.bad .head{color:var(--bad)}
+  .feedback .correct{font-size:26px;line-height:1.7}
+  .feedback .rule{margin-top:8px;color:#333}
+  .feedback .note{margin-top:6px;color:#8a5a00;font-size:14px}
+  .pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:#f1f3f5;color:#555;margin-left:6px;vertical-align:middle}
+
+  ruby rt{font-size:.45em;color:var(--muted)}
+  body.nofuri ruby rt{visibility:hidden}
+  .rw{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
+  .rw .rr{display:none;font-size:clamp(11px,.38em,22px);line-height:1.3;color:var(--accent);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;white-space:nowrap}
+  body.roma .rw .rr{display:block}
+  header h1{display:flex;align-items:center;gap:10px}
+  .homelink{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--muted);text-decoration:none;flex:none}
+  .homelink:hover{color:var(--accent);border-color:var(--accent)}
+  .listenq{display:inline-flex;align-items:center;gap:10px;font-size:20px;padding:14px 26px;border-radius:999px;border:2px solid var(--accent);
+    background:var(--accentbg);color:var(--accent);cursor:pointer;font-family:inherit;margin:14px 0 6px}
+  .listenq:hover{filter:brightness(1.05)} .listenq:active{transform:scale(.98)}
+  .listenq .ico{font-size:26px;line-height:1}
+  .reportline{margin-top:12px;font-size:12px;text-align:right}
+  .reportline a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+  .reportline a:hover{color:var(--accent);border-color:var(--accent)}
+  .homo{margin-top:6px;font-size:13px;color:var(--muted)}
+  .feedback .also{font-size:13px;color:var(--muted);margin:2px 0 8px}
+
+  /* Filters */
+  h2{font-size:16px;margin:0 0 12px}
+  h3{font-size:13px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px}
+  .checks label{font-size:14px;display:flex;gap:8px;align-items:center;cursor:pointer}
+  .small-links{font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0}
+  .small-links a{color:var(--accent);cursor:pointer;margin-left:6px}
+  .poolinfo{margin-top:18px;font-size:13px;color:var(--muted)}
+
+  /* Stats */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+  th{font-size:12px;color:var(--muted);font-weight:600}
+  td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .bar{height:6px;background:#f1f3f5;border-radius:3px;width:90px;display:inline-block;vertical-align:middle;overflow:hidden}
+  .bar i{display:block;height:100%}
+  .totals{display:flex;gap:30px;margin-bottom:10px}
+  .totals div{font-size:13px;color:var(--muted)}
+  .totals b{display:block;font-size:24px;color:var(--text)}
+  .reset{margin-top:20px;font-size:12px}
+
+  /* ---- quality-of-life additions: dark mode, audio, review / wrap-up ---- */
+  :root{--accentbg:#edf2ff;--okline:#b2f2bb;--badline:#ffc9c9;--pill:#f1f3f5;--pilltext:#555;--warn:#8a5a00;--sub:#333}
+  :root.dark{--bg:#15171c;--card:#1e2128;--text:#e4e6ea;--muted:#9aa0aa;--line:#353a45;--accent:#7b93f7;--ok:#69db7c;--okbg:#17301f;
+    --bad:#ff8787;--badbg:#3a1d21;--accentbg:#262d48;--okline:#2b6a3a;--badline:#7a2e35;--pill:#2a2e37;--pilltext:#c8ccd3;--warn:#f0c14b;--sub:#cfd3da;color-scheme:dark}
+  :root.dark button.primary{background:#4c6ef5;border-color:#4c6ef5}
+  :root.dark #storeWarn{background:#3a3212!important;border-color:#6b5d1e!important;color:#f0c14b!important}
+  nav button.active{background:var(--accentbg)}
+  .feedback.ok{border-color:var(--okline)} .feedback.bad{border-color:var(--badline)}
+  .feedback .rule{color:var(--sub)} .feedback .note{color:var(--warn)}
+  .feedback .ex{border-top-color:var(--line)} .feedback .ex .en{color:var(--muted)}
+  .added,.fixnote{color:var(--warn)}
+  .pill{background:var(--pill);color:var(--pilltext)} .bar{background:var(--pill)}
+  #answer,#listSearch{background-color:var(--card);color:var(--text)}
+  button.btn:not(.primary){background-color:var(--card);color:var(--text)}
+  .toggles{display:flex;gap:14px;flex-wrap:wrap}
+  .modebar{display:flex;gap:8px;justify-content:center;margin:-4px 0 14px;flex-wrap:wrap}
+  button.btn.small{font-size:12px;padding:5px 12px}
+  button.btn.on{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+  .modeinfo{text-align:center;font-size:12px;color:var(--accent);margin:-6px 0 14px}
+  .modeinfo.warn{color:var(--warn)}
+  .speak{background:none;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:13px;padding:1px 7px;color:var(--text);vertical-align:middle;font-family:inherit;line-height:1.5}
+  .speak:hover{border-color:var(--accent)}
+  #summary h2{text-align:center;font-size:20px;margin:0 0 14px}
+  #summary .totals{justify-content:center;text-align:center}
+
+  /* ---- support & feedback footer ---- */
+  .sitefoot{max-width:760px;margin:8px auto 40px;padding:18px 16px 0;border-top:1px solid var(--line);
+    display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+  .sitefoot p{margin:0;line-height:1.6;max-width:46ch}
+  .sitefoot .links{display:flex;gap:8px;flex-wrap:wrap}
+  .sitefoot a{display:inline-block;padding:7px 14px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);text-decoration:none;font-size:13px}
+  .sitefoot a:hover{border-color:var(--accent);color:var(--accent)}
+  .sitefoot a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sitefoot a.donate{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+  @media (max-width:520px){.sitefoot{justify-content:center;text-align:center}}
+  .verb{white-space:nowrap}  /* keep the quiz word on one line; script shrinks it to fit */
+  @media (max-width:420px){main{padding:0 10px}.card{padding:22px 14px}}
+
+  /* ---- counters quiz ---- */
+  .qpic{text-align:center;margin:6px 0 2px;line-height:1.25}
+  .pic{display:inline-block;font-size:34px;letter-spacing:2px;max-width:330px;word-break:break-all}
+  .pic.one{font-size:56px}
+  .qlabel{text-align:center;font-size:20px;margin:6px 0 4px}
+  .qlabel b{font-size:26px;color:var(--accent)}
+  .qlabel .en{font-size:14px;color:var(--muted)}
+  .qhint{text-align:center;font-size:14px;color:var(--text);margin:4px 0 16px}
+  .qhint b{font-size:20px;color:var(--accent);margin:0 4px}
+  .qhint .cw{color:var(--muted);font-size:13px}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .choice{display:flex;align-items:center;gap:10px;padding:12px 14px;font-size:22px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;text-align:left}
+  .choice:hover:not(:disabled){border-color:var(--accent)}
+  .choice .k{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 6px;flex:none}
+  .choice .rw{align-items:flex-start}
+  .choice.right{border-color:var(--ok);background:var(--okbg)}
+  .choice.wrong{border-color:var(--bad);background:var(--badbg)}
+  .choice:disabled{cursor:default}
+  .feedback .also{font-size:13px;color:var(--muted);margin:2px 0 8px}
+  /* learn tab */
+  .intro{font-size:14.5px;line-height:1.6}
+  .intro p{margin:0 0 10px}
+  .intro ul{margin:0 0 10px;padding-left:20px}
+  .intro li{margin:4px 0}
+  .legend{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .lcard{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0 14px}
+  .lhead{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+  .ck{font-size:30px;width:52px;height:52px;flex:none;display:grid;place-items:center;border-radius:12px;background:var(--accentbg);color:var(--accent);font-weight:600}
+  .cwhat{font-size:14px;font-weight:600}
+  .cex{font-size:13px;color:var(--muted);margin-top:3px}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .grid.one{grid-template-columns:repeat(2,1fr);margin-top:6px}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;min-width:0}
+  .cell:hover{border-color:var(--accent)}
+  .cell .num{font-size:12px;color:var(--muted)}
+  .cell .rd{font-size:15px;white-space:nowrap}
+  .cell .alt{font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .cell .rr{display:none;font-size:10.5px;color:var(--accent)}
+  body.roma .cell .rr{display:block}
+  .cell.irr{background:var(--accentbg);border-color:var(--accent)}
+  .cell.irr .rd{color:var(--accent);font-weight:600}
+  .cell.mini{display:inline-block;width:16px;height:12px;padding:0;cursor:default}
+  .lrule{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
+  @media (max-width:420px){ .lcard{padding:12px 8px} .cell{padding:6px 0} .cell .rd{font-size:11.5px;letter-spacing:-.02em} .cell .alt{font-size:9.5px} .grid{gap:3px} .pic{font-size:28px} .choice{font-size:19px;padding:10px} }
+  @media (max-width:360px){ .grid{grid-template-columns:repeat(4,1fr)} .grid.one{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body>
+<header>
+  <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>助数詞 Counters Quiz</h1>
+  <nav>
+    <button data-tab="quiz" class="active">Quiz</button>
+    <button data-tab="learn">Learn</button>
+    <button data-tab="filters">Filters</button>
+    <button data-tab="stats">Stats</button>
+  </nav>
+  <div class="toggles">
+    <label class="toggle"><input type="checkbox" id="furiToggle" checked> Furigana</label>
+    <label class="toggle" title="Show romaji above Japanese words"><input type="checkbox" id="romaToggle"> Romaji</label>
+    <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
+    <label class="toggle" title="Read the answer aloud as soon as you submit"><input type="checkbox" id="autoToggle"> Auto-play audio</label>
+  </div>
+</header>
+<main>
+  <section id="tab-quiz" class="card">
+    <div id="storeWarn" class="hidden" style="font-size:12px;color:var(--warn);background:var(--pill);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:14px;text-align:center">This viewer blocks saving, so lifetime stats won't persist.</div>
+    <div class="scorebar"><span>Session: <b id="sScore">0 / 0</b></span><span>Streak: <b id="sStreak">0</b></span></div>
+    <div class="modebar"><button class="btn small" id="mcBtn" title="Pick from 4 answers instead of typing">☰ Multiple choice</button></div>
+    <div id="quizBody">
+      <div class="qpic" id="qPic"></div>
+      <div class="qlabel" id="qLabel"></div>
+      <div class="qhint" id="qHint"></div>
+      <div id="typeArea">
+        <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type in romaji… (e.g. sanbon)">
+        <div class="buttons">
+          <button class="btn primary" id="submitBtn">Check</button>
+          <button class="btn" id="revealBtn">Show answer</button>
+        </div>
+        <div class="hint">Enter = check / next · Type <b>nn</b> for ん · double consonant = っ (e.g. <i>ippon</i> → いっぽん)</div>
+      </div>
+      <div class="choices hidden" id="choices"></div>
+      <div id="feedback"></div>
+    </div>
+    <div id="emptyPool" class="hidden" style="text-align:center;color:var(--muted)">No counters selected. Pick at least one on the Filters tab.</div>
+  </section>
+  <section id="tab-learn" class="card hidden"><h2>How counters work</h2><div id="learnBody"></div></section>
+  <section id="tab-filters" class="card hidden"><h2>Filters</h2><div id="filterBody"></div><div class="poolinfo" id="poolInfo"></div></section>
+  <section id="tab-stats" class="card hidden"><h2>Stats</h2><div id="statsBody"></div>
+    <h3>Sync between devices</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Export a file here, open the quiz on another computer or phone, and import it there. Results are combined without double-counting.</div>
+    <div class="buttons" style="justify-content:flex-start;margin-top:0">
+      <button class="btn" id="exportBtn">Export progress</button>
+      <button class="btn" id="importBtn">Import progress</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+    </div>
+    <div id="syncMsg" style="font-size:13px;margin-top:8px"></div>
+    <div id="syncInfo" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+    <button class="btn reset" id="resetBtn">Reset lifetime stats</button></section>
+</main>
+<footer class="sitefoot">
+  <p>Built by one learner, for others. Found a wrong answer or have an idea? I'd love to hear it.</p>
+  <div class="links">
+    <a href="mailto:support.kohikori@gmail.com?subject=Feedback:%20Counters%20Quiz">Send feedback</a>
+    <a class="donate" href="https://paypal.me/kohikori" target="_blank" rel="noopener">☕ Donate via PayPal</a>
+  </div>
+</footer>
+<script>
+/* ================= COUNTER DATA =================
+   r: readings for 1–10. Each entry lists every accepted reading; the first is the one shown.
+   nan: "how many?" form.  base: plain reading of the counter (used to spot sound changes). */
+const COUNTERS = [
+  {id:'tsu', k:'つ', base:'つ', grp:'core', what:'General things: anything without a special counter (and a safe fallback)',
+   r:[['ひとつ'],['ふたつ'],['みっつ'],['よっつ'],['いつつ'],['むっつ'],['ななつ'],['やっつ'],['ここのつ'],['とお']], nan:['いくつ'],
+   rule:'つ uses the native Japanese numbers (ひと, ふた, み, よ…), not いち, に, さん. 10 is just とお, with no つ. It only goes up to 10; after that, use plain numbers.',
+   native:true},
+  {id:'nin', k:'人', base:'にん', grp:'core', what:'People',
+   r:[['ひとり'],['ふたり'],['さんにん'],['よにん'],['ごにん'],['ろくにん'],['しちにん','ななにん'],['はちにん'],['きゅうにん','くにん'],['じゅうにん']], nan:['なんにん'],
+   rule:'1 and 2 are special: ひとり, ふたり. 4 is よにん (not よんにん). From 3 on it\'s number + にん.'},
+  {id:'hon', k:'本', base:'ほん', grp:'core', what:'Long, thin things: pens, bottles, umbrellas, trees, bananas',
+   r:[['いっぽん'],['にほん'],['さんぼん'],['よんほん'],['ごほん'],['ろっぽん'],['ななほん','しちほん'],['はっぽん','はちほん'],['きゅうほん'],['じゅっぽん','じっぽん']], nan:['なんぼん'],
+   rule:'ほん changes to ぽん after 1, 6, 8 and 10 (いっぽん, ろっぽん, はっぽん, じゅっぽん) and to ぼん after 3 (さんぼん). 何本 is なんぼん.'},
+  {id:'mai', k:'枚', base:'まい', grp:'core', what:'Flat, thin things: paper, shirts, plates, tickets, photos',
+   r:[['いちまい'],['にまい'],['さんまい'],['よんまい'],['ごまい'],['ろくまい'],['ななまい','しちまい'],['はちまい'],['きゅうまい'],['じゅうまい']], nan:['なんまい'],
+   rule:'枚 is regular: number + まい. Just remember 4 is よん and 7 is usually なな.'},
+  {id:'hiki', k:'匹', base:'ひき', grp:'core', what:'Small animals: cats, dogs, fish, insects',
+   r:[['いっぴき'],['にひき'],['さんびき'],['よんひき'],['ごひき'],['ろっぴき'],['ななひき','しちひき'],['はっぴき','はちひき'],['きゅうひき'],['じゅっぴき','じっぴき']], nan:['なんびき'],
+   rule:'Same pattern as 本: ひき → ぴき after 1, 6, 8, 10 (いっぴき…) and びき after 3 (さんびき). 何匹 is なんびき.'},
+  {id:'ko', k:'個', base:'こ', grp:'core', what:'Small, compact objects: eggs, apples, balls, candies, boxes',
+   r:[['いっこ'],['にこ'],['さんこ'],['よんこ'],['ごこ'],['ろっこ'],['ななこ'],['はっこ','はちこ'],['きゅうこ'],['じゅっこ','じっこ']], nan:['なんこ'],
+   rule:'1, 6, 8 and 10 shrink to いっ, ろっ, はっ, じゅっ before こ (いっこ, ろっこ, はっこ, じゅっこ). The rest are regular.'},
+  {id:'satsu', k:'冊', base:'さつ', grp:'more', what:'Books and other bound things: books, notebooks, magazines',
+   r:[['いっさつ'],['にさつ'],['さんさつ'],['よんさつ'],['ごさつ'],['ろくさつ'],['ななさつ'],['はっさつ','はちさつ'],['きゅうさつ'],['じゅっさつ','じっさつ']], nan:['なんさつ'],
+   rule:'1, 8 and 10 become いっ, はっ, じゅっ (いっさつ, はっさつ, じゅっさつ). 6 stays ろくさつ.'},
+  {id:'dai', k:'台', base:'だい', grp:'more', what:'Machines and vehicles: cars, bikes, computers, TVs',
+   r:[['いちだい'],['にだい'],['さんだい'],['よんだい'],['ごだい'],['ろくだい'],['ななだい','しちだい'],['はちだい'],['きゅうだい'],['じゅうだい']], nan:['なんだい'],
+   rule:'台 is regular: number + だい.'},
+  {id:'hai', k:'杯', base:'はい', grp:'more', what:'Cups, glasses and bowls (of drinks or food)',
+   r:[['いっぱい'],['にはい'],['さんばい'],['よんはい'],['ごはい'],['ろっぱい'],['ななはい'],['はっぱい','はちはい'],['きゅうはい'],['じゅっぱい','じっぱい']], nan:['なんばい'],
+   rule:'Same pattern as 本: はい → ぱい after 1, 6, 8, 10 and ばい after 3 (さんばい). 何杯 is なんばい.'},
+  {id:'kai', k:'回', base:'かい', grp:'time', what:'Number of times (how often)',
+   r:[['いっかい'],['にかい'],['さんかい'],['よんかい'],['ごかい'],['ろっかい'],['ななかい'],['はっかい','はちかい'],['きゅうかい'],['じゅっかい','じっかい']], nan:['なんかい'],
+   rule:'1, 6, 8 and 10 shrink to いっ, ろっ, はっ, じゅっ before かい. The rest are regular.'},
+  {id:'kaifl', k:'階', base:'かい', grp:'time', what:'Floors of a building (3階 = 3rd floor)',
+   r:[['いっかい'],['にかい'],['さんがい','さんかい'],['よんかい'],['ごかい'],['ろっかい'],['ななかい'],['はっかい','はちかい'],['きゅうかい'],['じゅっかい','じっかい']], nan:['なんがい','なんかい'],
+   rule:'Like 回 (いっかい, ろっかい…), but 3 is usually さんがい and "which floor?" is なんがい.'},
+  {id:'sai', k:'歳', base:'さい', grp:'time', what:'Age: years old (also written 才)',
+   r:[['いっさい'],['にさい'],['さんさい'],['よんさい'],['ごさい'],['ろくさい'],['ななさい'],['はっさい'],['きゅうさい'],['じゅっさい','じっさい']], nan:['なんさい'],
+   rule:'1, 8 and 10 become いっさい, はっさい, じゅっさい. 6 stays ろくさい. (Bonus: 20 years old is はたち.)'},
+  {id:'ji', k:'時', base:'じ', grp:'time', what:'Time: o\'clock',
+   r:[['いちじ'],['にじ'],['さんじ'],['よじ'],['ごじ'],['ろくじ'],['しちじ','ななじ'],['はちじ'],['くじ'],['じゅうじ']], nan:['なんじ'],
+   rule:'Three to remember: 4 o\'clock is よじ (not よんじ), 7 is しちじ, 9 is くじ (not きゅうじ).'},
+  {id:'fun', k:'分', base:'ふん', grp:'time', what:'Minutes',
+   r:[['いっぷん'],['にふん'],['さんぷん'],['よんぷん'],['ごふん'],['ろっぷん'],['ななふん'],['はっぷん','はちふん'],['きゅうふん'],['じゅっぷん','じっぷん']], nan:['なんぷん'],
+   rule:'ふん → ぷん after 1, 3, 4, 6, 8 and 10 (いっぷん, さんぷん, よんぷん, ろっぷん, はっぷん, じゅっぷん). 2, 5, 7, 9 keep ふん.'},
+];
+const GROUPS = {core:'Core counters', more:'More things', time:'Times, floors, age, clock'};
+
+/* Things to count. w: word (furigana in brackets), e: English, c: counters that are correct for it.
+   q: how the question reads for counters that aren't "N things". */
+const ITEMS = [
+  {em:'🧑', w:'人[ひと]', e:'people', c:['nin']},
+  {em:'🧒', w:'子[こ]ども', e:'children', c:['nin']},
+  {em:'🧑‍🎓', w:'学生[がくせい]', e:'students', c:['nin']},
+  {em:'✏️', w:'鉛筆[えんぴつ]', e:'pencils', c:['hon']},
+  {em:'☂️', w:'傘[かさ]', e:'umbrellas', c:['hon']},
+  {em:'🍌', w:'バナナ', e:'bananas', c:['hon']},
+  {em:'🌳', w:'木[き]', e:'trees', c:['hon']},
+  {em:'🍾', w:'ボトル', e:'bottles', c:['hon']},
+  {em:'📄', w:'紙[かみ]', e:'sheets of paper', c:['mai']},
+  {em:'👕', w:'シャツ', e:'shirts', c:['mai']},
+  {em:'🍽️', w:'皿[さら]', e:'plates', c:['mai']},
+  {em:'🎫', w:'チケット', e:'tickets', c:['mai']},
+  {em:'🖼️', w:'写真[しゃしん]', e:'photos', c:['mai']},
+  {em:'🐈', w:'猫[ねこ]', e:'cats', c:['hiki']},
+  {em:'🐕', w:'犬[いぬ]', e:'dogs', c:['hiki']},
+  {em:'🐟', w:'魚[さかな]', e:'fish', c:['hiki']},
+  {em:'🐁', w:'ねずみ', e:'mice', c:['hiki']},
+  {em:'🥚', w:'卵[たまご]', e:'eggs', c:['ko','tsu']},
+  {em:'⚽', w:'ボール', e:'balls', c:['ko','tsu']},
+  {em:'🍬', w:'あめ', e:'candies', c:['ko','tsu']},
+  {em:'📦', w:'箱[はこ]', e:'boxes', c:['ko','tsu']},
+  {em:'🍎', w:'りんご', e:'apples', c:['tsu','ko']},
+  {em:'🍊', w:'みかん', e:'mandarins', c:['tsu','ko']},
+  {em:'🍰', w:'ケーキ', e:'pieces of cake', c:['tsu','ko']},
+  {em:'👜', w:'かばん', e:'bags', c:['tsu','ko']},
+  {em:'❓', w:'質問[しつもん]', e:'questions', c:['tsu']},
+  {em:'📚', w:'本[ほん]', e:'books', c:['satsu']},
+  {em:'📓', w:'ノート', e:'notebooks', c:['satsu']},
+  {em:'📰', w:'雑誌[ざっし]', e:'magazines', c:['satsu']},
+  {em:'🚗', w:'車[くるま]', e:'cars', c:['dai']},
+  {em:'🚲', w:'自転車[じてんしゃ]', e:'bicycles', c:['dai']},
+  {em:'💻', w:'パソコン', e:'computers', c:['dai']},
+  {em:'📺', w:'テレビ', e:'TVs', c:['dai']},
+  {em:'☕', w:'コーヒー', e:'cups of coffee', c:['hai']},
+  {em:'🥛', w:'水[みず]', e:'glasses of water', c:['hai']},
+  {em:'🍺', w:'ビール', e:'glasses of beer', c:['hai']},
+  {em:'🍚', w:'ご飯[はん]', e:'bowls of rice', c:['hai']},
+  {em:'🔁', w:'', e:'times', c:['kai'], q:'{n} times', qn:'How many times?'},
+  {em:'🏢', w:'', e:'floor', c:['kaifl'], q:'Floor {n}', qn:'Which floor?'},
+  {em:'🎂', w:'', e:'years old', c:['sai'], q:'{n} years old', qn:'How old?'},
+  {em:'🕒', w:'', e:'o\'clock', c:['ji'], q:'{n} o\'clock', qn:'What time?'},
+  {em:'⏱️', w:'', e:'minutes', c:['fun'], q:'{n} minutes', qn:'How many minutes?'},
+];
+
+/* ================= ROMAJI DISPLAY ================= */
+// Hepburn-style romaji, spelled the way you'd type it (long vowels written out: べんきょう → benkyou)
+const toRomaji = (() => {
+  const B={あ:'a',い:'i',う:'u',え:'e',お:'o',か:'ka',き:'ki',く:'ku',け:'ke',こ:'ko',が:'ga',ぎ:'gi',ぐ:'gu',げ:'ge',ご:'go',
+    さ:'sa',し:'shi',す:'su',せ:'se',そ:'so',ざ:'za',じ:'ji',ず:'zu',ぜ:'ze',ぞ:'zo',た:'ta',ち:'chi',つ:'tsu',て:'te',と:'to',
+    だ:'da',ぢ:'ji',づ:'zu',で:'de',ど:'do',な:'na',に:'ni',ぬ:'nu',ね:'ne',の:'no',は:'ha',ひ:'hi',ふ:'fu',へ:'he',ほ:'ho',
+    ば:'ba',び:'bi',ぶ:'bu',べ:'be',ぼ:'bo',ぱ:'pa',ぴ:'pi',ぷ:'pu',ぺ:'pe',ぽ:'po',ま:'ma',み:'mi',む:'mu',め:'me',も:'mo',
+    や:'ya',ゆ:'yu',よ:'yo',ら:'ra',り:'ri',る:'ru',れ:'re',ろ:'ro',わ:'wa',ゐ:'i',ゑ:'e',を:'o',ん:'n',ゔ:'vu',
+    ぁ:'a',ぃ:'i',ぅ:'u',ぇ:'e',ぉ:'o'};
+  const SMALL={ゃ:'a',ゅ:'u',ょ:'o'};
+  return kana => {
+    const s=[...kana.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60))];
+    let out='';
+    for (let i=0;i<s.length;i++){
+      const c=s[i], n=s[i+1];
+      if (c==='っ'){ const nx=toRomaji(s.slice(i+1).join('')); out+= /^[bcdfghjkmprstvwz]/.test(nx) ? (nx.startsWith('ch')?'t':nx[0]) : ''; continue; }
+      if (c==='ー'){ const m=out.match(/[aiueo]$/); out+= m?m[0]:'-'; continue; }
+      if (c==='ん'){ out+= n && /[あいうえおやゆよ]/.test(n) ? "n'" : 'n'; continue; }
+      let r=B[c];
+      if (r===undefined){ out+=c; continue; }
+      if (n && SMALL[n]){                                  // きゃ → kya, しゃ → sha, じゃ → ja
+        r = /^(sh|ch|j)/.test(r) ? r.slice(0,-1)+SMALL[n] : r.slice(0,-1)+'y'+SMALL[n]; i++;
+      } else if (n && /[ぁぃぅぇぉ]/.test(n) && r.length>1){ // ふぁ → fa, てぃ → ti
+        r = r.slice(0,-1)+B[n]; i++;
+      }
+      out+=r;
+    }
+    return out;
+  };
+})();
+// A word with romaji stacked above it (shown only while the Romaji toggle is on)
+const wordHTML = b => `<span class="rw"><span class="rr">${toRomaji(toReading(b))}</span><span class="rj">${toRuby(b)}</span></span>`;
+
+
+/* ================= ROMAJI → KANA ================= */
+const ROMA = (() => {
+  const t = {a:'あ',i:'い',u:'う',e:'え',o:'お'};
+  const rows = {k:'かきくけこ',g:'がぎぐげご',s:'さしすせそ',z:'ざじずぜぞ',t:'たちつてと',d:'だぢづでど',
+    n:'なにぬねの',h:'はひふへほ',b:'ばびぶべぼ',p:'ぱぴぷぺぽ',m:'まみむめも',r:'らりるれろ'};
+  const V='aiueo';
+  for (const c in rows) for (let i=0;i<5;i++) t[c+V[i]] = rows[c][i];
+  Object.assign(t,{ya:'や',yu:'ゆ',yo:'よ',wa:'わ',wo:'を',wi:'うぃ',we:'うぇ',
+    shi:'し',chi:'ち',tsu:'つ',fu:'ふ',ji:'じ',
+    fa:'ふぁ',fi:'ふぃ',fe:'ふぇ',fo:'ふぉ',
+    xa:'ぁ',xi:'ぃ',xu:'ぅ',xe:'ぇ',xo:'ぉ',la:'ぁ',li:'ぃ',lu:'ぅ',le:'ぇ',lo:'ぉ',
+    xya:'ゃ',xyu:'ゅ',xyo:'ょ',lya:'ゃ',lyu:'ゅ',lyo:'ょ',xtu:'っ',ltu:'っ',xtsu:'っ',ltsu:'っ',
+    'nn':'ん',"n'":'ん','-':'ー'});
+  const small={a:'ゃ',u:'ゅ',o:'ょ'};
+  for (const c of 'kgnhbpmr') for (const v in small) t[c+'y'+v]=rows[c][1]+small[v];
+  for (const v in small){
+    t['sh'+v]='し'+small[v]; t['sy'+v]='し'+small[v]; t['zy'+v]='じ'+small[v]; t['jy'+v]='じ'+small[v];
+    t['j'+v]='じ'+small[v]; t['ch'+v]='ち'+small[v]; t['ty'+v]='ち'+small[v]; t['cy'+v]='ち'+small[v]; t['dy'+v]='ぢ'+small[v];
+  }
+  t.she='しぇ'; t.je='じぇ'; t.che='ちぇ'; t.ti='ち'; t.tu='つ'; t.si='し'; t.zi='じ'; t.hu='ふ';
+  t.di='ぢ'; t.du='づ'; t.ja='じゃ'; t.ju='じゅ'; t.jo='じょ';
+  return t;
+})();
+const ROMA_PREFIX = new Set();
+for (const k in ROMA) for (let i=1;i<=k.length;i++) ROMA_PREFIX.add(k.slice(0,i));
+
+function romajiToKana(str, final){
+  let out='', i=0;
+  const s=str.toLowerCase();
+  while (i<s.length){
+    const ch=s[i];
+    if (!/[a-z'\-]/.test(ch)){ out+=str[i]; i++; continue; }
+    if (ch==='n'){
+      const nx=s[i+1];
+      if (nx===undefined){ out+= final?'ん':'n'; i++; continue; }
+      if (nx==='n'){
+        const n2=s[i+2];
+        if (n2===undefined){ out+='ん'; i+=2; continue; }
+        if ('aiueoy'.includes(n2)){ out+='ん'; i+=1; continue; }
+        out+='ん'; i+=2; continue;
+      }
+      if (nx==="'"){ out+='ん'; i+=2; continue; }
+      if (!'aiueoy'.includes(nx)){ out+='ん'; i++; continue; }
+    }
+    // double consonant → っ
+    if (/[bcdfghjkmprstvwz]/.test(ch) && (s[i+1]===ch || (ch==='t' && s[i+1]==='c' && s[i+2]==='h'))){
+      out+='っ'; i++; continue;
+    }
+    let matched=false;
+    for (let len=4;len>=1;len--){
+      const sub=s.substr(i,len);
+      if (sub.length===len && ROMA[sub]){ out+=ROMA[sub]; i+=len; matched=true; break; }
+    }
+    if (matched) continue;
+    const rest=s.slice(i);
+    if (ROMA_PREFIX.has(rest)){ out+=str.slice(i); break; }  // still typing
+    out+=str[i]; i++;
+  }
+  return out;
+}
+
+
+/* ================= HELPERS ================= */
+const $ = id => document.getElementById(id);
+const KANJI_RE=/([一-鿿々]+)\[([^\]]+)\]/g;
+const toReading = b => b.replace(KANJI_RE, '$2');
+const toKanji   = b => b.replace(KANJI_RE, '$1');
+const toRuby    = b => b.replace(KANJI_RE, '<ruby>$1<rt>$2</rt></ruby>');
+const C_BY_ID = Object.fromEntries(COUNTERS.map(c=>[c.id,c]));
+const NUM = ['いち','に','さん','よん','ご','ろく','なな','はち','きゅう','じゅう'];
+const SMALL = {1:'いっ',6:'ろっ',8:'はっ',10:'じゅっ'};
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+
+// accepted readings for counter c and number n (n = 0 means "how many?")
+const accepted = (c,n) => n===0 ? c.nan : c.r[n-1];
+const written  = (c,n) => n===0 ? (c.id==='tsu' ? 'いくつ' : '何'+c.k) : n+c.k;
+// is this cell a sound change? (differs from plain number + counter)
+const irregular = (c,n) => !c.native && c.r[n-1][0] !== NUM[n-1]+c.base;
+
+/* ---- wrong-but-plausible options for multiple choice ---- */
+const SHIFT = {
+  'ほ':['ほ','ぼ','ぽ'],'ひ':['ひ','び','ぴ'],'は':['は','ば','ぱ'],'ふ':['ふ','ぶ','ぷ'],
+  'こ':['こ','ご'],'か':['か','が'],'さ':['さ','ざ'],'に':['に'],'ま':['ま'],'だ':['だ','た'],'じ':['じ'],'つ':['つ']
+};
+function distractors(c,n){
+  const ok=new Set(accepted(c,n)), out=new Set();
+  if (n===0){
+    const b=c.base, f=b[0], rest=b.slice(1);
+    (SHIFT[f]||[f]).forEach(x=>out.add('なん'+x+rest));
+    out.add('いくつ'); out.add('なんこ'); out.add('なん'+b);
+  } else if (c.native){
+    out.add(NUM[n-1]+'つ');
+    if (n>1) out.add(c.r[n-2][0]); if (n<10) out.add(c.r[n][0]);
+    out.add(n===10?'とおつ':c.r[n-1][0].replace(/っつ$/,'つ'));
+  } else {
+    const b=c.base, f=b[0], rest=b.slice(1);
+    const heads=[NUM[n-1]]; if (SMALL[n]) heads.push(SMALL[n]);
+    if (n===4) heads.push('よ','し'); if (n===7) heads.push('しち'); if (n===9) heads.push('く');
+    for (const h of heads) for (const x of (SHIFT[f]||[f])) out.add(h+x+rest);
+    if (c.id==='nin'){ out.add('いちにん'); out.add('ににん'); out.add('よんにん'); }
+    if (n>1) out.add(c.r[n-2][0]); if (n<10) out.add(c.r[n][0]);
+  }
+  for (const x of ok) out.delete(x);
+  out.delete('');
+  const list=shuffle([...out]);
+  // regular counters have few look-alikes: top up with the same number on other counters (a "which counter?" mix-up)
+  if (list.length<3) for (const o of shuffle(COUNTERS.filter(o=>o!==c && o.grp===c.grp))){
+    const x=accepted(o,n)[0]; if (!ok.has(x) && !list.includes(x)) list.push(x);
+  }
+  return list;
+}
+
+/* ================= STORAGE / STATE ================= */
+const P='jcnt_';
+const store = (() => {
+  const mem = {}; let ok=false;
+  try { const k='__jcnt_test'; localStorage.setItem(k,'1'); localStorage.removeItem(k); ok=true; } catch(e){}
+  return { persistent: ok,
+    get(k){ try { return ok ? localStorage.getItem(k) : (k in mem ? mem[k] : null); } catch(e){ return null; } },
+    set(k,v){ try { if (ok) localStorage.setItem(k,v); else mem[k]=v; } catch(e){ mem[k]=v; } } };
+})();
+const loadJSON = k => { try { return JSON.parse(store.get(k)||'null'); } catch(e){ return null; } };
+const LS={stats:P+'stats_v1', filters:P+'filters_v1', srs:P+'srs_v1', srsT:P+'srs_time_v1', peers:P+'peers_v1', device:P+'device_v1',
+          furi:P+'furi_v1', roma:P+'roma_v1', dark:P+'dark_v1', auto:P+'autoplay_v1', mc:P+'mc_v1'};
+const blankStats = () => ({c:0,t:0,counters:{},nums:{},pairs:{}});
+let lifetime = loadJSON(LS.stats) || blankStats();
+let session = blankStats(), streak = 0;
+let filters = Object.assign({counters:COUNTERS.filter(c=>c.grp==='core').map(c=>c.id), max:10, hint:true, nan:false, srs:true}, loadJSON(LS.filters)||{});
+const saveFilters = () => store.set(LS.filters, JSON.stringify(filters));
+let srs = loadJSON(LS.srs)||{}, srsT = loadJSON(LS.srsT)||{}, peers = loadJSON(LS.peers)||{};
+let deviceId = store.get(LS.device);
+if (!deviceId){ deviceId=Math.random().toString(36).slice(2,10); store.set(LS.device, deviceId); }
+function addStats(a,b){
+  const out={c:a.c+b.c,t:a.t+b.t,counters:{},nums:{},pairs:{}};
+  for (const k of ['counters','nums','pairs']) for (const src of [a[k],b[k]]) for (const key in (src||{})){
+    const o=out[k][key]||(out[k][key]={c:0,t:0}); o.c+=src[key].c; o.t+=src[key].t; }
+  return out;
+}
+let combined;
+const recombine = () => { combined = Object.values(peers).reduce((acc,p)=>addStats(acc,p.stats), addStats(blankStats(), lifetime)); };
+recombine();
+const pairKey = (c,n) => c.id+'|'+n;
+function record(st,c,n,ok){
+  const bump=(o,k)=>{ o[k]=o[k]||{c:0,t:0}; o[k].t++; if(ok) o[k].c++; };
+  st.t++; if(ok) st.c++; bump(st.counters,c.id); bump(st.nums,n||'?'); bump(st.pairs,pairKey(c,n));
+}
+const SRS_WEIGHT=[5,2,1,0.5,0.25];
+function weight(c,n){
+  if (!filters.srs) return 1;
+  const l=srs[pairKey(c,n)];
+  let w = l===undefined ? 1 : SRS_WEIGHT[Math.min(l,4)];
+  if (irregular(c,n||1) && n) w*=1.3;            // sound changes come up a bit more
+  return w;
+}
+function updateSrs(c,n,ok){
+  const k=pairKey(c,n), prev=srs[k];
+  srs[k] = !ok ? 0 : prev===undefined ? 2 : Math.min(prev+1,4); srsT[k]=Date.now();
+  store.set(LS.srs, JSON.stringify(srs)); store.set(LS.srsT, JSON.stringify(srsT));
+}
+
+/* ================= QUIZ ================= */
+let current=null, answered=false, recent=[];
+const mcOn = () => $('mcBtn').classList.contains('on');
+function buildPool(){
+  const pool=[];
+  for (const id of filters.counters){
+    const c=C_BY_ID[id]; if (!c) continue;
+    for (let n=1;n<=filters.max;n++) pool.push([c,n]);
+    if (filters.nan) pool.push([c,0]);
+  }
+  return pool;
+}
+function itemFor(c){
+  // prefer items whose main counter is this one; an apple asked under 個 still accepts つ
+  const own=ITEMS.filter(it=>it.c[0]===c.id);
+  return pick(own.length ? own : ITEMS.filter(it=>it.c.includes(c.id)));
+}
+function nextQuestion(){
+  TTS.stop();
+  const pool=buildPool();
+  $('quizBody').classList.toggle('hidden', !pool.length); $('emptyPool').classList.toggle('hidden', !!pool.length);
+  if (!pool.length) return;
+  let cand=pool.filter(([c,n])=>!recent.includes(pairKey(c,n)));
+  if (!cand.length) cand=pool;
+  const ws=cand.map(([c,n])=>weight(c,n));
+  let r=Math.random()*ws.reduce((a,b)=>a+b,0), i=0;
+  while (i<cand.length-1 && (r-=ws[i])>0) i++;
+  const [c,n]=cand[i];
+  recent=[pairKey(c,n),...recent].slice(0,4);
+  const it=itemFor(c);
+  const ok=new Set(); for (const id of it.c) accepted(C_BY_ID[id],n).forEach(x=>ok.add(x));
+  current={c,n,it,ok:[...ok]};
+  answered=false;
+  renderQuestion();
+  $('feedback').innerHTML='';
+  $('submitBtn').textContent='Check';
+  const inp=$('answer'); inp.value=''; inp.className=''; inp.readOnly=false;
+  if (mcOn()) renderChoices(); else inp.focus();
+}
+function renderQuestion(){
+  const {c,n,it}=current;
+  let pic, label;
+  if (it.q){                                   // times, floors, ages, clock, minutes
+    pic = `<span class="pic one">${it.em}</span>`;
+    label = n ? it.q.replace('{n}', `<b>${n}</b>`) : it.qn;
+  } else {
+    pic = n ? `<span class="pic">${Array(n).fill(it.em).join('')}</span>` : `<span class="pic one">${it.em}❔</span>`;
+    const word = `<span class="rw"><span class="rr">${toRomaji(toReading(it.w))}</span><span class="rj">${toRuby(it.w)}</span></span>`;
+    label = n ? `<b>${n}</b> × ${word} <span class="en">${it.e}</span>` : `How many ${word}? <span class="en">(${it.e})</span>`;
+  }
+  $('qPic').innerHTML=pic;
+  $('qLabel').innerHTML=label;
+  const hint=$('qHint');
+  hint.innerHTML = `Counter: <b>${c.k}</b> <span class="cw">${c.what}</span>`;
+  hint.classList.toggle('hidden', !filters.hint);
+}
+function renderChoices(){
+  const {c,n}=current;
+  const right=accepted(c,n)[0];
+  const opts=shuffle([right, ...distractors(c,n).filter(x=>!current.ok.includes(x)).slice(0,3)]);
+  $('choices').innerHTML=opts.map((o,i)=>`<button type="button" class="choice" data-v="${o}"><span class="k">${i+1}</span><span class="rw"><span class="rr">${toRomaji(o)}</span><span class="rj">${o}</span></span></button>`).join('');
+}
+const toHira = s => s.replace(/[ァ-ヶ]/g, ch=>String.fromCharCode(ch.charCodeAt(0)-0x60));
+function check(reveal, chosen){
+  if (!current) return;
+  if (answered){ nextQuestion(); return; }
+  const inp=$('answer');
+  let given = chosen!==undefined ? chosen : romajiToKana(inp.value.trim(), true);
+  if (!given && !reveal) return;
+  if (chosen===undefined) inp.value=given;
+  const {c,n,it,ok:okList}=current;
+  const g=toHira(given).replace(/\s/g,'');
+  const zen=s=>s.replace(/[０-９]/g,d=>String.fromCharCode(d.charCodeAt(0)-0xFEE0));
+  const ok = !reveal && (okList.includes(g) || it.c.some(id=>zen(given)===written(C_BY_ID[id],n)));
+  answered=true;
+  record(session,c,n,ok); record(lifetime,c,n,ok); updateSrs(c,n,ok);
+  store.set(LS.stats, JSON.stringify(lifetime)); recombine();
+  streak = ok ? streak+1 : 0;
+  inp.className = ok?'ok':'bad'; inp.readOnly=true;
+  document.querySelectorAll('.choice').forEach(b=>{
+    b.disabled=true;
+    if (okList.includes(b.dataset.v)) b.classList.add('right');
+    else if (b.dataset.v===given) b.classList.add('wrong');
+  });
+  $('submitBtn').textContent='Next →';
+  $('qHint').classList.remove('hidden');
+  const main=accepted(c,n)[0], say=main;
+  const others=it.c.filter(id=>id!==c.id).map(id=>C_BY_ID[id]);
+  let html=`<div class="feedback ${ok?'ok':'bad'}">
+    <div class="head">${ok?'Correct!':(reveal?'Answer':'Not quite')}${!ok&&!reveal?` — you wrote ${escH(given)}`:''}</div>
+    <div class="correct"><span class="rw"><span class="rr">${toRomaji(main)}</span><span class="rj">${written(c,n)}</span></span> <span class="pill">${main}</span> ${speakBtn(say)}</div>`;
+  const alts=[...accepted(c,n).slice(1), ...others.map(o=>accepted(o,n)[0]+' ('+written(o,n)+')')];
+  if (alts.length) html+=`<div class="also">Also correct: ${alts.join(' · ')}</div>`;
+  if (!ok || (n && irregular(c,n))) html+=`<div class="rule"><b>${c.k}</b>: ${c.rule}</div>`;
+  if (n===0 && c.id!=='tsu') html+=`<div class="rule" style="color:var(--muted);font-size:13px">Asking "how many?": 何 (なん) + the counter, with the same sound change as 3 (さん).</div>`;
+  html+=`<div class="reportline"><a href="${reportHref(c,n,it,reveal?'':given)}">⚑ Report a mistake in this question</a></div></div>`;
+  $('feedback').innerHTML=html;
+  updateScore();
+  if (autoT.checked) TTS.say(say);
+}
+function updateScore(){ $('sScore').textContent=`${session.c} / ${session.t}`; $('sStreak').textContent=streak; }
+const REPORT_TO='support.kohikori@gmail.com';
+function reportHref(c,n,it,given){
+  const subj=`Mistake report: Counters Quiz – ${written(c,n)}`;
+  const body=['App: Counters Quiz', `Question: ${n||'how many?'} × ${toKanji(it.w)||it.e} (${it.e})`, `Counter: ${c.k}`,
+    `App's answer: ${written(c,n)} (${accepted(c,n).join(' / ')})`, `My answer: ${given||'(revealed)'}`, '', 'What looks wrong:', ''].join('\n');
+  return 'mailto:'+REPORT_TO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
+
+/* ================= LEARN ================= */
+function cellHTML(c,n){
+  const r=accepted(c,n), irr=n && irregular(c,n);
+  return `<button type="button" class="cell${irr?' irr':''}${n===0?' nan':''}" data-say="${r[0]}">
+    <span class="num">${written(c,n)}</span><span class="rd">${r[0]}</span>${r.length>1?`<span class="alt">${r.slice(1).join(', ')}</span>`:''}<span class="rr">${toRomaji(r[0])}</span></button>`;
+}
+function renderLearn(){
+  let html=`<div class="intro">
+    <p>Japanese counts things with a <b>number + counter</b>, and the counter depends on what you're counting: 3 pencils is <b>さんぼん</b> (3本), 3 sheets of paper is <b>さんまい</b> (3枚). Tap any cell to hear it.</p>
+    <p>Most of the tricky part is a few sound changes. Once you spot them, they repeat across counters:</p>
+    <ul>
+      <li><b>1, 6, 8, 10 often shrink</b> to いっ, ろっ, はっ, じゅっ: いっこ, ろっぽん, はっぴき, じゅっかい.</li>
+      <li><b>は-row counters (本, 匹, 杯, 分) harden</b> after those: ほん → <b>ぽ</b>ん, ひき → <b>ぴ</b>き.</li>
+      <li><b>3 (and 何) often softens</b> the next sound: さん<b>ぼ</b>ん, さん<b>び</b>き, なん<b>ば</b>い.</li>
+    </ul>
+    <p class="legend"><span class="cell irr mini"></span> = sound change to watch</p></div>`;
+  for (const g in GROUPS){
+    html+=`<h3>${GROUPS[g]}</h3>`;
+    for (const c of COUNTERS.filter(x=>x.grp===g)){
+      const items=ITEMS.filter(it=>it.c[0]===c.id && it.w).slice(0,4).map(it=>it.em+' '+toKanji(it.w)).join('  ');
+      html+=`<div class="lcard"><div class="lhead"><span class="ck">${c.k}</span><div><div class="cwhat">${c.what}</div>${items?`<div class="cex">${items}</div>`:''}</div></div>
+        <div class="grid">${[1,2,3,4,5,6,7,8,9,10].map(n=>cellHTML(c,n)).join('')}</div>
+        <div class="grid one">${cellHTML(c,0)}</div>
+        <div class="lrule">${c.rule}</div></div>`;
+    }
+  }
+  $('learnBody').innerHTML=html;
+}
+$('learnBody').addEventListener('click',e=>{ const b=e.target.closest('.cell'); if (b) TTS.say(b.dataset.say); });
+
+/* ================= FILTERS ================= */
+function renderFilters(){
+  let html=`<h3>Counters<span class="small-links"><a data-all="1">all</a><a data-core="1">core only</a></span></h3>`;
+  for (const g in GROUPS){
+    html+=`<div style="font-size:13px;font-weight:600;margin:10px 0 4px">${GROUPS[g]}</div><div class="checks">`;
+    for (const c of COUNTERS.filter(x=>x.grp===g))
+      html+=`<label><input type="checkbox" data-k="counters" value="${c.id}" ${filters.counters.includes(c.id)?'checked':''}> <b>${c.k}</b> <span style="color:var(--muted)">${c.what.split(':')[0]}</span></label>`;
+    html+='</div>';
+  }
+  html+=`<h3>Numbers</h3><div class="checks">
+    <label><input type="radio" name="max" value="5" ${filters.max===5?'checked':''}> 1–5 (easier)</label>
+    <label><input type="radio" name="max" value="10" ${filters.max===10?'checked':''}> 1–10</label></div>`;
+  html+=`<h3>Help</h3><div class="checks">
+    <label style="grid-column:1/-1"><input type="checkbox" id="fHint" ${filters.hint?'checked':''}> Show which counter to use <span style="color:var(--muted)">— turn off to practice choosing the counter yourself</span></label>
+    <label style="grid-column:1/-1"><input type="checkbox" id="fNan" ${filters.nan?'checked':''}> Include "how many?" questions <span style="color:var(--muted)">— 何本 (なんぼん), いくつ…</span></label>
+    <label style="grid-column:1/-1"><input type="checkbox" id="fSrs" ${filters.srs?'checked':''}> Focus on weak spots <span style="color:var(--muted)">— ones you miss come up more often</span></label></div>`;
+  $('filterBody').innerHTML=html;
+  $('poolInfo').textContent=`${buildPool().length} possible questions with current filters.`;
+}
+$('filterBody').addEventListener('change',e=>{
+  const t=e.target;
+  if (t.dataset.k==='counters') filters.counters=[...document.querySelectorAll('input[data-k="counters"]:checked')].map(x=>x.value);
+  else if (t.name==='max') filters.max=+t.value;
+  else if (t.id==='fHint') filters.hint=t.checked;
+  else if (t.id==='fNan') filters.nan=t.checked;
+  else if (t.id==='fSrs') filters.srs=t.checked;
+  saveFilters(); $('poolInfo').textContent=`${buildPool().length} possible questions with current filters.`;
+});
+$('filterBody').addEventListener('click',e=>{
+  if (e.target.dataset.all) filters.counters=COUNTERS.map(c=>c.id);
+  else if (e.target.dataset.core) filters.counters=COUNTERS.filter(c=>c.grp==='core').map(c=>c.id);
+  else return;
+  saveFilters(); renderFilters();
+});
+
+/* ================= STATS ================= */
+const pct = o => o&&o.t ? Math.round(100*o.c/o.t) : null;
+const bar = p => p===null ? '<span style="color:var(--muted)">—</span>'
+  : `<span class="bar"><i style="width:${p}%;background:${p>=80?'var(--ok)':p>=60?'#e8a300':'var(--bad)'}"></i></span> ${p}%`;
+const cell = o => o&&o.t ? `${o.c}/${o.t}` : '—';
+function renderStats(){
+  const L=combined;
+  renderSyncInfo();
+  let html=`<div class="totals"><div>Session<b>${session.c} / ${session.t}</b>${pct(session)!==null?pct(session)+'%':''}</div>
+    <div>Lifetime<b>${L.c} / ${L.t}</b>${pct(L)!==null?pct(L)+'%':''}</div></div>`;
+  html+=`<h3>By counter (weakest first)</h3><table><tr><th>Counter</th><th class="num">Session</th><th class="num">Lifetime</th><th>Accuracy</th></tr>`;
+  const sorted=[...COUNTERS].filter(c=>L.counters[c.id]||filters.counters.includes(c.id))
+    .sort((a,b)=>{ const pa=pct(L.counters[a.id]), pb=pct(L.counters[b.id]); return (pa===null?101:pa)-(pb===null?101:pb); });
+  for (const c of sorted) html+=`<tr><td><b>${c.k}</b> <span style="color:var(--muted)">${c.what.split(':')[0]}</span></td><td class="num">${cell(session.counters[c.id])}</td><td class="num">${cell(L.counters[c.id])}</td><td>${bar(pct(L.counters[c.id]))}</td></tr>`;
+  html+='</table>';
+  html+=`<h3>By number</h3><table><tr><th>Number</th><th class="num">Lifetime</th><th>Accuracy</th></tr>`;
+  for (const n of [1,2,3,4,5,6,7,8,9,10,'?']) if (L.nums[n]) html+=`<tr><td>${n==='?'?'how many?':n}</td><td class="num">${cell(L.nums[n])}</td><td>${bar(pct(L.nums[n]))}</td></tr>`;
+  html+='</table>';
+  const missed=Object.entries(L.pairs).map(([k,o])=>[k,o,o.t-o.c]).filter(x=>x[2]>0).sort((a,b)=>b[2]-a[2]).slice(0,10);
+  html+=`<h3>Most missed</h3>`+(missed.length ? `<table><tr><th>Form</th><th>Reading</th><th class="num">Missed</th><th>Accuracy</th></tr>`+
+    missed.map(([k,o,m])=>{ const [id,n]=k.split('|'), c=C_BY_ID[id]; if(!c) return ''; return `<tr><td>${written(c,+n)}</td><td>${accepted(c,+n)[0]} ${speakBtn(accepted(c,+n)[0])}</td><td class="num">${m}</td><td>${bar(pct(o))}</td></tr>`; }).join('')+'</table>'
+    : '<div style="color:var(--muted);font-size:14px">None yet.</div>');
+  $('statsBody').innerHTML=html;
+}
+$('statsBody').addEventListener('click',e=>{ const b=e.target.closest('.speak'); if (b) TTS.say(b.dataset.say); });
+$('resetBtn').addEventListener('click',()=>{
+  if (!confirm('Reset all lifetime stats? This cannot be undone.')) return;
+  lifetime=blankStats(); srs={}; srsT={}; peers={};
+  store.set(LS.stats,JSON.stringify(lifetime)); store.set(LS.srs,'{}'); store.set(LS.srsT,'{}'); store.set(LS.peers,'{}');
+  recombine(); renderStats(); updateScore();
+});
+const fmtDate = ms => new Date(ms).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+function renderSyncInfo(){
+  const ids=Object.keys(peers);
+  $('syncInfo').innerHTML=`This device: ${lifetime.t} answers`+(ids.length ? ` · Imported from ${ids.length} other device${ids.length>1?'s':''}: `+
+    ids.map(id=>`${peers[id].stats.t} answers (as of ${fmtDate(peers[id].at)})`).join(', ') : ' · No other devices imported yet');
+}
+$('exportBtn').addEventListener('click',()=>{
+  const data={app:'jcnt-counters-quiz',version:1,exportedAt:Date.now(),device:deviceId,own:lifetime,peers,srs,srsT};
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
+  a.download=`counters-quiz-progress-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  $('syncMsg').innerHTML='<span style="color:var(--ok)">Exported. Import this file on your other device.</span>';
+});
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async e=>{
+  const file=e.target.files[0]; e.target.value=''; if (!file) return;
+  let d; try { d=JSON.parse(await file.text()); } catch(err){ d=null; }
+  if (!d || d.app!=='jcnt-counters-quiz' || !d.own){ $('syncMsg').innerHTML='<span style="color:var(--bad)">That file isn\'t a counters quiz export.</span>'; return; }
+  if (d.device===deviceId){ $('syncMsg').innerHTML='<span style="color:var(--bad)">That file came from this device, so there\'s nothing new to add.</span>'; return; }
+  const incoming={...(d.peers||{}), [d.device]:{at:d.exportedAt, stats:d.own}};
+  let devs=0, pairs=0;
+  for (const id in incoming){ if (id===deviceId || !incoming[id] || !incoming[id].stats) continue;
+    if (!peers[id] || incoming[id].at>peers[id].at){ peers[id]=incoming[id]; devs++; } }
+  for (const k in (d.srs||{})){ const t=(d.srsT||{})[k]||0; if (srs[k]===undefined || t>(srsT[k]||0)){ srs[k]=d.srs[k]; srsT[k]=t; pairs++; } }
+  store.set(LS.peers,JSON.stringify(peers)); store.set(LS.srs,JSON.stringify(srs)); store.set(LS.srsT,JSON.stringify(srsT));
+  recombine(); renderStats();
+  $('syncMsg').innerHTML = devs||pairs ? `<span style="color:var(--ok)">Imported: updated results from ${devs} device${devs===1?'':'s'} and ${pairs} weak-spot entr${pairs===1?'y':'ies'}.</span>`
+    : '<span style="color:var(--muted)">Already up to date. Nothing new in that file.</span>';
+});
+
+/* ================= WIRING ================= */
+document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));
+  for (const t of ['quiz','learn','filters','stats']) $('tab-'+t).classList.toggle('hidden', t!==btn.dataset.tab);
+  if (btn.dataset.tab==='learn') renderLearn();
+  if (btn.dataset.tab==='filters') renderFilters();
+  if (btn.dataset.tab==='stats') renderStats();
+  if (btn.dataset.tab==='quiz'){
+    const valid = current && filters.counters.includes(current.c.id) && current.n<=filters.max && (current.n || filters.nan);
+    if (!valid || answered) nextQuestion(); else if (!mcOn()) $('answer').focus();
+    $('qHint').classList.toggle('hidden', !filters.hint && !answered);
+  }
+}));
+const inp=$('answer');
+let composing=false;
+inp.addEventListener('compositionstart',()=>composing=true);
+inp.addEventListener('compositionend',()=>composing=false);
+let nnIdx=null;
+inp.addEventListener('input',e=>{
+  if (composing || answered) return;
+  let raw=inp.value;
+  if (nnIdx!==null && e.inputType==='insertText' && raw.length===nnIdx+2 && raw[nnIdx]==='ん' && /[aiueoy]/i.test(raw[nnIdx+1]))
+    raw=raw.slice(0,nnIdx+1)+'n'+raw.slice(nnIdx+1);
+  nnIdx=null;
+  const conv=romajiToKana(raw,false);
+  if (/nn$/i.test(raw) && conv.endsWith('ん')) nnIdx=conv.length-1;
+  if (conv!==inp.value){ inp.value=conv; inp.setSelectionRange(conv.length,conv.length); }
+});
+document.addEventListener('keydown',e=>{
+  if ($('tab-quiz').classList.contains('hidden') || composing) return;
+  if (e.key==='Enter'){ e.preventDefault(); check(false); return; }
+  if (mcOn() && !answered && /^[1-4]$/.test(e.key)){ const b=document.querySelectorAll('.choice')[+e.key-1]; if (b) check(false, b.dataset.v); }
+});
+$('submitBtn').addEventListener('click',()=>check(false));
+$('revealBtn').addEventListener('click',()=>{ if(!answered) check(true); });
+$('choices').addEventListener('click',e=>{ const b=e.target.closest('.choice'); if (b && !answered) check(false, b.dataset.v); });
+$('feedback').addEventListener('click',e=>{ const b=e.target.closest('.speak'); if (b){ TTS.say(b.dataset.say); } });
+
+function setMode(mc){
+  $('mcBtn').classList.toggle('on', mc);
+  $('mcBtn').textContent = mc ? '☰ Multiple choice: on' : '☰ Multiple choice';
+  $('typeArea').classList.toggle('hidden', mc);
+  $('choices').classList.toggle('hidden', !mc);
+  store.set(LS.mc, mc?'on':'off');
+}
+$('mcBtn').addEventListener('click',()=>{
+  setMode(!mcOn());
+  if (current && !answered){ if (mcOn()) renderChoices(); else $('answer').focus(); }
+});
+
+const furi=$('furiToggle');
+furi.checked = store.get(LS.furi)!=='off';
+document.body.classList.toggle('nofuri',!furi.checked);
+furi.addEventListener('change',()=>{ document.body.classList.toggle('nofuri',!furi.checked); store.set(LS.furi, furi.checked?'on':'off'); });
+const romaT=$('romaToggle');
+romaT.checked = store.get(LS.roma)==='on';
+document.body.classList.toggle('roma', romaT.checked);
+romaT.addEventListener('change',()=>{ document.body.classList.toggle('roma', romaT.checked); store.set(LS.roma, romaT.checked?'on':'off'); });
+const darkT=$('darkToggle');
+darkT.checked=document.documentElement.classList.contains('dark');
+darkT.addEventListener('change',()=>{ document.documentElement.classList.toggle('dark',darkT.checked); store.set(LS.dark, darkT.checked?'on':'off'); });
+const TTS=(()=>{
+  const ok = typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined';
+  let voice=null;
+  const pickV=()=>{ const ja=speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang));
+    voice = ja.find(v=>/natural|online|google|nanami|kyoko|o-ren|haruka/i.test(v.name)) || ja[0] || null; };
+  if (ok){ pickV(); speechSynthesis.onvoiceschanged=pickV; }
+  return { ok,
+    say(text){ if(!ok||!text) return; speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; if(voice) u.voice=voice; u.rate=0.9; speechSynthesis.speak(u); },
+    stop(){ if(ok) try{ speechSynthesis.cancel(); }catch(e){} } };
+})();
+const escH = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const speakBtn = text => TTS.ok&&text ? `<button type="button" class="speak" data-say="${escH(text)}" title="Play audio">🔊</button>` : '';
+const autoT=$('autoToggle');
+autoT.checked = store.get(LS.auto)==='on';
+if (!TTS.ok){ autoT.disabled=true; autoT.parentElement.title='This browser has no speech support'; }
+autoT.addEventListener('change',()=>store.set(LS.auto, autoT.checked?'on':'off'));
+if (!store.persistent) $('storeWarn').classList.remove('hidden');
+
+setMode(store.get(LS.mc)==='on');
+updateScore();
+nextQuestion();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
