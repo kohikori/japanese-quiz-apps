@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon-favicon-64.png">
+<link rel="apple-touch-icon" href="icon-adj-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Adjective Quiz">
+<meta name="theme-color" content="#c2255c">
+<script>(function(){var d;try{d=localStorage.getItem('jadj_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+<title>Japanese Adjective Conjugation Quiz</title>
+<style>
+  :root{
+    --bg:#fafafa; --card:#fff; --text:#222; --muted:#777; --line:#e3e3e3;
+    --accent:#3b5bdb; --ok:#2b8a3e; --okbg:#ebfbee; --bad:#c92a2a; --badbg:#fff5f5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans",sans-serif;background:var(--bg);color:var(--text)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap;gap:10px}
+  header h1{font-size:18px;margin:0;font-weight:600}
+  nav button{background:none;border:none;padding:8px 14px;font-size:14px;color:var(--muted);cursor:pointer;border-radius:6px}
+  nav button.active{color:var(--accent);background:#edf2ff;font-weight:600}
+  .toggle{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer}
+  main{max-width:760px;margin:28px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px}
+  .hidden{display:none!important}
+
+  /* Quiz */
+  .scorebar{display:flex;gap:18px;justify-content:center;font-size:13px;color:var(--muted);margin-bottom:16px}
+  .scorebar b{color:var(--text)}
+  .verb{font-size:52px;text-align:center;margin:10px 0 4px;line-height:1.6}
+  .meaning{text-align:center;color:var(--muted);font-size:15px}
+  .target{text-align:center;margin:22px 0 18px;font-size:18px}
+  .target .form{font-weight:600;color:var(--accent)}
+  .target .cat{display:block;font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+  #answer{width:100%;font-size:28px;padding:12px 16px;border:2px solid var(--line);border-radius:10px;text-align:center;outline:none;font-family:inherit}
+  #answer:focus{border-color:var(--accent)}
+  #answer.ok{border-color:var(--ok);background:var(--okbg)}
+  #answer.bad{border-color:var(--bad);background:var(--badbg)}
+  .buttons{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  button.btn{font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-family:inherit}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:12px}
+  .feedback{margin-top:20px;padding:16px 18px;border-radius:10px;font-size:15px;line-height:1.6}
+  .feedback.ok{background:var(--okbg);border:1px solid #b2f2bb}
+  .feedback.bad{background:var(--badbg);border:1px solid #ffc9c9}
+  .feedback .head{font-weight:600;margin-bottom:4px}
+  .feedback.ok .head{color:var(--ok)} .feedback.bad .head{color:var(--bad)}
+  .feedback .correct{font-size:26px;line-height:1.7}
+  .feedback .rule{margin-top:8px;color:#333}
+  .feedback .note{margin-top:6px;color:#8a5a00;font-size:14px}
+  .pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:#f1f3f5;color:#555;margin-left:6px;vertical-align:middle}
+
+  ruby rt{font-size:.45em;color:var(--muted)}
+  body.nofuri ruby rt{visibility:hidden}
+  .rw{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
+  .rw .rr{display:none;font-size:clamp(11px,.38em,22px);line-height:1.3;color:var(--accent);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;white-space:nowrap}
+  body.roma .rw .rr{display:block}
+  header h1{display:flex;align-items:center;gap:10px}
+  .homelink{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--muted);text-decoration:none;flex:none}
+  .homelink:hover{color:var(--accent);border-color:var(--accent)}
+  .listenq{display:inline-flex;align-items:center;gap:10px;font-size:20px;padding:14px 26px;border-radius:999px;border:2px solid var(--accent);
+    background:var(--accentbg);color:var(--accent);cursor:pointer;font-family:inherit;margin:14px 0 6px}
+  .listenq:hover{filter:brightness(1.05)} .listenq:active{transform:scale(.98)}
+  .listenq .ico{font-size:26px;line-height:1}
+  .reportline{margin-top:12px;font-size:12px;text-align:right}
+  .reportline a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+  .reportline a:hover{color:var(--accent);border-color:var(--accent)}
+  .homo{margin-top:6px;font-size:13px;color:var(--muted)}
+  .feedback .also{font-size:13px;color:var(--muted);margin:2px 0 8px}
+
+  /* Filters */
+  h2{font-size:16px;margin:0 0 12px}
+  h3{font-size:13px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px}
+  .checks label{font-size:14px;display:flex;gap:8px;align-items:center;cursor:pointer}
+  .small-links{font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0}
+  .small-links a{color:var(--accent);cursor:pointer;margin-left:6px}
+  .poolinfo{margin-top:18px;font-size:13px;color:var(--muted)}
+
+  /* Stats */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+  th{font-size:12px;color:var(--muted);font-weight:600}
+  td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .bar{height:6px;background:#f1f3f5;border-radius:3px;width:90px;display:inline-block;vertical-align:middle;overflow:hidden}
+  .bar i{display:block;height:100%}
+  .totals{display:flex;gap:30px;margin-bottom:10px}
+  .totals div{font-size:13px;color:var(--muted)}
+  .totals b{display:block;font-size:24px;color:var(--text)}
+  .reset{margin-top:20px;font-size:12px}
+
+  /* ---- quality-of-life additions: dark mode, audio, review / wrap-up ---- */
+  :root{--accentbg:#edf2ff;--okline:#b2f2bb;--badline:#ffc9c9;--pill:#f1f3f5;--pilltext:#555;--warn:#8a5a00;--sub:#333}
+  :root.dark{--bg:#15171c;--card:#1e2128;--text:#e4e6ea;--muted:#9aa0aa;--line:#353a45;--accent:#7b93f7;--ok:#69db7c;--okbg:#17301f;
+    --bad:#ff8787;--badbg:#3a1d21;--accentbg:#262d48;--okline:#2b6a3a;--badline:#7a2e35;--pill:#2a2e37;--pilltext:#c8ccd3;--warn:#f0c14b;--sub:#cfd3da;color-scheme:dark}
+  :root.dark button.primary{background:#4c6ef5;border-color:#4c6ef5}
+  :root.dark #storeWarn{background:#3a3212!important;border-color:#6b5d1e!important;color:#f0c14b!important}
+  nav button.active{background:var(--accentbg)}
+  .feedback.ok{border-color:var(--okline)} .feedback.bad{border-color:var(--badline)}
+  .feedback .rule{color:var(--sub)} .feedback .note{color:var(--warn)}
+  .feedback .ex{border-top-color:var(--line)} .feedback .ex .en{color:var(--muted)}
+  .added,.fixnote{color:var(--warn)}
+  .pill{background:var(--pill);color:var(--pilltext)} .bar{background:var(--pill)}
+  #answer,#listSearch{background-color:var(--card);color:var(--text)}
+  button.btn:not(.primary){background-color:var(--card);color:var(--text)}
+  .toggles{display:flex;gap:14px;flex-wrap:wrap}
+  .modebar{display:flex;gap:8px;justify-content:center;margin:-4px 0 14px;flex-wrap:wrap}
+  button.btn.small{font-size:12px;padding:5px 12px}
+  button.btn.on{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+  .modeinfo{text-align:center;font-size:12px;color:var(--accent);margin:-6px 0 14px}
+  .modeinfo.warn{color:var(--warn)}
+  .speak{background:none;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:13px;padding:1px 7px;color:var(--text);vertical-align:middle;font-family:inherit;line-height:1.5}
+  .speak:hover{border-color:var(--accent)}
+  #summary h2{text-align:center;font-size:20px;margin:0 0 14px}
+  #summary .totals{justify-content:center;text-align:center}
+
+  /* ---- support & feedback footer ---- */
+  .sitefoot{max-width:760px;margin:8px auto 40px;padding:18px 16px 0;border-top:1px solid var(--line);
+    display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+  .sitefoot p{margin:0;line-height:1.6;max-width:46ch}
+  .sitefoot .links{display:flex;gap:8px;flex-wrap:wrap}
+  .sitefoot a{display:inline-block;padding:7px 14px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);text-decoration:none;font-size:13px}
+  .sitefoot a:hover{border-color:var(--accent);color:var(--accent)}
+  .sitefoot a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sitefoot a.donate{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+  @media (max-width:520px){.sitefoot{justify-content:center;text-align:center}}
+  .verb{white-space:nowrap}  /* keep the quiz word on one line; script shrinks it to fit */
+  @media (max-width:420px){main{padding:0 10px}.card{padding:22px 14px}}
+</style>
+</head>
+<body>
+<header>
+  <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>形容詞 Adjective Quiz</h1>
+  <nav>
+    <button data-tab="quiz" class="active">Quiz</button>
+    <button data-tab="filters">Filters</button>
+    <button data-tab="stats">Stats</button>
+  </nav>
+  <div class="toggles">
+    <label class="toggle"><input type="checkbox" id="furiToggle" checked> Furigana</label>
+    <label class="toggle" title="Show romaji above Japanese words"><input type="checkbox" id="romaToggle"> Romaji</label>
+    <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
+    <label class="toggle" title="Read the answer aloud as soon as you submit"><input type="checkbox" id="autoToggle"> Auto-play audio</label>
+  </div>
+</header>
+
+<main>
+  <!-- QUIZ -->
+  <section id="tab-quiz" class="card">
+    <div id="storeWarn" class="hidden" style="font-size:12px;color:#8a5a00;background:#fff9db;border:1px solid #ffe066;border-radius:8px;padding:8px 12px;margin-bottom:14px;text-align:center">This viewer blocks saving, so lifetime stats won&#39;t persist. Download the file and open it directly in Chrome to save progress.</div>
+    <div class="scorebar">
+      <span>Session: <b id="sScore">0 / 0</b></span>
+      <span>Streak: <b id="sStreak">0</b></span>
+    </div>
+    <div class="modebar" id="modebar">
+      <button class="btn small" id="reviewBtn" title="Drill only the items with your worst track record">Review weak spots</button>
+      <button class="btn small" id="wrapBtn" title="Finish with 5 more questions, then see a summary">Wrap up</button>
+      <button class="btn small" id="listenBtn" title="Hear the adjective instead of reading it">🎧 Listening</button>
+    </div>
+    <div class="modeinfo hidden" id="modeInfo"></div>
+    <div id="quizBody">
+      <div class="verb" id="qVerb"></div>
+      <div class="meaning" id="qMeaning"></div>
+      <div class="target">Convert to <span class="form" id="qForm"></span><span class="cat" id="qCat"></span></div>
+      <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type in romaji…">
+      <div class="buttons">
+        <button class="btn primary" id="submitBtn">Check</button>
+        <button class="btn" id="revealBtn">Show answer</button>
+      </div>
+      <div class="hint">Enter = check / next · Type <b>nn</b> for ん · double consonant = っ (e.g. <i>matte</i> → まって)</div>
+      <div id="feedback"></div>
+    </div>
+    <div id="emptyPool" class="hidden" style="text-align:center;color:var(--muted)">No questions match your filters. Enable at least one form, level and adjective type.</div>
+    <div id="summary" class="hidden">
+      <h2 id="sumTitle"></h2>
+      <div id="sumBody"></div>
+      <div class="buttons" style="margin-top:20px">
+        <button class="btn primary" id="newSessionBtn">Start new session</button>
+        <button class="btn" id="keepGoingBtn">Keep going</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <section id="tab-filters" class="card hidden">
+    <h2>Filters</h2>
+    <div id="filterBody"></div>
+    <div class="poolinfo" id="poolInfo"></div>
+  </section>
+
+  <!-- STATS -->
+  <section id="tab-stats" class="card hidden">
+    <h2>Stats</h2>
+    <div id="statsBody"></div>
+    <h3>Sync between devices</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Export a file here, open the quiz on another computer or phone, and import it there. Results are combined without double-counting, so you can sync back and forth as often as you like.</div>
+    <div class="buttons" style="justify-content:flex-start;margin-top:0">
+      <button class="btn" id="exportBtn">Export progress</button>
+      <button class="btn" id="importBtn">Import progress</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+    </div>
+    <div id="syncMsg" style="font-size:13px;margin-top:8px"></div>
+    <div id="syncInfo" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+    <button class="btn reset" id="resetBtn">Reset lifetime stats</button>
+  </section>
+</main>
+<footer class="sitefoot">
+  <p>Built by one learner, for others. Found a wrong answer or have an idea? I'd love to hear it.</p>
+  <div class="links">
+    <a href="mailto:support.kohikori@gmail.com?subject=Feedback:%20Adjective%20Quiz">Send feedback</a>
+    <a class="donate" href="https://paypal.me/kohikori" target="_blank" rel="noopener">☕ Donate via PayPal</a>
+  </div>
+</footer>
+
+<script>
+//ENGINE-START
+/* ================= ADJECTIVE DATA =================
+   word|meaning|type|JLPT level|flags
+   type: i = い-adjective, na = な-adjective, ii = いい (irregular)
+   flags: negnai = a negative-looking ない word, prefers 〜なさそう
+   Levels and meanings follow the vocabulary quiz; types checked against JMdict. */
+const ADJ_DATA = `
+いい|good; nice|ii|5
+危[あぶ]ない|dangerous|i|5
+赤[あか]い|red; crimson; scarlet|i|5
+明[あか]るい|bright; light|i|5
+甘[あま]い|sweet; sweet-tasting; sugary|i|5
+青[あお]い|blue; azure|i|5
+新[あたら]しい|new; fresh|i|5
+暖[あたた]かい|warm|i|5
+暑[あつ]い|hot; sultry|i|5
+厚[あつ]い|thick|i|5
+熱[あつ]い|hot|i|5
+便利[べんり]|convenient|na|5
+小[ちい]さい|small; little; tiny|i|5
+近[ちか]い|near; close|i|5
+大丈夫[だいじょうぶ]|all right; OK|na|5
+大好[だいす]き|much loved; really like|na|5
+安心[あんしん]|relieved; at ease|na|4
+安全[あんぜん]|safe|na|4
+浅[あさ]い|shallow|i|4
+大事[だいじ]|important; precious|na|4
+不便[ふべん]|inconvenient|na|4
+深[ふか]い|deep|i|4
+複雑[ふくざつ]|complicated|na|4
+恥[は]ずかしい|embarrassed; shameful|i|4
+明[あき]らか|clear; obvious|na|3
+新[あら]た|new; fresh|na|3
+駄目[だめ]|no good|na|3
+不利[ふり]|disadvantageous|na|3
+激[はげ]しい|violent; extreme; intense|i|3
+意外[いがい]|unexpected; surprising|na|3
+邪魔[じゃま]|in the way; bothersome|na|3
+強力[きょうりょく]|powerful; strong|na|3
+青白[あおじろ]い|pale; bluish-white|i|2
+意地悪[いじわる]|mean; nasty|na|2
+真[ま]っ青[さお]|deep blue; pale|na|2
+真[ま]っ白[しろ]|pure white; blank|na|2
+透明[とうめい]|transparent; clear|na|2
+忙[いそが]しい|busy|i|5
+痛[いた]い|painful; sore|i|5
+嫌[いや]|unpleasant; disagreeable|na|5
+色々[いろいろ]|various|na|5
+薄[うす]い|thin; weak|i|5
+うるさい|noisy; annoying|i|5
+美味[おい]しい|delicious|i|5
+多[おお]い|many; numerous|i|5
+大[おお]きい|big; large|i|5
+遅[おそ]い|slow; time-consuming; late|i|5
+重[おも]い|heavy|i|5
+面白[おもしろ]い|interesting|i|5
+辛[から]い|spicy; salty|i|5
+軽[かる]い|light|i|5
+可愛[かわい]い|cute|i|5
+黄色[きいろ]い|yellow|i|5
+汚[きたな]い|dirty|i|5
+嫌[きら]い|disliked; hateful|na|5
+きれい|pretty; clean|na|5
+暗[くら]い|dark; gloomy; murky|i|5
+黒[くろ]い|black|i|5
+結構[けっこう]|fine; splendid; enough|na|5
+元気[げんき]|healthy; energetic|na|5
+寒[さむ]い|cold|i|5
+静[しず]か|quiet|na|5
+白[しろ]い|white|i|5
+上手[じょうず]|skillful; good at|na|5
+丈夫[じょうぶ]|sturdy; healthy|na|5
+好[す]き|liked; favorite|na|5
+少[すく]ない|few; scarce|i|5
+涼[すず]しい|cool; refreshing|i|5
+狭[せま]い|narrow|i|5
+大切[たいせつ]|important; precious|na|5
+大変[たいへん]|tough; terrible; serious|na|5
+高[たか]い|high; tall; expensive|i|5
+楽[たの]しい|enjoyable; fun|i|5
+つまらない|boring|i|5|negnai
+冷[つめ]たい|cold to the touch|i|5
+強[つよ]い|strong; powerful|i|5
+遠[とお]い|far|i|5
+長[なが]い|long|i|5
+賑[にぎ]やか|lively; bustling|na|5
+温[ぬる]い|lukewarm|i|5
+速[はや]い|fast|i|5
+早[はや]い|early; fast|i|5
+低[ひく]い|low; short|i|5
+暇[ひま]|free (not busy)|na|5
+広[ひろ]い|spacious; vast; wide|i|5
+太[ふと]い|fat; thick|i|5
+古[ふる]い|old (not for people)|i|5
+下手[へた]|unskillful; bad at|na|5
+欲[ほ]しい|wanted; desired|i|5
+細[ほそ]い|thin; slender|i|5
+まずい|bad-tasting; awkward|i|5
+真[ま]っ直[す]ぐ|straight|na|5
+丸[まる]い|round|i|5
+短[みじか]い|short|i|5
+難[むずか]しい|difficult|i|5
+易[やさ]しい|easy; simple|i|5
+安[やす]い|cheap; inexpensive|i|5
+有名[ゆうめい]|famous|na|5
+良[よ]い|good|i|5
+弱[よわ]い|weak|i|5
+立派[りっぱ]|splendid; fine|na|5
+若[わか]い|young|i|5
+悪[わる]い|bad; poor; undesirable|i|5
+一生懸命[いっしょうけんめい]|hardworking; with all one's might|na|4
+美[うつく]しい|beautiful|i|4
+嬉[うれ]しい|happy; glad|i|4
+おかしい|funny; strange|i|4
+硬[かた]い|hard; stiff|i|4
+悲[かな]しい|sad|i|4
+簡単[かんたん]|simple; easy|na|4
+危険[きけん]|dangerous|na|4
+厳[きび]しい|strict|i|4
+急[きゅう]|sudden; urgent; steep|na|4
+細[こま]かい|small; fine; detailed|i|4
+怖[こわ]い|frightening|i|4
+盛[さか]ん|thriving; popular|na|4
+寂[さび]しい|lonely|i|4
+残念[ざんねん]|disappointing; unfortunate|na|4
+親切[しんせつ]|kind|na|4
+十分[じゅうぶん]|enough; sufficient|na|4
+自由[じゆう]|free; unrestricted|na|4
+すごい|amazing; terrible|i|4
+素晴[すば]らしい|wonderful|i|4
+正[ただ]しい|right; correct|i|4
+楽[たの]しみ|looking forward to|na|4
+丁寧[ていねい]|polite; careful|na|4
+適当[てきとう]|suitable; sloppy|na|4
+特別[とくべつ]|special|na|4
+苦[にが]い|bitter|i|4
+眠[ねむ]い|sleepy|i|4
+酷[ひど]い|terrible; cruel|i|4
+変[へん]|strange|na|4
+無理[むり]|impossible; unreasonable|na|4
+珍[めずら]しい|unusual; rare|i|4
+優[やさ]しい|kind|i|4
+柔[やわ]らかい|soft|i|4
+急激[きゅうげき]|sudden; abrupt; rapid|na|3
+急速[きゅうそく]|rapid (e.g. progress)|na|3
+新鮮[しんせん]|fresh|na|3
+熱心[ねっしん]|enthusiastic; eager|na|3
+真面目[まじめ]|serious; earnest|na|3
+真[ま]っ赤[か]|bright red; deep red; flushed (of face)|na|3
+満足[まんぞく]|satisfied|na|3
+明確[めいかく]|clear; precise; definite|na|3
+有利[ゆうり]|advantageous|na|3
+よろしい|good; all right (polite)|i|3
+利口[りこう]|clever; intelligent; wise|na|3
+うまい|delicious; skillful|i|4
+堅[かた]い|hard; solid; steady|i|4
+心配[しんぱい]|worried; worrying|na|4
+確[たし]か|certain; sure|na|4
+必要[ひつよう]|necessary|na|4
+別[べつ]|different; separate|na|4
+異常[いじょう]|abnormal; unusual|na|3
+偉大[いだい]|great; mighty|na|3
+永遠[えいえん]|eternal|na|3
+幼[おさな]い|very young; childish|i|3
+恐[おそ]ろしい|terrible; dreadful|i|3
+穏[おだ]やか|calm; gentle; quiet|na|3
+温暖[おんだん]|warm; mild|na|3
+快適[かいてき]|pleasant; agreeable; comfortable|na|3
+確実[かくじつ]|certain; reliable|na|3
+賢[かしこ]い|wise; clever; smart|i|3
+可能[かのう]|possible|na|3
+かわいそう|pitiful; poor (thing)|na|3
+かわいらしい|lovely; sweet|i|3
+完全[かんぜん]|perfect; complete|na|3
+貴重[きちょう]|precious; valuable|na|3
+きつい|tight; harsh; tough|i|3
+気[き]の毒[どく]|pitiful; a pity|na|3
+奇妙[きみょう]|strange; queer; curious|na|3
+器用[きよう]|skillful; handy|na|3
+巨大[きょだい]|huge; gigantic; enormous|na|3
+臭[くさ]い|smelly; stinky|i|3
+クラシック|classic; classical|na|3
+苦[くる]しい|painful; difficult|i|3
+詳[くわ]しい|detailed; knowledgeable|i|3
+けち|stingy|na|3
+健康[けんこう]|healthy|na|3
+濃[こ]い|thick (as of color; liquid); dense|i|3
+幸運[こううん]|lucky|na|3
+高価[こうか]|expensive|na|3
+豪華[ごうか]|wonderful; gorgeous; splendor|na|3
+幸福[こうふく]|happy|na|3
+困難[こんなん]|difficult|na|3
+最高[さいこう]|the best; great|na|3
+最低[さいてい]|the worst; awful|na|3
+幸[さいわ]い|fortunate|na|3
+様々[さまざま]|varied; various|na|3
+幸[しあわ]せ|happy|na|3
+親[した]しい|intimate; close (e.g. friend)|i|3
+重大[じゅうだい]|serious; grave|na|3
+重要[じゅうよう]|important; momentous; essential|na|3
+主要[しゅよう]|chief; main; principal|na|3
+順調[じゅんちょう]|going smoothly|na|3
+正直[しょうじき]|honest|na|3
+上等[じょうとう]|first-class; excellent|na|3
+真剣[しんけん]|serious; earnest|na|3
+深刻[しんこく]|serious|na|3
+慎重[しんちょう]|careful; cautious|na|3
+すてき|lovely; wonderful|na|3
+鋭[するど]い|pointed; sharp|i|3
+正確[せいかく]|accurate; exact|na|3
+清潔[せいけつ]|clean|na|3
+正式[せいしき]|formal; official|na|3
+贅沢[ぜいたく]|luxurious; extravagant|na|3
+積極的[せっきょくてき]|active; positive|na|3
+相当[そうとう]|considerable; suitable|na|3
+粗末[そまつ]|crude; shabby|na|3
+退屈[たいくつ]|boring; bored|na|3
+平[たい]ら|flat; level|na|3
+単純[たんじゅん]|simple|na|3
+辛[つら]い|painful; hard to bear|i|3
+適切[てきせつ]|pertinent; appropriate; adequate|na|3
+適度[てきど]|moderate|na|3
+同様[どうよう]|similar; same|na|3
+得意[とくい]|good at; proud|na|3
+独特[どくとく]|unique; distinctive|na|3
+苦手[にがて]|bad at; not fond of|na|3
+莫大[ばくだい]|enormous; vast|na|3
+ハンサム|handsome|na|3
+非常[ひじょう]|extraordinary; extreme|na|3
+等[ひと]しい|equal|i|3
+微妙[びみょう]|delicate; subtle|na|3
+平等[びょうどう]|equal; fair|na|3
+不安[ふあん]|anxious; uneasy|na|3
+不幸[ふこう]|unhappy; unfortunate|na|3
+無事[ぶじ]|safe; without incident|na|3
+不思議[ふしぎ]|mysterious; strange|na|3
+不自由[ふじゆう]|inconvenient; restricted|na|3
+不正[ふせい]|unfair; dishonest|na|3
+不満[ふまん]|dissatisfied|na|3
+平和[へいわ]|peaceful|na|3
+豊富[ほうふ]|abundant; plentiful|na|3
+貧[まず]しい|poor; needy|i|3
+見事[みごと]|splendid; magnificent; beautiful|na|3
+密[みつ]|dense; close|na|3
+妙[みょう]|strange; odd|na|3
+無駄[むだ]|wasteful; useless|na|3
+夢中[むちゅう]|absorbed in; crazy about|na|3
+迷惑[めいわく]|annoying; troublesome|na|3
+面倒[めんどう]|troublesome; a hassle|na|3
+厄介[やっかい]|troublesome; burdensome|na|3
+有効[ゆうこう]|valid; effective|na|3
+優秀[ゆうしゅう]|excellent; outstanding|na|3
+有能[ゆうのう]|able; capable; efficient|na|3
+愉快[ゆかい]|pleasant; happy|na|3
+豊[ゆた]か|abundant; wealthy; plentiful|na|3
+容易[ようい]|easy; simple; plain|na|3
+余分[よぶん]|extra; excess; surplus|na|3
+楽[らく]|easy; comfortable|na|3
+冷静[れいせい]|calm; composed|na|3
+わがまま|selfish|na|3
+僅[わず]か|slight; few|na|3
+あいまい|vague; ambiguous|na|2
+あたりまえ|natural; obvious|na|2
+厚[あつ]かましい|impudent; shameless; brazen|i|2
+危[あや]うい|dangerous; critical; grave|i|2
+怪[あや]しい|suspicious; dubious; doubtful|i|2
+荒[あら]い|rough; rude; wild|i|2
+粗[あら]い|coarse; rough|i|2
+ありがたい|grateful; welcome|i|2
+あわただしい|busy; hurried; confused|i|2
+安易[あんい]|easy; careless|na|2
+勇[いさ]ましい|brave; valiant; gallant|i|2
+薄暗[うすぐら]い|dim; gloomy|i|2
+羨[うらや]ましい|envious; enviable|i|2
+偉[えら]い|great; admirable|i|2
+おおざっぱ|rough; sloppy|na|2
+惜[お]しい|regrettable; so close|i|2
+おしゃれ|stylish; fashionable|na|2
+おとなしい|quiet; well-behaved|i|2
+思[おも]いがけない|unexpected|i|2|negnai
+重[おも]たい|heavy; massive; serious|i|2
+格別[かくべつ]|exceptional|na|2
+過剰[かじょう]|excessive|na|2
+固[かた]い|firm; stubborn|i|2
+かゆい|itchy; itching|i|2
+空[から]っぽ|empty|na|2
+清[きよ]い|clear; pure; noble|i|2
+くだらない|worthless; trivial; stupid|i|2|negnai
+くどい|wordy; persistent; heavy (taste)|i|2
+悔[くや]しい|regrettable; mortifying; vexing|i|2
+下品[げひん]|vulgar|na|2
+煙[けむ]い|smoky|i|2
+険[けわ]しい|steep; stern|i|2
+謙虚[けんきょ]|modest; humble|na|2
+厳重[げんじゅう]|strict; rigorous|na|2
+恋[こい]しい|missed; longed for|i|2
+強引[ごういん]|pushy; forceful|na|2
+高級[こうきゅう]|high-class; luxury|na|2
+公正[こうせい]|fair; just|na|2
+高等[こうとう]|advanced; high-level|na|2
+逆[さか]さ|upside down; reversed|na|2
+逆[さか]さま|upside down|na|2
+騒[さわ]がしい|noisy|i|2
+さわやか|refreshing|na|2
+塩辛[しおから]い|salty (taste)|i|2
+四角[しかく]い|square|i|2
+しつこい|insistent; obstinate|i|2
+地味[じみ]|plain; subdued|na|2
+純情[じゅんじょう]|pure-hearted; innocent|na|2
+純粋[じゅんすい]|pure; genuine|na|2
+消極的[しょうきょくてき]|passive|na|2
+垂直[すいちょく]|vertical|na|2
+ずうずうしい|impudent; shameless|i|2
+すっぱい|sour; acid|i|2
+素直[すなお]|honest; obedient; open|na|2
+スマート|slim; stylish|na|2
+ずるい|sly; cunning|i|2
+騒々[そうぞう]しい|noisy; boisterous|i|2
+そそっかしい|careless; thoughtless|i|2
+率直[そっちょく]|frank; candid|na|2
+妥当[だとう]|appropriate; reasonable|na|2
+頼[たの]もしい|reliable; promising|i|2
+だらしない|sloppy; slovenly|i|2|negnai
+力強[ちからづよ]い|powerful; reassuring|i|2
+茶色[ちゃいろ]い|light brown; tawny|i|2
+強気[つよき]|confident; bullish|na|2
+的確[てきかく]|precise; accurate|na|2
+凸凹[でこぼこ]|bumpy; uneven|na|2
+手頃[てごろ]|reasonable (price); handy|na|2
+でたらめ|nonsensical; random|na|2
+特殊[とくしゅ]|special; unusual|na|2
+永[なが]い|long; lengthy|i|2
+懐[なつ]かしい|nostalgic; dearly missed|i|2
+斜[なな]め|diagonal; slanted|na|2
+生意気[なまいき]|cheeky; impertinent|na|2
+憎[にく]い|hateful; detestable|i|2
+憎[にく]らしい|odious; hateful|i|2
+鈍[にぶ]い|dull; slow|i|2
+のんき|carefree; easygoing|na|2
+ばからしい|absurd|i|2
+派手[はで]|flashy; showy|na|2
+甚[はなは]だしい|extreme; excessive|i|2
+ぴかぴか|sparkling; shiny|na|2
+卑怯[ひきょう]|cowardly; unfair|na|2
+皮肉[ひにく]|ironic; sarcastic|na|2
+不運[ふうん]|unlucky|na|2
+不規則[ふきそく]|irregular|na|2
+不潔[ふけつ]|dirty; unclean|na|2
+物騒[ぶっそう]|dangerous; unsafe|na|2
+ふわふわ|soft; fluffy|na|2
+平気[へいき]|calm; unbothered|na|2
+平凡[へいぼん]|ordinary|na|2
+膨大[ぼうだい]|huge; enormous|na|2
+朗[ほが]らか|cheerful|na|2
+真[ま]っ暗[くら]|pitch dark|na|2
+真[ま]っ黒[くろ]|pitch black|na|2
+まぶしい|dazzling; radiant|i|2
+円[まる]い|round; circular; spherical|i|2
+稀[まれ]|rare|na|2
+みじめ|miserable|na|2
+みっともない|shameful; unsightly|i|2|negnai
+醜[みにく]い|ugly|i|2
+無限[むげん]|infinite; limitless|na|2
+蒸[む]し暑[あつ]い|humid; sultry|i|2
+めちゃくちゃ|messy; absurd|na|2
+めでたい|happy; auspicious|i|2
+面倒臭[めんどうくさ]い|troublesome; a pain|i|2
+モダン|modern|na|2
+もったいない|wasteful; too good for|i|2|negnai
+ものすごい|tremendous; terrific|i|2
+やかましい|noisy; fussy|i|2
+軟[やわ]らかい|soft; tender; limp|i|2
+緩[ゆる]い|loose; lenient; gentle|i|2
+幼稚[ようち]|childish|na|2
+欲張[よくば]り|greedy|na|2
+余計[よけい]|unnecessary; excessive|na|2
+乱暴[らんぼう]|rough; violent; rude|na|2
+若々[わかわか]しい|youthful|i|2
+`;
+const VERBS = ADJ_DATA.trim().split('\n').map(line => {   // (named VERBS to share code with the verb quiz)
+  const [b, m, g, l, flags=''] = line.split('|');
+  return {b, m, g, lvl: 'N' + l, flags: flags.split(' ').filter(Boolean)};
+});
+
+/* ================= FORMS ================= */
+const FORMS = [
+  {id:'desu',     cat:'Polite', label:'Polite present',        jp:'〜です'},
+  {id:'desuneg',  cat:'Polite', label:'Polite negative',       jp:'〜くないです / 〜じゃないです'},
+  {id:'deshita',  cat:'Polite', label:'Polite past',           jp:'〜かったです / 〜でした'},
+  {id:'desunegpast', cat:'Polite', label:'Polite past negative', jp:'〜くなかったです / 〜じゃなかったです'},
+  {id:'da',       cat:'Casual', label:'Casual present',        jp:'〜だ'},
+  {id:'nai',      cat:'Casual', label:'Casual negative',       jp:'〜くない / 〜じゃない'},
+  {id:'katta',    cat:'Casual', label:'Casual past',           jp:'〜かった / 〜だった'},
+  {id:'nakatta',  cat:'Casual', label:'Casual past negative',  jp:'〜くなかった / 〜じゃなかった'},
+  {id:'attr',     cat:'Other',  label:'Before a noun',         jp:'〜な + noun'},
+  {id:'te',       cat:'Other',  label:'て-form (and…)',        jp:'〜くて / 〜で'},
+  {id:'adv',      cat:'Other',  label:'Adverb (…ly)',          jp:'〜く / 〜に'},
+  {id:'ba',       cat:'Other',  label:'Conditional (if…)',     jp:'〜ければ / 〜なら'},
+  {id:'tara',     cat:'Other',  label:'たら-conditional',      jp:'〜かったら / 〜だったら'},
+  {id:'naru',     cat:'N4 forms', label:'Become…',             jp:'〜くなる / 〜になる'},
+  {id:'sou',      cat:'N4 forms', label:'Looks…',              jp:'〜そう'},
+  {id:'sugiru',   cat:'N4 forms', label:'Too…',                jp:'〜すぎる'},
+];
+const FORM_BY_ID = Object.fromEntries(FORMS.map(f => [f.id, f]));
+// い-adjectives: the plain present and the before-a-noun form are just the dictionary form, so they're skipped.
+// "Looks…" (〜そう) isn't used for things you can see at a glance, so colors and かわいい skip it.
+const SOU_SKIP = new Set(['赤い','青い','白い','黒い','黄色い','茶色い','青白い','可愛い','真っ赤','真っ青','真っ白','真っ黒','真っ暗','透明']);
+function allowed(v, fid){
+  if (v.g!=='na' && (fid==='da' || fid==='attr')) return false;
+  if (fid==='sou' && SOU_SKIP.has(toKanji(v.b))) return false;
+  return true;
+}
+
+/* ================= CONJUGATION ENGINE ================= */
+const KANJI_RE=/([一-鿿々]+)\[([^\]]+)\]/g;
+const toReading = b => b.replace(KANJI_RE, '$2');
+const toKanji   = b => b.replace(KANJI_RE, '$1');
+const toRuby    = b => b.replace(KANJI_RE, '<ruby>$1<rt>$2</rt></ruby>');
+const iStem = v => v.g==='ii' ? 'よ' : v.b.slice(0,-1);          // いい conjugates from よい
+const endsNai = v => v.g==='i' && toReading(v.b).endsWith('ない');
+const I_END = {
+  desuneg:['くないです','くありません'], deshita:['かったです'], desunegpast:['くなかったです','くありませんでした'],
+  nai:['くない'], katta:['かった'], nakatta:['くなかった'], te:['くて'], adv:['く'], ba:['ければ'], tara:['かったら'],
+  naru:['くなる'], sou:['そう'], sugiru:['すぎる']
+};
+const NA_END = {
+  desu:['です'], desuneg:['じゃないです','ではありません','じゃありません','ではないです'], deshita:['でした'],
+  desunegpast:['じゃなかったです','ではありませんでした','じゃありませんでした','ではなかったです'],
+  da:['だ',''], nai:['じゃない','ではない'], katta:['だった'], nakatta:['じゃなかった','ではなかった'],
+  attr:['な'], te:['で'], adv:['に'], ba:['なら','ならば','であれば'], tara:['だったら'], naru:['になる'], sou:['そう'], sugiru:['すぎる']
+};
+// Every accepted answer; the first one is shown as "the" answer.
+function answers(v,f){
+  if (v.g==='na') return NA_END[f].map(e=>v.b+e);
+  if (f==='desu') return [v.b+'です'];
+  const st=iStem(v);
+  if (endsNai(v) && (f==='sou' || f==='sugiru')){            // 〜ない adjectives: both 〜なそう and 〜なさそう are heard
+    const a=st+I_END[f][0], b=st+'さ'+I_END[f][0];
+    return v.flags.includes('negnai') ? [b,a] : [a,b];
+  }
+  if (v.g==='ii' && f==='sou') return ['よさそう'];
+  if (v.g==='ii' && f==='sugiru') return ['よすぎる','よさすぎる'];
+  return I_END[f].map(e=>st+e);
+}
+const conjugate = (v,f) => answers(v,f)[0];
+
+/* ================= EXPLANATIONS ================= */
+const FORM_USE = {
+  desu:'Polite "is…". い-adjectives just add です; な-adjectives use です in place of だ.',
+  desuneg:'Polite "isn\'t…". The 〜ありません version is a little more formal.',
+  deshita:'Polite "was…".', desunegpast:'Polite "wasn\'t…".',
+  da:'Plain "is…" for な-adjectives. In casual speech the だ is often dropped.',
+  nai:'Plain "isn\'t…".', katta:'Plain "was…".', nakatta:'Plain "wasn\'t…".',
+  attr:'Describes a noun directly: 静かな部屋 (a quiet room). This な is where the name "な-adjective" comes from.',
+  te:'Links descriptions: 安くておいしい (cheap and tasty). Also gives a reason: 寒くて… (it\'s cold, so…).',
+  adv:'Describes how something is done: 早く起きる (get up early), 静かに話す (speak quietly).',
+  ba:'"If it is…". な-adjectives use なら (ならば, であれば are also correct).',
+  tara:'"If / when it is…".',
+  naru:'"Become…": 寒くなる (get cold), 有名になる (become famous).',
+  sou:'"Looks…" based on appearance: おいしそう (looks tasty). Not used for things you can see directly, like colors (赤そう sounds odd) or かわいい (かわいそう means "pitiful").',
+  sugiru:'"Too…": 高すぎる (too expensive). Conjugates like a る-verb (高すぎた, 高すぎない).'
+};
+const I_RULE = {
+  desuneg:'Drop the final <b>い</b> and add <b>くないです</b> (or <b>くありません</b>).',
+  deshita:'Drop the final <b>い</b> and add <b>かったです</b>. Don\'t use でした with い-adjectives (高いでした is a common mistake).',
+  desunegpast:'Drop the final <b>い</b> and add <b>くなかったです</b> (or <b>くありませんでした</b>).',
+  nai:'Drop the final <b>い</b> and add <b>くない</b>.', katta:'Drop the final <b>い</b> and add <b>かった</b>.',
+  nakatta:'Drop the final <b>い</b> and add <b>くなかった</b>.', te:'Drop the final <b>い</b> and add <b>くて</b>.',
+  adv:'Change the final <b>い</b> to <b>く</b>.', ba:'Drop the final <b>い</b> and add <b>ければ</b>.',
+  tara:'Drop the final <b>い</b> and add <b>かったら</b>.', naru:'Change the final <b>い</b> to <b>く</b> and add <b>なる</b>.',
+  sou:'Drop the final <b>い</b> and add <b>そう</b>.', sugiru:'Drop the final <b>い</b> and add <b>すぎる</b>.',
+  desu:'Keep the adjective as it is and add <b>です</b>.'
+};
+const NA_RULE = {
+  desu:'Add <b>です</b>.', desuneg:'Add <b>じゃないです</b> (or <b>ではありません</b>).', deshita:'Add <b>でした</b>.',
+  desunegpast:'Add <b>じゃなかったです</b> (or <b>ではありませんでした</b>).', da:'Add <b>だ</b>.',
+  nai:'Add <b>じゃない</b> (or the more formal <b>ではない</b>).', katta:'Add <b>だった</b>.',
+  nakatta:'Add <b>じゃなかった</b> (or <b>ではなかった</b>).', attr:'Add <b>な</b> before the noun.', te:'Add <b>で</b>.',
+  adv:'Add <b>に</b>.', ba:'Add <b>なら</b>.', tara:'Add <b>だったら</b>.', naru:'Add <b>になる</b>.', sou:'Add <b>そう</b>.', sugiru:'Add <b>すぎる</b>.'
+};
+function explain(v,f){
+  const d=toKanji(v.b), r=toReading(v.b);
+  let group, rule, notes=[];
+  if (v.g==='na'){
+    group='a な-adjective';
+    rule=NA_RULE[f]+' な-adjectives work like nouns: nothing about the word itself changes.';
+    if (/い$/.test(r)) notes.push(`Careful: ${d} ends in い, but it's a な-adjective, so the い stays (${d}じゃない, not ${d.slice(0,-1)}くない).`);
+  } else if (v.g==='ii'){
+    group='irregular';
+    rule = f==='desu' ? I_RULE.desu
+      : `いい comes from the older word <b>よい</b>, and every conjugated form is built from that: いい → <b>${conjugate(v,f)}</b>. Only いい and いいです keep いい.`;
+    if (f==='sou') notes.push('いい adds さ before そう: よさそう (not よそう). Same for ない: なさそう.');
+  } else {
+    group='an い-adjective';
+    rule=I_RULE[f];
+    if (endsNai(v) && (f==='sou'||f==='sugiru'))
+      notes.push(`Words ending in ない can take an extra さ: ${answers(v,f).join(' / ')}. Both are accepted here.`);
+    if (d==='良い' && f!=='desu') notes.push('良い (よい) conjugates regularly. It\'s also where いい\'s forms come from.');
+  }
+  return {group, rule, use:FORM_USE[f], notes};
+}
+//ENGINE-END
+
+/* ================= ROMAJI DISPLAY ================= */
+// Hepburn-style romaji, spelled the way you'd type it (long vowels written out: べんきょう → benkyou)
+const toRomaji = (() => {
+  const B={あ:'a',い:'i',う:'u',え:'e',お:'o',か:'ka',き:'ki',く:'ku',け:'ke',こ:'ko',が:'ga',ぎ:'gi',ぐ:'gu',げ:'ge',ご:'go',
+    さ:'sa',し:'shi',す:'su',せ:'se',そ:'so',ざ:'za',じ:'ji',ず:'zu',ぜ:'ze',ぞ:'zo',た:'ta',ち:'chi',つ:'tsu',て:'te',と:'to',
+    だ:'da',ぢ:'ji',づ:'zu',で:'de',ど:'do',な:'na',に:'ni',ぬ:'nu',ね:'ne',の:'no',は:'ha',ひ:'hi',ふ:'fu',へ:'he',ほ:'ho',
+    ば:'ba',び:'bi',ぶ:'bu',べ:'be',ぼ:'bo',ぱ:'pa',ぴ:'pi',ぷ:'pu',ぺ:'pe',ぽ:'po',ま:'ma',み:'mi',む:'mu',め:'me',も:'mo',
+    や:'ya',ゆ:'yu',よ:'yo',ら:'ra',り:'ri',る:'ru',れ:'re',ろ:'ro',わ:'wa',ゐ:'i',ゑ:'e',を:'o',ん:'n',ゔ:'vu',
+    ぁ:'a',ぃ:'i',ぅ:'u',ぇ:'e',ぉ:'o'};
+  const SMALL={ゃ:'a',ゅ:'u',ょ:'o'};
+  return kana => {
+    const s=[...kana.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60))];
+    let out='';
+    for (let i=0;i<s.length;i++){
+      const c=s[i], n=s[i+1];
+      if (c==='っ'){ const nx=toRomaji(s.slice(i+1).join('')); out+= /^[bcdfghjkmprstvwz]/.test(nx) ? (nx.startsWith('ch')?'t':nx[0]) : ''; continue; }
+      if (c==='ー'){ const m=out.match(/[aiueo]$/); out+= m?m[0]:'-'; continue; }
+      if (c==='ん'){ out+= n && /[あいうえおやゆよ]/.test(n) ? "n'" : 'n'; continue; }
+      let r=B[c];
+      if (r===undefined){ out+=c; continue; }
+      if (n && SMALL[n]){                                  // きゃ → kya, しゃ → sha, じゃ → ja
+        r = /^(sh|ch|j)/.test(r) ? r.slice(0,-1)+SMALL[n] : r.slice(0,-1)+'y'+SMALL[n]; i++;
+      } else if (n && /[ぁぃぅぇぉ]/.test(n) && r.length>1){ // ふぁ → fa, てぃ → ti
+        r = r.slice(0,-1)+B[n]; i++;
+      }
+      out+=r;
+    }
+    return out;
+  };
+})();
+// A word with romaji stacked above it (shown only while the Romaji toggle is on)
+const wordHTML = b => `<span class="rw"><span class="rr">${toRomaji(toReading(b))}</span><span class="rj">${toRuby(b)}</span></span>`;
+
+
+/* ================= ROMAJI → KANA ================= */
+const ROMA = (() => {
+  const t = {a:'あ',i:'い',u:'う',e:'え',o:'お'};
+  const rows = {k:'かきくけこ',g:'がぎぐげご',s:'さしすせそ',z:'ざじずぜぞ',t:'たちつてと',d:'だぢづでど',
+    n:'なにぬねの',h:'はひふへほ',b:'ばびぶべぼ',p:'ぱぴぷぺぽ',m:'まみむめも',r:'らりるれろ'};
+  const V='aiueo';
+  for (const c in rows) for (let i=0;i<5;i++) t[c+V[i]] = rows[c][i];
+  Object.assign(t,{ya:'や',yu:'ゆ',yo:'よ',wa:'わ',wo:'を',wi:'うぃ',we:'うぇ',
+    shi:'し',chi:'ち',tsu:'つ',fu:'ふ',ji:'じ',
+    fa:'ふぁ',fi:'ふぃ',fe:'ふぇ',fo:'ふぉ',
+    xa:'ぁ',xi:'ぃ',xu:'ぅ',xe:'ぇ',xo:'ぉ',la:'ぁ',li:'ぃ',lu:'ぅ',le:'ぇ',lo:'ぉ',
+    xya:'ゃ',xyu:'ゅ',xyo:'ょ',lya:'ゃ',lyu:'ゅ',lyo:'ょ',xtu:'っ',ltu:'っ',xtsu:'っ',ltsu:'っ',
+    'nn':'ん',"n'":'ん','-':'ー'});
+  const small={a:'ゃ',u:'ゅ',o:'ょ'};
+  for (const c of 'kgnhbpmr') for (const v in small) t[c+'y'+v]=rows[c][1]+small[v];
+  for (const v in small){
+    t['sh'+v]='し'+small[v]; t['sy'+v]='し'+small[v]; t['zy'+v]='じ'+small[v]; t['jy'+v]='じ'+small[v];
+    t['j'+v]='じ'+small[v]; t['ch'+v]='ち'+small[v]; t['ty'+v]='ち'+small[v]; t['cy'+v]='ち'+small[v]; t['dy'+v]='ぢ'+small[v];
+  }
+  t.she='しぇ'; t.je='じぇ'; t.che='ちぇ'; t.ti='ち'; t.tu='つ'; t.si='し'; t.zi='じ'; t.hu='ふ';
+  t.di='ぢ'; t.du='づ'; t.ja='じゃ'; t.ju='じゅ'; t.jo='じょ';
+  return t;
+})();
+const ROMA_PREFIX = new Set();
+for (const k in ROMA) for (let i=1;i<=k.length;i++) ROMA_PREFIX.add(k.slice(0,i));
+
+function romajiToKana(str, final){
+  let out='', i=0;
+  const s=str.toLowerCase();
+  while (i<s.length){
+    const ch=s[i];
+    if (!/[a-z'\-]/.test(ch)){ out+=str[i]; i++; continue; }
+    if (ch==='n'){
+      const nx=s[i+1];
+      if (nx===undefined){ out+= final?'ん':'n'; i++; continue; }
+      if (nx==='n'){
+        const n2=s[i+2];
+        if (n2===undefined){ out+='ん'; i+=2; continue; }
+        if ('aiueoy'.includes(n2)){ out+='ん'; i+=1; continue; }
+        out+='ん'; i+=2; continue;
+      }
+      if (nx==="'"){ out+='ん'; i+=2; continue; }
+      if (!'aiueoy'.includes(nx)){ out+='ん'; i++; continue; }
+    }
+    // double consonant → っ
+    if (/[bcdfghjkmprstvwz]/.test(ch) && (s[i+1]===ch || (ch==='t' && s[i+1]==='c' && s[i+2]==='h'))){
+      out+='っ'; i++; continue;
+    }
+    let matched=false;
+    for (let len=4;len>=1;len--){
+      const sub=s.substr(i,len);
+      if (sub.length===len && ROMA[sub]){ out+=ROMA[sub]; i+=len; matched=true; break; }
+    }
+    if (matched) continue;
+    const rest=s.slice(i);
+    if (ROMA_PREFIX.has(rest)){ out+=str.slice(i); break; }  // still typing
+    out+=str[i]; i++;
+  }
+  return out;
+}
+
+/* ================= STORAGE / STATE ================= */
+/* Safe storage: falls back to memory if localStorage is blocked (e.g. sandboxed previews) */
+const store = (() => {
+  const mem = {};
+  let ok = false;
+  try { const k='__jadj_test'; window.localStorage.setItem(k,'1'); window.localStorage.removeItem(k); ok = true; } catch(e) {}
+  return {
+    persistent: ok,
+    get(k){ try { return ok ? window.localStorage.getItem(k) : (k in mem ? mem[k] : null); } catch(e){ return null; } },
+    set(k,v){ try { if (ok) window.localStorage.setItem(k,v); else mem[k]=v; } catch(e){ mem[k]=v; } }
+  };
+})();
+function loadJSON(k){ try { return JSON.parse(store.get(k) || 'null'); } catch(e){ return null; } }
+
+const LS_STATS='jadj_stats_v1', LS_FILTERS='jadj_filters_v1', LS_FURI='jadj_furi_v1';
+const blankStats = () => ({c:0,t:0,forms:{},groups:{},verbs:{},pairs:{}});
+let lifetime = loadJSON(LS_STATS) || blankStats();
+if (!lifetime.pairs) lifetime.pairs={};   // per verb+form record (added in v7)
+let session = blankStats();
+let streak = 0;
+let filters = loadJSON(LS_FILTERS) || {
+  forms: FORMS.map(f=>f.id), levels:['N5','N4'], groups:['i','na']
+};
+/* ---- Light spaced repetition ----
+   Each verb+form pair has a level (0 = last missed, higher = correct streak).
+   Weight decides how likely it is to be picked. Unseen pairs = 1.       */
+const LS_SRS='jadj_srs_v1';
+let srs = loadJSON(LS_SRS) || {};
+/* ---- Multi-device sync ----
+   lifetime = answers given on THIS device. peers = latest snapshot of every other device
+   we've heard about. Displayed totals = this device + peers, so re-importing never double-counts.
+   srsT = when each weak-spot level last changed; on import the newer one wins.          */
+const LS_SRS_T='jadj_srs_time_v1', LS_PEERS='jadj_peers_v1', LS_DEVICE='jadj_device_v1';
+let srsT = loadJSON(LS_SRS_T) || {};
+let peers = loadJSON(LS_PEERS) || {};
+let deviceId = store.get(LS_DEVICE);
+if (!deviceId){ deviceId = Math.random().toString(36).slice(2,10); store.set(LS_DEVICE, deviceId); }
+function addStats(a,b){
+  const out={c:a.c+b.c,t:a.t+b.t,forms:{},groups:{},verbs:{},pairs:{}};
+  for (const k of ['forms','groups','verbs','pairs']) for (const src of [a[k],b[k]]) for (const key in (src||{})){
+    const o=out[k][key]||(out[k][key]={c:0,t:0}); o.c+=src[key].c; o.t+=src[key].t;
+  }
+  return out;
+}
+let combined;
+function recombine(){ combined = Object.values(peers).reduce((acc,p)=>addStats(acc,p.stats), addStats(blankStats(), lifetime)); }
+recombine();
+if (filters.srs===undefined) filters.srs = true;
+const SRS_WEIGHT = [5, 2, 1, 0.5, 0.25];          // by level; 4+ = mastered
+const pairKey = (v,f) => v.b+'|'+f;
+function pairWeight(v,f){
+  if (!filters.srs) return 1;
+  const lvl = srs[pairKey(v,f)];
+  let w = lvl===undefined ? 1 : SRS_WEIGHT[Math.min(lvl,4)];
+  const fs = combined.forms[f];                    // small nudge for weak forms
+  if (fs && fs.t>=5) w *= 1 + (1 - fs.c/fs.t);     // up to 2x
+  return w;
+}
+function updateSrs(v,f,ok){
+  const k=pairKey(v,f), prev=srs[k];
+  srs[k] = !ok ? 0 : prev===undefined ? 2 : Math.min(prev+1, 4);  // new + correct starts at 2
+  srsT[k] = Date.now();
+  store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
+}
+const sessionSeen = new Set();   // pairs already asked this session (no repeats)
+let recentVerbs = [];            // last few verbs, to avoid back-to-back same verb
+const GROUP_LABEL = {i:'い-adjectives (incl. いい)', na:'な-adjectives'};
+const groupOf = v => v.g==='na' ? 'na' : 'i';
+
+function record(st, v, f, ok){
+  const bump = (obj,key) => { obj[key]=obj[key]||{c:0,t:0}; obj[key].t++; if(ok) obj[key].c++; };
+  st.t++; if(ok) st.c++;
+  bump(st.forms,f); bump(st.groups,groupOf(v)); bump(st.verbs,v.b); bump(st.pairs||(st.pairs={}),pairKey(v,f));
+}
+
+/* ================= QUIZ ================= */
+let current=null, answered=false, lastKey='';
+const $ = id => document.getElementById(id);
+
+function buildPool(){
+  const pool=[];
+  for (const v of VERBS){
+    if (!filters.levels.includes(v.lvl) || !filters.groups.includes(groupOf(v))) continue;
+    for (const f of filters.forms) if (allowed(v,f)) pool.push([v,f]);
+  }
+  return pool;
+}
+
+function nextQuestion(){
+  TTS.stop();
+  if (wrapLeft===0 || reviewDone()){ showSummary(); return; }
+  let picked;
+  if (reviewState){
+    picked = pickReview();
+    $('quizBody').classList.remove('hidden'); $('emptyPool').classList.add('hidden');
+  } else {
+    const pool=buildPool();
+    $('quizBody').classList.toggle('hidden', !pool.length);
+    $('emptyPool').classList.toggle('hidden', !!pool.length);
+    if (!pool.length){ updateModeUI(); return; }
+    let cand = pool.filter(([v,f]) => !sessionSeen.has(pairKey(v,f)));
+    if (!cand.length){ sessionSeen.clear(); cand = pool; }        // whole pool done: start over
+    const fresh = cand.filter(([v]) => !recentVerbs.includes(v.b));
+    if (fresh.length) cand = fresh;
+    const weights = cand.map(([v,f]) => pairWeight(v,f));
+    let r = Math.random() * weights.reduce((a,b)=>a+b,0), idx = 0;
+    while (idx < cand.length-1 && (r -= weights[idx]) > 0) idx++;
+    picked = cand[idx];
+  }
+  const [v,f]=picked; lastKey=v.b+f;
+  sessionSeen.add(pairKey(v,f));
+  recentVerbs = [v.b, ...recentVerbs].slice(0,5);
+  current={v,f,answer:conjugate(v,f)};
+  answered=false;
+  renderQ();
+  $('qForm').textContent=FORM_BY_ID[f].label+' ('+FORM_BY_ID[f].jp+')';
+  $('qCat').textContent=FORM_BY_ID[f].cat;
+  const inp=$('answer'); inp.value=''; inp.className=''; inp.readOnly=false; inp.focus();
+  $('feedback').innerHTML='';
+  $('submitBtn').textContent='Check';
+  updateModeUI();
+}
+/* Katakana and hiragana count as the same (プレゼントすれば = ぷれぜんとすれば).
+   A long-vowel mark ー can also be typed as the vowel itself (コーチ = こおち; おう / えい spellings work too). */
+const toHira = s => s.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+const VOWEL_KANA = {a:'あ',i:'い',u:'う',e:'え',o:'お'};
+function kanaVariants(expected){
+  let out=[''];
+  const h=toHira(expected);
+  for (let i=0;i<h.length;i++){
+    const c=h[i];
+    if (c!=='ー'){ out=out.map(x=>x+c); continue; }
+    const v=(toRomaji(h[i-1]||'').match(/[aiueo]$/)||[''])[0];
+    const opts=['ー'];
+    if (v) opts.push(VOWEL_KANA[v]);
+    if (v==='o') opts.push('う');
+    if (v==='e') opts.push('い');
+    out=out.flatMap(x=>opts.map(o=>x+o));
+    if (out.length>64) out=out.slice(0,64);
+  }
+  return out;
+}
+const kanaMatch = (given, expected) => kanaVariants(expected).includes(toHira(given));
+
+function check(reveal){
+  if (!current || summaryOpen) return;
+  if (answered){ nextQuestion(); return; }
+  const inp=$('answer');
+  const given=romajiToKana(inp.value.trim(), true);
+  if (!given && !reveal) return;
+  inp.value=given;
+  const {v,f,answer}=current;
+  const ALL=answers(v,f);
+  let ok = !reveal && ALL.some(a => kanaMatch(given, toReading(a)) || given===toKanji(a));
+  let homo=null;   // listening: a different adjective that sounds the same (e.g. 暑い / 熱い) also counts
+  if (listening && !reveal && !ok){
+    homo = soundAlikes(v).find(o => allowed(o,f) && answers(o,f).some(a=>kanaMatch(given, toReading(a)))) || null;
+    ok = !!homo;
+  }
+  answered=true;
+  record(session,v,f,ok); record(lifetime,v,f,ok); updateSrs(v,f,ok);
+  store.set(LS_STATS, JSON.stringify(lifetime)); recombine();
+  streak = ok ? streak+1 : 0; bestStreak = Math.max(bestStreak, streak);
+  sessionLog.push({v,f,answer,given:reveal?'':given,ok});
+  if (reviewState && ok) reviewState.cleared.add(pairKey(v,f));
+  if (wrapLeft) wrapLeft--;
+  inp.className = ok?'ok':'bad'; inp.readOnly=true;
+  setNextLabel();
+  const ex=explain(v,f), say=toReading(answer);
+  let html=`<div class="feedback ${ok?'ok':'bad'}">
+    <div class="head">${ok?'Correct!':(reveal?'Answer':'Not quite')}${!ok&&!reveal?` — you wrote ${escH(given)}`:''}</div>
+    <div class="correct">${wordHTML(answer)} <span class="pill">${toReading(answer)}</span> ${speakBtn(say)}</div>`;
+  const alts=ALL.filter(a=>a!==answer && a!==v.b+'');
+  if (alts.length) html+=`<div class="also">Also correct: ${alts.map(a=>toKanji(a)).join(' · ')}</div>`;
+  if (!ok){
+    html+=`<div class="rule"><b>${toKanji(v.b)}</b> is ${ex.group}. ${ex.rule}</div>`;
+    html+=ex.notes.map(n=>`<div class="note">⚠ ${n}</div>`).join('');
+  }
+  html+=`<div class="rule" style="color:var(--muted);font-size:13px">${ex.use}</div>`;
+  if (homo) html+=`<div class="homo">You heard ${toKanji(homo.b)} (${homo.m}), which sounds the same, so that counts.</div>`;
+  else if (listening && soundAlikes(v).length) html+=`<div class="homo">Sounds the same: ${soundAlikes(v).map(o=>toKanji(o.b)+' ('+escH(o.m)+')').join(', ')}</div>`;
+  html+=`<div class="reportline"><a href="${reportHref(v,f,answer,reveal?'':given)}">⚑ Report a mistake in this question</a></div></div>`;
+  $('feedback').innerHTML=html;
+  if (listening) renderQ(true);
+  updateScore(); updateModeUI();
+  if (autoT.checked) TTS.say(say);
+}
+function updateScore(){
+  $('sScore').textContent=`${session.c} / ${session.t}`;
+  $('sStreak').textContent=streak;
+}
+
+/* ================= FILTERS UI ================= */
+function renderFilters(){
+  const cats=[...new Set(FORMS.map(f=>f.cat))];
+  let html='';
+  html+=`<h3>Conjugations<span class="small-links"><a data-all="forms">all</a><a data-none="forms">none</a></span></h3>`;
+  for (const c of cats){
+    html+=`<div style="font-size:13px;font-weight:600;margin:10px 0 4px">${c}</div><div class="checks">`;
+    for (const f of FORMS.filter(x=>x.cat===c))
+      html+=`<label><input type="checkbox" data-k="forms" value="${f.id}" ${filters.forms.includes(f.id)?'checked':''}> ${f.label} <span style="color:var(--muted)">${f.jp}</span></label>`;
+    html+='</div>';
+  }
+  html+=`<h3>Level</h3><div class="checks">`+['N5','N4','N3','N2'].map(l=>
+    `<label><input type="checkbox" data-k="levels" value="${l}" ${filters.levels.includes(l)?'checked':''}> ${l} (${VERBS.filter(v=>v.lvl===l).length} adjectives)</label>`).join('')+'</div>';
+  html+=`<h3>Adjective type</h3><div class="checks">`+Object.keys(GROUP_LABEL).map(g=>
+    `<label><input type="checkbox" data-k="groups" value="${g}" ${filters.groups.includes(g)?'checked':''}> ${GROUP_LABEL[g]}</label>`).join('')+'</div>';
+  html+=`<h3>Practice mode</h3><div class="checks"><label style="grid-column:1/-1"><input type="checkbox" id="srsToggle" ${filters.srs?'checked':''}> Focus on weak spots <span style="color:var(--muted)">— adjectives/forms you've missed show up more often; ones you know show up less</span></label></div>`;
+  $('filterBody').innerHTML=html;
+  $('poolInfo').textContent=`${buildPool().length} possible questions with current filters.`;
+}
+$('filterBody').addEventListener('change', e=>{
+  if (e.target.id==='srsToggle'){ filters.srs=e.target.checked; store.set(LS_FILTERS, JSON.stringify(filters)); return; }
+  const k=e.target.dataset.k; if(!k) return;
+  filters[k]=[...document.querySelectorAll(`input[data-k="${k}"]:checked`)].map(x=>x.value);
+  store.set(LS_FILTERS, JSON.stringify(filters));
+  $('poolInfo').textContent=`${buildPool().length} possible questions with current filters.`;
+});
+$('filterBody').addEventListener('click', e=>{
+  const all=e.target.dataset.all, none=e.target.dataset.none;
+  if (all) filters[all]=FORMS.map(f=>f.id);
+  else if (none) filters[none]=[];
+  else return;
+  store.set(LS_FILTERS, JSON.stringify(filters));
+  renderFilters();
+});
+
+/* ================= STATS UI ================= */
+function pct(o){ return o&&o.t ? Math.round(100*o.c/o.t) : null; }
+function bar(p){
+  if (p===null) return '<span style="color:var(--muted)">—</span>';
+  const col = p>=80?'var(--ok)':p>=60?'#e8a300':'var(--bad)';
+  return `<span class="bar"><i style="width:${p}%;background:${col}"></i></span> ${p}%`;
+}
+function cell(o){ return o&&o.t ? `${o.c}/${o.t}` : '—'; }
+
+function renderStats(){
+  const lifetime = combined;   // stats page shows all devices combined
+  renderSyncInfo();
+  let html=`<div class="totals">
+    <div>Session<b>${session.c} / ${session.t}</b>${pct(session)!==null?pct(session)+'%':''}</div>
+    <div>Lifetime<b>${lifetime.c} / ${lifetime.t}</b>${pct(lifetime)!==null?pct(lifetime)+'%':''}</div></div>`;
+  const lv=Object.values(srs);
+  html+=`<div style="font-size:13px;color:var(--muted);margin:4px 0 6px">Review queue: <b style="color:var(--bad)">${lv.filter(x=>x===0).length}</b> to review · <b style="color:#e8a300">${lv.filter(x=>x>0&&x<4).length}</b> learning · <b style="color:var(--ok)">${lv.filter(x=>x>=4).length}</b> mastered</div>`;
+  html+=`<h3>By conjugation (weakest first, lifetime)</h3>
+    <table><tr><th>Form</th><th class="num">Session</th><th class="num">Lifetime</th><th>Accuracy</th></tr>`;
+  const sorted=[...FORMS].sort((a,b)=>{
+    const pa=pct(lifetime.forms[a.id]), pb=pct(lifetime.forms[b.id]);
+    return (pa===null?101:pa)-(pb===null?101:pb);
+  });
+  for (const f of sorted)
+    html+=`<tr><td>${f.label} <span style="color:var(--muted)">${f.jp}</span></td><td class="num">${cell(session.forms[f.id])}</td><td class="num">${cell(lifetime.forms[f.id])}</td><td>${bar(pct(lifetime.forms[f.id]))}</td></tr>`;
+  html+='</table>';
+  html+=`<h3>By adjective type</h3><table><tr><th>Type</th><th class="num">Session</th><th class="num">Lifetime</th><th>Accuracy</th></tr>`;
+  for (const g in GROUP_LABEL)
+    html+=`<tr><td>${GROUP_LABEL[g]}</td><td class="num">${cell(session.groups[g])}</td><td class="num">${cell(lifetime.groups[g])}</td><td>${bar(pct(lifetime.groups[g]))}</td></tr>`;
+  html+='</table>';
+  const missed=Object.entries(lifetime.verbs).map(([b,o])=>[b,o,o.t-o.c]).filter(x=>x[2]>0)
+    .sort((a,b)=>b[2]-a[2]).slice(0,10);
+  html+=`<h3>Most-missed adjectives (lifetime)</h3>`;
+  html+= missed.length ? `<table><tr><th>Adjective</th><th class="num">Missed</th><th>Accuracy</th></tr>`+
+    missed.map(([b,o,m])=>`<tr><td>${wordHTML(b)} <span style="color:var(--muted)">${VERBS.find(v=>v.b===b)?.m||''}</span></td><td class="num">${m}</td><td>${bar(pct(o))}</td></tr>`).join('')+'</table>'
+    : '<div style="color:var(--muted);font-size:14px">None yet.</div>';
+  $('statsBody').innerHTML=html;
+}
+$('resetBtn').addEventListener('click',()=>{
+  if (!confirm('Reset all lifetime stats? This cannot be undone.')) return;
+  lifetime=blankStats(); store.set(LS_STATS, JSON.stringify(lifetime)); srs={}; store.set(LS_SRS, '{}');
+  srsT={}; store.set(LS_SRS_T,'{}'); peers={}; store.set(LS_PEERS,'{}'); recombine();
+  renderStats(); updateScore();
+});
+
+/* ================= SYNC (export / import) ================= */
+const fmtDate = ms => new Date(ms).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+function renderSyncInfo(){
+  const ids=Object.keys(peers);
+  $('syncInfo').innerHTML = `This device: ${lifetime.t} answers` +
+    (ids.length ? ` · Imported from ${ids.length} other device${ids.length>1?'s':''}: ` +
+      ids.map(id=>`${peers[id].stats.t} answers (as of ${fmtDate(peers[id].at)})`).join(', ') : ' · No other devices imported yet');
+}
+$('exportBtn').addEventListener('click',()=>{
+  const data={app:'jadj-adjective-quiz', version:1, exportedAt:Date.now(), device:deviceId,
+              own:lifetime, peers, srs, srsT};
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`adjective-quiz-progress-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  $('syncMsg').innerHTML='<span style="color:var(--ok)">Exported. Import this file on your other device.</span>';
+});
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async e=>{
+  const file=e.target.files[0]; e.target.value='';
+  if (!file) return;
+  let d;
+  try { d=JSON.parse(await file.text()); } catch(err){ d=null; }
+  if (!d || d.app!=='jadj-adjective-quiz' || !d.own){
+    $('syncMsg').innerHTML='<span style="color:var(--bad)">That file isn\'t an adjective quiz export.</span>'; return;
+  }
+  if (d.device===deviceId){
+    $('syncMsg').innerHTML='<span style="color:var(--bad)">That file came from this device, so there\'s nothing new to add.</span>'; return;
+  }
+  // stats: keep the newest snapshot of every device (never our own; ours is always current)
+  const incoming={...(d.peers||{}), [d.device]:{at:d.exportedAt, stats:d.own}};
+  let devs=0;
+  for (const id in incoming){
+    if (id===deviceId || !incoming[id] || !incoming[id].stats) continue;
+    if (!peers[id] || incoming[id].at > peers[id].at){ peers[id]=incoming[id]; devs++; }
+  }
+  // weak-spot levels: the most recently updated one wins
+  let pairs=0;
+  for (const k in (d.srs||{})){
+    const t=(d.srsT||{})[k]||0;
+    if (srs[k]===undefined || t > (srsT[k]||0)){ srs[k]=d.srs[k]; srsT[k]=t; pairs++; }
+  }
+  store.set(LS_PEERS, JSON.stringify(peers)); store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
+  recombine(); renderStats();
+  $('syncMsg').innerHTML = devs||pairs
+    ? `<span style="color:var(--ok)">Imported: updated results from ${devs} device${devs===1?'':'s'} and ${pairs} weak-spot entr${pairs===1?'y':'ies'}.</span>`
+    : '<span style="color:var(--muted)">Already up to date. Nothing new in that file.</span>';
+});
+
+/* ================= WIRING ================= */
+document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));
+  for (const t of ['quiz','filters','stats']) $('tab-'+t).classList.toggle('hidden', t!==btn.dataset.tab);
+  if (btn.dataset.tab==='filters') renderFilters();
+  if (btn.dataset.tab==='stats') renderStats();
+  if (btn.dataset.tab==='quiz'){
+    const stillValid = current && filters.forms.includes(current.f) && filters.levels.includes(current.v.lvl) && filters.groups.includes(current.v.g);
+    if (summaryOpen) return;
+    if (reviewState){ if (answered || !current) nextQuestion(); else $('answer').focus(); return; }
+    if (!stillValid || answered) nextQuestion(); else $('answer').focus();
+  }
+}));
+
+const inp=$('answer');
+let composing=false;
+inp.addEventListener('compositionstart',()=>composing=true);
+inp.addEventListener('compositionend',()=>composing=false);
+// nnIdx: position of a ん that was just created from "nn". If a vowel/y is typed right after it,
+// the second n is restored so "onna" still gives おんな (like a standard IME).
+let nnIdx=null;
+inp.addEventListener('input',e=>{
+  if (composing || answered) return;
+  let raw=inp.value;
+  if (nnIdx!==null && e.inputType==='insertText' && raw.length===nnIdx+2 &&
+      raw[nnIdx]==='ん' && /[aiueoy]/i.test(raw[nnIdx+1])){
+    raw=raw.slice(0,nnIdx+1)+'n'+raw.slice(nnIdx+1);
+  }
+  nnIdx=null;
+  const conv=romajiToKana(raw,false);
+  if (/nn$/i.test(raw) && conv.endsWith('ん')) nnIdx=conv.length-1;
+  if (conv!==inp.value){ inp.value=conv; inp.setSelectionRange(conv.length,conv.length); }
+});
+document.addEventListener('keydown',e=>{
+  if (e.key==='Enter' && !$('tab-quiz').classList.contains('hidden') && !composing){ e.preventDefault(); check(false); }
+});
+$('submitBtn').addEventListener('click',()=>check(false));
+$('revealBtn').addEventListener('click',()=>{ if(!answered) check(true); });
+
+const furi=$('furiToggle');
+furi.checked = store.get(LS_FURI)!=='off';
+document.body.classList.toggle('nofuri',!furi.checked);
+furi.addEventListener('change',()=>{
+  document.body.classList.toggle('nofuri',!furi.checked);
+  store.set(LS_FURI, furi.checked?'on':'off');
+});
+const LS_ROMA='jadj_roma_v1', romaT=$('romaToggle');
+romaT.checked = store.get(LS_ROMA)==='on';
+document.body.classList.toggle('roma', romaT.checked);
+romaT.addEventListener('change',()=>{
+  document.body.classList.toggle('roma', romaT.checked);
+  store.set(LS_ROMA, romaT.checked?'on':'off');
+  if (!answered) $('answer').focus();
+});
+
+
+/* ================= DARK MODE + AUDIO ================= */
+const LS_DARK='jadj_dark_v1', LS_AUTO='jadj_autoplay_v1';
+const darkT=$('darkToggle');
+darkT.checked=document.documentElement.classList.contains('dark');
+darkT.addEventListener('change',()=>{ document.documentElement.classList.toggle('dark',darkT.checked); store.set(LS_DARK, darkT.checked?'on':'off'); });
+const TTS=(()=>{
+  const ok = typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined';
+  let voice=null;
+  const pick=()=>{ const ja=speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang));
+    voice = ja.find(v=>/natural|online|google|nanami|kyoko|o-ren|haruka/i.test(v.name)) || ja[0] || null; };
+  if (ok){ pick(); speechSynthesis.onvoiceschanged=pick; }
+  return { ok,
+    say(text){ if(!ok||!text) return; speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; if(voice) u.voice=voice; u.rate=0.9; speechSynthesis.speak(u); },
+    stop(){ if(ok) try{ speechSynthesis.cancel(); }catch(e){} } };
+})();
+const escH = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const speakBtn = (text,label) => TTS.ok&&text ? `<button type="button" class="speak" data-say="${escH(text)}" title="Play audio">🔊${label?' '+label:''}</button>` : '';
+const autoT=$('autoToggle');
+autoT.checked = store.get(LS_AUTO)==='on';
+if (!TTS.ok){ autoT.disabled=true; autoT.parentElement.title='This browser has no speech support'; }
+autoT.addEventListener('change',()=>store.set(LS_AUTO, autoT.checked?'on':'off'));
+for (const id of ['feedback','summary']) $(id).addEventListener('click',e=>{
+  const b=e.target.closest('.speak'); if(!b) return; TTS.say(b.dataset.say); if (id==='feedback') $('answer').focus();
+});
+
+/* ================= LISTENING MODE ================= */
+// Hide the adjective, play it aloud, show it again once answered.
+const LS_LISTEN='jadj_listen_v1';
+let listening = TTS.ok && store.get(LS_LISTEN)==='on';
+const SOUND = {};
+for (const v of VERBS){ const r=toReading(v.b); (SOUND[r]=SOUND[r]||[]).push(v); }
+const soundAlikes = v => SOUND[toReading(v.b)].filter(o=>o!==v);
+function renderQ(revealed){
+  if (!current) return;
+  const v=current.v;
+  if (listening && !revealed){
+    $('qVerb').innerHTML=`<button type="button" class="listenq" id="playQ" title="Play again"><span class="ico">🔊</span> Listen</button>`;
+    $('qMeaning').textContent=v.lvl+'  ·  type the form of the adjective you hear';
+    $('playQ').addEventListener('click',()=>{ TTS.say(toReading(v.b)); $('answer').focus(); });
+    TTS.say(toReading(v.b));   // spoken straight away so iOS treats it as part of the tap / key press
+  } else {
+    $('qVerb').innerHTML=wordHTML(v.b);
+    $('qMeaning').textContent=v.m+'  ·  '+v.lvl;
+  }
+}
+function setListenUI(){
+  const b=$('listenBtn');
+  b.classList.toggle('on', listening);
+  b.textContent = listening ? '🎧 Listening: on' : '🎧 Listening';
+  if (!TTS.ok){ b.disabled=true; b.title='This browser has no speech support'; }
+}
+$('listenBtn').addEventListener('click',()=>{
+  listening=!listening; store.set(LS_LISTEN, listening?'on':'off'); setListenUI();
+  if (current && !summaryOpen) renderQ(answered);
+  $('answer').focus();
+});
+setListenUI();
+
+/* ================= REPORT A MISTAKE ================= */
+const REPORT_TO='support.kohikori@gmail.com';
+function reportHref(v,f,answer,given){
+  const subj=`Mistake report: Adjective Quiz – ${toKanji(v.b)} (${FORM_BY_ID[f].label})`;
+  const body=[
+    'App: Adjective Quiz',
+    `Adjective: ${toKanji(v.b)} (${toReading(v.b)}) – ${v.m} [${v.lvl}, ${v.g==='na'?'な-adjective':v.g==='ii'?'いい (irregular)':'い-adjective'}]`,
+    `Form asked: ${FORM_BY_ID[f].label} (${FORM_BY_ID[f].jp})`,
+    `App's answer: ${answers(v,f).map(toKanji).join(' / ')} (${toReading(answer)})`,
+    `My answer: ${given||'(revealed)'}`,
+    listening?'Mode: listening':'',
+    '','What looks wrong:',''
+  ].filter((x,i,a)=>x!==''||i>=a.length-3).join('\n');
+  return 'mailto:'+REPORT_TO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
+
+/* ================= REVIEW MODE · WRAP UP · SESSION SUMMARY ================= */
+const REVIEW_SIZE=25, REVIEW_MIN=0.3, WRAP_COUNT=5;
+let reviewState=null, wrapLeft=null, summaryOpen=false, sessionLog=[], bestStreak=0;
+const reviewDone = () => !!reviewState && reviewState.cleared.size>=reviewState.total;
+const errRate = o => o && o.t ? (o.t-o.c+0.5)/(o.t+1) : null;   // smoothed miss rate
+function setNextLabel(){ if (answered) $('submitBtn').textContent = (wrapLeft===0 || reviewDone()) ? 'Finish →' : 'Next →'; }
+function pickWeighted(list, w){
+  const tot=list.reduce((a,x)=>a+w(x),0); let r=Math.random()*tot;
+  for (const x of list){ r-=w(x); if (r<=0) return x; }
+  return list[list.length-1];
+}
+function updateModeUI(){
+  $('reviewBtn').textContent = reviewState ? 'Exit review' : 'Review weak spots';
+  $('reviewBtn').classList.toggle('on', !!reviewState);
+  $('wrapBtn').textContent = wrapLeft===null ? 'Wrap up' : 'Cancel wrap-up';
+  $('wrapBtn').classList.toggle('on', wrapLeft!==null);
+  const bits=[];
+  if (reviewState) bits.push(`Review mode · ${reviewState.total-reviewState.cleared.size} of ${reviewState.total} weak items left${reviewState.focus?' · focus: '+reviewState.focus:''}`);
+  if (wrapLeft!==null) bits.push(wrapLeft>0 ? `Wrapping up · ${wrapLeft} question${wrapLeft===1?'':'s'} left` : 'Done. Press Finish to see your summary');
+  const mi=$('modeInfo'); mi.classList.remove('warn');
+  mi.textContent=bits.join('  ·  '); mi.classList.toggle('hidden', !bits.length || summaryOpen);
+}
+function modeMsg(t){ const mi=$('modeInfo'); mi.textContent=t; mi.classList.add('warn'); mi.classList.remove('hidden'); }
+function closeSummary(reset){
+  summaryOpen=false; reviewState=null; wrapLeft=null;
+  $('summary').classList.add('hidden'); $('modebar').classList.remove('hidden');
+  if (reset) resetSession();
+  updateScore(); nextQuestion();
+}
+function openSummary(title, statsHtml, missHtml){
+  summaryOpen=true; current=null; TTS.stop();
+  for (const id of ['quizBody','emptyPool','modebar','modeInfo']) $(id).classList.add('hidden');
+  $('summary').classList.remove('hidden');
+  $('sumTitle').textContent=title;
+  $('sumBody').innerHTML=statsHtml+missHtml;
+}
+function summaryTotals(){
+  const p=pct(session);
+  let h=`<div class="totals"><div>Score<b>${session.c} / ${session.t}</b>${p!==null?p+'%':''}</div><div>Best streak<b>${bestStreak}</b></div>`;
+  if (reviewState) h+=`<div>Weak items cleared<b>${reviewState.cleared.size} / ${reviewState.total}</b></div>`;
+  return h+'</div>';
+}
+$('reviewBtn').addEventListener('click',()=>{
+  if (reviewState){ reviewState=null; setNextLabel(); updateModeUI(); $('answer').focus(); return; }
+  const items=buildReview();
+  if (!items.length){ modeMsg('No weak spots yet with your current filters. Answer some more questions first, then try again.'); return; }
+  reviewState={items, cleared:new Set(), total:items.length, focus:reviewFocus(items)};
+  nextQuestion();
+});
+$('wrapBtn').addEventListener('click',()=>{
+  wrapLeft = wrapLeft===null ? WRAP_COUNT : null;
+  setNextLabel(); updateModeUI(); $('answer').focus();
+});
+$('newSessionBtn').addEventListener('click',()=>closeSummary(true));
+$('keepGoingBtn').addEventListener('click',()=>closeSummary(false));
+
+const SRS_ERR=[1,0.6,0.3,0.15,0.05];
+// How shaky is this verb+form? Mostly the exact pair's record, nudged by the verb's and the form's overall record.
+function weakness(v,f){
+  const k=pairKey(v,f), lvl=srs[k];
+  const pe=errRate(combined.pairs[k]), se = lvl===undefined ? null : SRS_ERR[Math.min(lvl,4)];
+  const pair = pe!==null && se!==null ? (pe+se)/2 : (pe ?? se);
+  const ve=errRate(combined.verbs[v.b]), fe=errRate(combined.forms[f]);
+  const ps=combined.pairs[k], missed=(ps && ps.t>ps.c) || (lvl!==undefined && lvl<=1);
+  if (pair!==null && !missed) return null;   // only ever answered correctly: not a weak spot
+  if (pair===null){   // never asked this exact pair: only include it if both the verb and the form have a shaky record
+    const vs=combined.verbs[v.b], fs=combined.forms[f];
+    if (!vs || !fs || vs.t<2 || fs.t<3 || ve<0.4 || fe<0.4) return null;
+    return 0.35 + 0.3*(ve+fe)/2;     // ranks below pairs you've actually missed
+  }
+  return 0.6*pair + 0.2*(ve ?? pair) + 0.2*(fe ?? pair);
+}
+function buildReview(){
+  return buildPool().map(([v,f])=>[v,f,weakness(v,f)]).filter(x=>x[2]!==null && x[2]>=REVIEW_MIN)
+    .sort((a,b)=>b[2]-a[2]).slice(0,REVIEW_SIZE);
+}
+function reviewFocus(items){
+  const n={}; for (const [,f] of items) n[f]=(n[f]||0)+1;
+  return Object.keys(n).sort((a,b)=>n[b]-n[a]).slice(0,3).map(f=>FORM_BY_ID[f].label).join(', ');
+}
+function pickReview(){
+  const left=reviewState.items.filter(([v,f])=>!reviewState.cleared.has(pairKey(v,f)));
+  let cand = left.length>1 ? left.filter(([v,f])=>v.b+f!==lastKey) : left;
+  const fresh=cand.filter(([v])=>v.b!==recentVerbs[0]); if (fresh.length) cand=fresh;
+  return pickWeighted(cand, x=>x[2]);
+}
+function resetSession(){ session=blankStats(); streak=0; bestStreak=0; sessionLog=[]; sessionSeen.clear(); recentVerbs=[]; }
+function showSummary(){
+  const miss=new Map();
+  for (const e of sessionLog){ if (e.ok) continue; const k=pairKey(e.v,e.f), m=miss.get(k)||{...e,n:0}; m.n++; m.given=e.given; miss.set(k,m); }
+  const rows=[...miss.values()].sort((a,b)=>b.n-a.n);
+  const missHtml = rows.length
+    ? `<h3>To review (${rows.length})</h3><table><tr><th>Adjective</th><th>Form</th><th>Correct</th><th>You wrote</th></tr>`+rows.map(e=>`<tr>
+        <td>${wordHTML(e.v.b)}</td><td>${FORM_BY_ID[e.f].label}</td>
+        <td>${wordHTML(e.answer)} ${speakBtn(toReading(e.answer))}</td>
+        <td>${e.given?escH(e.given):'<span style="color:var(--muted)">(revealed)</span>'}${e.n>1?` <span class="pill">missed ×${e.n}</span>`:''}</td></tr>`).join('')+'</table>'
+    : (session.t ? '<div style="text-align:center;color:var(--muted)">No misses this session. Nice work.</div>' : '');
+  openSummary(reviewDone() ? 'Review complete' : 'Session complete', summaryTotals(), missHtml);
+}
+
+if (!store.persistent) $('storeWarn').classList.remove('hidden');
+updateScore();
+nextQuestion();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ---- keep the quiz word on one line: shrink it when it's wider than the card ---- */
+(function(){
+  const el=document.getElementById('qVerb');
+  if (!el) return;
+  const fit=()=>{
+    el.style.fontSize='';
+    const w=el.clientWidth, sw=el.scrollWidth;
+    if (w && sw>w){
+      const base=parseFloat(getComputedStyle(el).fontSize);
+      el.style.fontSize=Math.max(22, Math.floor(base*w/sw*0.97))+'px';
+    }
+  };
+  new MutationObserver(fit).observe(el,{childList:true,subtree:true,characterData:true});
+  window.addEventListener('resize',fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  fit();
+})();
+</script>
+</body>
+</html>
