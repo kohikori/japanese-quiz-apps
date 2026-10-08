@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kohikori · Japanese Practice</title>
+<meta name="description" content="Free Japanese practice apps: verb conjugation and JLPT vocabulary quizzes, made by a learner for learners.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/home-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kohikori">
+<meta name="theme-color" content="#27336b">
+<script>(function(){var d;try{d=localStorage.getItem('jvq_dark_v1')||localStorage.getItem('jvocab_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+<style>
+  :root{
+    --bg:#fafafa; --card:#fff; --text:#222; --muted:#6b6f76; --line:#e3e3e3;
+    --accent:#3b5bdb; --accentbg:#edf2ff; --ink:#27336b; --ok:#2b8a3e;
+  }
+  :root.dark{--bg:#15171c;--card:#1e2128;--text:#e4e6ea;--muted:#9aa0aa;--line:#353a45;--accent:#7b93f7;--accentbg:#262d48;--ink:#c7d0ff;--ok:#69db7c;color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans",sans-serif;background:var(--bg);color:var(--text);-webkit-text-size-adjust:100%}
+  main{max-width:760px;margin:0 auto;padding:40px 16px 8px}
+  .hidden{display:none!important}
+
+  .brand{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .brand img{width:52px;height:52px;border-radius:12px;flex:none}
+  .brand h1{margin:0;font-size:26px;letter-spacing:-.01em;color:var(--ink)}
+  .tagline{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+  .apps{display:grid;gap:14px;margin-top:28px}
+  a.app{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:20px;border:1px solid var(--line);
+    border-radius:14px;background:var(--card);color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+  a.app:hover{border-color:var(--accent)}
+  a.app:active{transform:scale(.99)}
+  a.app:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .tile{width:64px;height:64px;border-radius:15px;display:grid;place-items:center;color:#fff;font-size:34px;font-weight:700;
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+  .app h2{margin:0;font-size:18px}
+  .app h2 .jp{color:var(--muted);font-weight:500;margin-right:6px}
+  .app p{margin:5px 0 8px;font-size:14px;line-height:1.5;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accentbg);color:var(--accent)}
+  .progress{margin-top:10px;font-size:13px;color:var(--text)}
+  .progress .bar{display:inline-block;width:80px;height:6px;border-radius:3px;background:var(--line);vertical-align:middle;margin-left:8px;overflow:hidden}
+  .progress .bar i{display:block;height:100%;background:var(--ok)}
+  .progress.none{color:var(--muted)}
+  .go{color:var(--accent);font-size:22px;padding-left:4px}
+
+  .install{margin-top:22px;padding:16px 18px;border-radius:14px;border:1px solid var(--accent);background:var(--accentbg);font-size:14px;line-height:1.55;position:relative}
+  .install b{color:var(--ink)}
+  .install ol{margin:8px 0 6px;padding-left:20px}
+  .install li{margin:2px 0}
+  .install .share{display:inline-block;width:16px;height:16px;vertical-align:-3px}
+  .install .note{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .install .x{position:absolute;top:8px;right:10px;border:none;background:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:4px}
+  .install button.primary{margin-top:8px;font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-family:inherit}
+  :root.dark .install button.primary{background:#4c6ef5;border-color:#4c6ef5}
+
+  .local{margin-top:18px;font-size:12.5px;color:var(--muted);text-align:center}
+
+  .sitefoot{max-width:760px;margin:24px auto 40px;padding:18px 16px 0;border-top:1px solid var(--line);
+    display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+  .sitefoot p{margin:0;line-height:1.6;max-width:46ch}
+  .sitefoot .links{display:flex;gap:8px;flex-wrap:wrap}
+  .sitefoot a{display:inline-block;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-size:13px}
+  .sitefoot a:hover{border-color:var(--accent);color:var(--accent)}
+  .sitefoot a.donate{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+
+  @media (max-width:520px){
+    main{padding-top:28px}
+    a.app{grid-template-columns:auto 1fr;padding:16px;gap:14px;align-items:start}
+    .go{display:none}
+    .tile{width:54px;height:54px;font-size:28px;border-radius:13px}
+    .sitefoot{justify-content:center;text-align:center}
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <img src="icons/home-180.png" alt="">
+    <div>
+      <h1>Kohikori</h1>
+      <p class="tagline">Free Japanese practice, built by a learner for learners.</p>
+    </div>
+  </div>
+
+  <!-- install help: shown only where it applies -->
+  <div class="install hidden" id="installIOS">
+    <button class="x" id="dismissIOS" aria-label="Dismiss">×</button>
+    <b>Put Kohikori on your home screen</b>
+    <ol>
+      <li>Tap the <b>Share</b> button
+        <svg class="share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+        in your browser bar.</li>
+      <li>Scroll down and choose <b>Add to Home Screen</b>.</li>
+    </ol>
+    It opens full-screen like an app and works offline.
+    <div class="note">Already have progress here? The installed app keeps its own copy of your stats, so use <b>Export progress</b> on each quiz's Stats tab first, then <b>Import progress</b> in the installed app.</div>
+  </div>
+  <div class="install hidden" id="installOther">
+    <button class="x" id="dismissOther" aria-label="Dismiss">×</button>
+    <b>Install Kohikori as an app</b>
+    <div>Get a home-screen icon, full-screen quizzes and offline practice.</div>
+    <button class="primary" id="installBtn">Install</button>
+  </div>
+
+  <div class="apps">
+    <a class="app" href="verb.html">
+      <div class="tile" style="background:#3b5bdb">活</div>
+      <div>
+        <h2><span class="jp">活用</span>Verb Conjugation Quiz</h2>
+        <p>Conjugate 1,500 verbs into 18 forms, from ます and て to passive and causative. Every mistake comes with the rule that explains it.</p>
+        <div class="chips"><span class="chip">N5–N2</span><span class="chip">Type in romaji</span><span class="chip">Listening mode</span></div>
+        <div class="progress none" id="pVerb">Not started yet</div>
+      </div>
+      <span class="go" aria-hidden="true">›</span>
+    </a>
+    <a class="app" href="vocab.html">
+      <div class="tile" style="background:#0b7285">語</div>
+      <div>
+        <h2><span class="jp">語彙</span>Vocabulary Quiz</h2>
+        <p>4,800 JLPT words with example sentences. Type the meaning in English, and small typos are forgiven.</p>
+        <div class="chips"><span class="chip">N5–N2</span><span class="chip">Example sentences</span><span class="chip">Listening mode</span></div>
+        <div class="progress none" id="pVocab">Not started yet</div>
+      </div>
+      <span class="go" aria-hidden="true">›</span>
+    </a>
+  </div>
+
+  <div class="local">Your progress is saved on this device. Use Export / Import on a quiz's Stats tab to move it to another one.</div>
+</main>
+
+<footer class="sitefoot">
+  <p>Built by one learner, for others. Found a wrong answer or have an idea? I'd love to hear it.</p>
+  <div class="links">
+    <a href="mailto:support.kohikori@gmail.com?subject=Feedback:%20Kohikori">Send feedback</a>
+    <a class="donate" href="https://paypal.me/kohikori" target="_blank" rel="noopener">☕ Donate via PayPal</a>
+  </div>
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const get = k => { try { return localStorage.getItem(k); } catch(e){ return null; } };
+const set = (k,v) => { try { localStorage.setItem(k,v); } catch(e){} };
+
+/* ---- progress on each card (answers given on this device plus any imported devices) ---- */
+function total(statsKey, peersKey){
+  let c=0, t=0;
+  try { const s=JSON.parse(get(statsKey)||'null'); if (s){ c+=s.c||0; t+=s.t||0; } } catch(e){}
+  try { const p=JSON.parse(get(peersKey)||'null')||{}; for (const id in p){ const s=p[id]&&p[id].stats; if (s){ c+=s.c||0; t+=s.t||0; } } } catch(e){}
+  return {c,t};
+}
+function showProgress(el, {c,t}){
+  if (!t) return;
+  const pct=Math.round(100*c/t);
+  el.classList.remove('none');
+  el.innerHTML=`${t.toLocaleString()} answered · ${pct}% correct<span class="bar"><i style="width:${pct}%"></i></span>`;
+}
+showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
+showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
+
+/* ---- install help ---- */
+const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+const DISMISS='khome_install_dismissed_v1';
+if (!standalone && get(DISMISS)!=='1'){
+  if (isIOS) $('installIOS').classList.remove('hidden');
+  let deferred=null;
+  window.addEventListener('beforeinstallprompt', e => {        // Chrome / Edge / Android
+    e.preventDefault(); deferred=e; $('installOther').classList.remove('hidden');
+  });
+  $('installBtn').addEventListener('click', async () => {
+    if (!deferred) return;
+    deferred.prompt(); await deferred.userChoice.catch(()=>{}); deferred=null;
+    $('installOther').classList.add('hidden');
+  });
+}
+for (const [btn,box] of [['dismissIOS','installIOS'],['dismissOther','installOther']])
+  $(btn).addEventListener('click', () => { $(box).classList.add('hidden'); set(DISMISS,'1'); });
+
+/* ---- offline support (only works when served from a website, e.g. GitHub Pages) ---- */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
