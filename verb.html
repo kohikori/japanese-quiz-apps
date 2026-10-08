@@ -196,7 +196,7 @@
     <h2>Stats</h2>
     <div id="statsBody"></div>
     <h3>Sync between devices</h3>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Export a file here, open the quiz on another computer or phone, and import it there. Results are combined without double-counting, so you can sync back and forth as often as you like.</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px"><b>Tip:</b> the <a href="./#sync">home page</a> backs up and restores all quizzes at once. Export a file here, open the quiz on another computer or phone, and import it there. Results are combined without double-counting, so you can sync back and forth as often as you like.</div>
     <div class="buttons" style="justify-content:flex-start;margin-top:0">
       <button class="btn" id="exportBtn">Export progress</button>
       <button class="btn" id="importBtn">Import progress</button>
@@ -2277,6 +2277,7 @@ $('importFile').addEventListener('change',async e=>{
   if (!file) return;
   let d;
   try { d=JSON.parse(await file.text()); } catch(err){ d=null; }
+  if (d && d.app==='kohikori-backup') d=(d.apps||{})['verb'];   // all-in-one backup from the home page
   if (!d || d.app!=='jvq-verb-quiz' || !d.own){
     $('syncMsg').innerHTML='<span style="color:var(--bad)">That file isn\'t a verb quiz export.</span>'; return;
   }
@@ -2285,6 +2286,7 @@ $('importFile').addEventListener('change',async e=>{
   }
   // stats: keep the newest snapshot of every device (never our own; ours is always current)
   const incoming={...(d.peers||{}), [d.device]:{at:d.exportedAt, stats:d.own}};
+  if (!(d.own && d.own.t)) delete incoming[d.device];
   let devs=0;
   for (const id in incoming){
     if (id===deviceId || !incoming[id] || !incoming[id].stats) continue;

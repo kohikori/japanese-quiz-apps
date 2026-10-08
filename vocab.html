@@ -177,7 +177,7 @@
   <section id="tab-filters" class="card hidden"><h2>Filters</h2><div id="filterBody"></div><div class="poolinfo" id="poolInfo"></div></section>
   <section id="tab-stats" class="card hidden"><h2>Stats</h2><div id="statsBody"></div>
     <h3>Sync between devices</h3>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Export a file here, open the quiz on another computer or phone, and import it there. Results and your ✱ synonyms are combined without double-counting, so you can sync back and forth as often as you like.</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px"><b>Tip:</b> the <a href="./#sync">home page</a> backs up and restores all quizzes at once. Export a file here, open the quiz on another computer or phone, and import it there. Results and your ✱ synonyms are combined without double-counting, so you can sync back and forth as often as you like.</div>
     <div class="buttons" style="justify-content:flex-start;margin-top:0">
       <button class="btn" id="exportBtn">Export progress</button>
       <button class="btn" id="importBtn">Import progress</button>
@@ -579,10 +579,12 @@ $('importFile').addEventListener('change',async e=>{
   const file=e.target.files[0]; e.target.value='';
   if (!file) return;
   let d; try { d=JSON.parse(await file.text()); } catch(err){ d=null; }
+  if (d && d.app==='kohikori-backup') d=(d.apps||{})['vocab'];   // all-in-one backup from the home page
   if (!d || d.app!=='jvocab-quiz' || !d.own){ $('syncMsg').innerHTML='<span style="color:var(--bad)">That file isn\'t a vocab quiz export.</span>'; return; }
   if (d.device===deviceId){ $('syncMsg').innerHTML='<span style="color:var(--bad)">That file came from this device, so there\'s nothing new to add.</span>'; return; }
   // results: keep the newest snapshot from every other device
   const incoming={...(d.peers||{}), [d.device]:{at:d.exportedAt, stats:d.own}};
+  if (!(d.own && d.own.t)) delete incoming[d.device];
   let devs=0;
   for (const id in incoming){
     if (id===deviceId || !incoming[id] || !incoming[id].stats) continue;

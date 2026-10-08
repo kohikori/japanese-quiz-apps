@@ -58,7 +58,22 @@
   .install button.primary{margin-top:8px;font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-family:inherit}
   :root.dark .install button.primary{background:#4c6ef5;border-color:#4c6ef5}
 
-  .local{margin-top:18px;font-size:12.5px;color:var(--muted);text-align:center}
+  .sync{margin-top:26px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+  .sync h2{margin:0 0 6px;font-size:17px}
+  .sync .sub{margin:0 0 14px;font-size:13.5px;line-height:1.55;color:var(--muted)}
+  .syncrow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .step{display:flex;flex-direction:column;gap:8px}
+  .step .lbl{font-size:12px;color:var(--muted)}
+  .sbtn{font-size:14px;padding:10px 14px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;text-align:left}
+  .sbtn:hover{border-color:var(--accent)}
+  .sbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  :root.dark .sbtn.primary{background:#4c6ef5;border-color:#4c6ef5}
+  .codebox{display:flex;gap:8px;margin-top:12px;align-items:stretch}
+  .codebox textarea{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);resize:vertical;min-width:0}
+  .smsg{font-size:13.5px;margin-top:12px;line-height:1.55}
+  .tips{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.55}
+  .tips #lastBackup{display:block;margin-top:4px}
+  @media (max-width:520px){ .syncrow{grid-template-columns:1fr} .codebox{flex-direction:column} }
 
   .sitefoot{max-width:760px;margin:24px auto 40px;padding:18px 16px 0;border-top:1px solid var(--line);
     display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
@@ -98,7 +113,7 @@
       <li>Scroll down and choose <b>Add to Home Screen</b>.</li>
     </ol>
     It opens full-screen like an app and works offline.
-    <div class="note">Already have progress here? The installed app keeps its own copy of your stats, so use <b>Export progress</b> on each quiz's Stats tab first, then <b>Import progress</b> in the installed app.</div>
+    <div class="note">Already have progress here? The installed app keeps its own copy of your stats. Tap <b>Copy sync code</b> under Backup &amp; sync below first, then <b>Paste a sync code</b> in the installed app.</div>
   </div>
   <div class="install hidden" id="installOther">
     <button class="x" id="dismissOther" aria-label="Dismiss">×</button>
@@ -150,7 +165,25 @@
     </a>
   </div>
 
-  <div class="local">Your progress is saved on this device. Use Export / Import on a quiz's Stats tab to move it to another one.</div>
+  <section class="sync" id="sync">
+    <h2>Backup &amp; sync</h2>
+    <p class="sub">Your progress is saved on each device separately. To move it between your phone and laptop, back up on one and restore on the other. Restoring <b>merges</b> results, so nothing gets overwritten. Do it in both directions and both devices end up with everything.</p>
+    <div class="syncrow">
+      <div class="step"><span class="lbl">From this device</span>
+        <button class="sbtn primary" id="shareBtn">📤 Share backup</button>
+        <button class="sbtn" id="copyBtn">📋 Copy sync code</button></div>
+      <div class="step"><span class="lbl">On your other device</span>
+        <button class="sbtn" id="restoreBtn">📥 Restore from file</button>
+        <button class="sbtn" id="pasteBtn">📝 Paste a sync code</button>
+        <input type="file" id="restoreFile" accept=".json,application/json" class="hidden"></div>
+    </div>
+    <div class="codebox hidden" id="codeBox">
+      <textarea id="codeIn" rows="3" placeholder="Paste the code that starts with KOHI…" spellcheck="false" autocapitalize="off"></textarea>
+      <button class="sbtn primary" id="codeGo">Restore</button>
+    </div>
+    <div id="syncMsg" class="smsg"></div>
+    <div class="tips"><b>Share backup</b> opens your phone's share sheet: AirDrop, Messages, email or Save to Files. <b>Copy sync code</b> is the same backup as text, handy for pasting into a note or a message to yourself. <span id="lastBackup"></span></div>
+  </section>
 </main>
 
 <footer class="sitefoot">
@@ -204,6 +237,150 @@ for (const [btn,box] of [['dismissIOS','installIOS'],['dismissOther','installOth
   $(btn).addEventListener('click', () => { $(box).classList.add('hidden'); set(DISMISS,'1'); });
 
 /* ---- offline support (only works when served from a website, e.g. GitHub Pages) ---- */
+/* ================= BACKUP & SYNC (all quizzes at once) =================
+   Each quiz keeps its own results on this device. A backup bundles every quiz's results; restoring
+   MERGES them in (it never overwrites), exactly like each quiz's own Import button. */
+const SYNC_APPS = [
+  {key:'verb',  name:'Verbs',      p:'jvq_',    app:'jvq-verb-quiz'},
+  {key:'adj',   name:'Adjectives', p:'jadj_',   app:'jadj-adjective-quiz'},
+  {key:'cnt',   name:'Counters',   p:'jcnt_',   app:'jcnt-counters-quiz'},
+  {key:'vocab', name:'Vocabulary', p:'jvocab_', app:'jvocab-quiz', syn:true},
+];
+const jget = k => { try { return JSON.parse(get(k)||'null'); } catch(e){ return null; } };
+const jset = (k,v) => set(k, JSON.stringify(v));
+function deviceOf(a){
+  let id=get(a.p+'device_v1');
+  if (!id){ id=Math.random().toString(36).slice(2,10); set(a.p+'device_v1', id); }
+  return id;
+}
+function exportApp(a){
+  const d={app:a.app, version:1, exportedAt:Date.now(), device:deviceOf(a),
+    own: jget(a.p+'stats_v1') || {c:0,t:0}, peers: jget(a.p+'peers_v1')||{}, srs: jget(a.p+'srs_v1')||{}, srsT: jget(a.p+'srs_time_v1')||{}};
+  if (a.syn) d.synLog = jget(a.p+'synonym_log_v1')||{};
+  return d;
+}
+const buildBackup = () => ({app:'kohikori-backup', version:1, exportedAt:Date.now(),
+  apps:Object.fromEntries(SYNC_APPS.map(a=>[a.key, exportApp(a)]))});
+
+function normSyn(s){   // same rule the vocab quiz uses to match synonyms
+  let t=s.toLowerCase().replace(/[’‘`]/g,"'").replace(/[^a-z0-9' \-]/g,' ').replace(/-/g,' ').replace(/\s+/g,' ').trim();
+  return t.replace(/^(to be |to |be |a |an |the )/,'').replace(/^(a |an |the )/,'');
+}
+function mergeApp(a, d){
+  if (!d || d.app!==a.app) return null;
+  const me=deviceOf(a);
+  if (d.device===me) return {self:true};
+  const peers=jget(a.p+'peers_v1')||{}, srs=jget(a.p+'srs_v1')||{}, srsT=jget(a.p+'srs_time_v1')||{};
+  const incoming={...(d.peers||{})};
+  if (d.own && d.own.t) incoming[d.device]={at:d.exportedAt, stats:d.own};
+  let devs=0, spots=0, syn=0;
+  for (const id in incoming){
+    if (id===me || !incoming[id] || !incoming[id].stats) continue;
+    if (!peers[id] || incoming[id].at>peers[id].at){ peers[id]=incoming[id]; devs++; }
+  }
+  for (const k in (d.srs||{})){ const t=(d.srsT||{})[k]||0; if (srs[k]===undefined || t>(srsT[k]||0)){ srs[k]=d.srs[k]; srsT[k]=t; spots++; } }
+  jset(a.p+'peers_v1',peers); jset(a.p+'srs_v1',srs); jset(a.p+'srs_time_v1',srsT);
+  if (a.syn && d.synLog){
+    const log=jget(a.p+'synonym_log_v1')||{}, us=jget(a.p+'user_synonyms_v1')||{};
+    for (const key in d.synLog){
+      const r=d.synLog[key], l=log[key]; if (l && l.t>=r.t) continue;
+      log[key]=r; syn++;
+      const id=key.slice(0,key.indexOf('|')), cur=us[id]||[], has=cur.some(x=>id+'|'+normSyn(x)===key);
+      if (r.on && !has) us[id]=[...cur, r.text];
+      if (!r.on && has){ const left=cur.filter(x=>id+'|'+normSyn(x)!==key); if (left.length) us[id]=left; else delete us[id]; }
+    }
+    jset(a.p+'synonym_log_v1',log); jset(a.p+'user_synonyms_v1',us);
+  }
+  return {devs, spots, syn};
+}
+function restore(d){
+  // accepts the all-in-one backup or a single quiz's own export file
+  const parts = d && d.app==='kohikori-backup' ? d.apps||{} : {};
+  if (d && d.app!=='kohikori-backup'){ const a=SYNC_APPS.find(x=>x.app===d.app); if (a) parts[a.key]=d; }
+  const lines=[]; let any=false, self=false;
+  for (const a of SYNC_APPS){
+    const r=mergeApp(a, parts[a.key]); if (!r) continue;
+    if (r.self){ self=true; continue; }
+    const bits=[]; if (r.devs) bits.push(`results from ${r.devs} device${r.devs===1?'':'s'}`);
+    if (r.spots) bits.push(`${r.spots} weak spot${r.spots===1?'':'s'}`); if (r.syn) bits.push(`${r.syn} synonym change${r.syn===1?'':'s'}`);
+    if (bits.length){ any=true; lines.push(`<b>${a.name}:</b> ${bits.join(', ')}`); }
+  }
+  if (!Object.keys(parts).length) return msg('bad','That isn\'t a Kohikori backup or quiz export.');
+  if (self && !any) return msg('bad','That backup came from this device, so there\'s nothing new to add. Restore it on your other device.');
+  if (!any) return msg('muted','Already up to date. Nothing new in that backup.');
+  msg('ok','Restored and merged:<br>'+lines.join('<br>'));
+  refreshProgress();
+}
+function msg(kind, html){ $('syncMsg').innerHTML=`<span style="color:var(--${kind==='ok'?'ok':kind==='bad'?'bad':'muted'})">${html}</span>`; }
+
+/* ---- text code: the same backup, squeezed into text you can paste anywhere ---- */
+const b64 = bytes => { let s=''; for (let i=0;i<bytes.length;i+=0x8000) s+=String.fromCharCode.apply(null, bytes.subarray(i,i+0x8000)); return btoa(s); };
+const unb64 = str => Uint8Array.from(atob(str), ch=>ch.charCodeAt(0));
+async function squeeze(bytes, mode){
+  const cs = mode==='gzip' ? new CompressionStream('gzip') : new DecompressionStream('gzip');
+  return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(cs)).arrayBuffer());
+}
+async function toCode(obj){
+  const raw=new TextEncoder().encode(JSON.stringify(obj));
+  if (typeof CompressionStream!=='undefined'){ try { return 'KOHI1.'+b64(await squeeze(raw,'gzip')); } catch(e){} }
+  return 'KOHI0.'+b64(raw);
+}
+async function fromCode(text){
+  const t=text.replace(/\s+/g,''), m=t.match(/KOHI([01])\.([A-Za-z0-9+/=]+)/);
+  if (!m) throw new Error('no code');
+  let bytes=unb64(m[2]);
+  if (m[1]==='1') bytes=await squeeze(bytes,'gunzip');
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/* ---- buttons ---- */
+const stamp = () => new Date().toISOString().slice(0,10);
+const LAST='khome_last_backup_v1';
+function showLast(){
+  const t=+get(LAST)||0;
+  $('lastBackup').textContent = t ? `Last backup from this device: ${new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric'})}` : '';
+}
+const totalAnswers = () => SYNC_APPS.reduce((n,a)=>n+((jget(a.p+'stats_v1')||{}).t||0),0);
+$('shareBtn').addEventListener('click', async ()=>{
+  const data=JSON.stringify(buildBackup());
+  const file=new File([data], `kohikori-backup-${stamp()}.json`, {type:'application/json'});
+  set(LAST, Date.now()); showLast();
+  if (navigator.canShare && navigator.canShare({files:[file]})){
+    try { await navigator.share({files:[file], title:'Kohikori backup'}); msg('ok','Backup shared. On your other device, open Kohikori and tap <b>Restore from file</b>.'); return; }
+    catch(e){ if (e.name==='AbortError') return; }
+  }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(file); a.download=file.name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  msg('ok','Backup saved to your downloads. On your other device, open Kohikori and tap <b>Restore from file</b>.');
+});
+$('restoreBtn').addEventListener('click',()=>$('restoreFile').click());
+$('restoreFile').addEventListener('change', async e=>{
+  const f=e.target.files[0]; e.target.value=''; if (!f) return;
+  let d; try { d=JSON.parse(await f.text()); } catch(err){ d=null; }
+  restore(d);
+});
+$('copyBtn').addEventListener('click', async ()=>{
+  const code=await toCode(buildBackup());
+  set(LAST, Date.now()); showLast();
+  let done=false;
+  try { await navigator.clipboard.writeText(code); done=true; } catch(e){}
+  if (!done){ $('codeBox').classList.remove('hidden'); $('codeIn').value=code; $('codeIn').select(); }
+  msg('ok', (done?'Sync code copied ('+Math.ceil(code.length/1024)+' KB of text). ':'Copy the code in the box below. ')+
+    'Paste it anywhere you can reach from your other device (a note, a message to yourself, an email), then use <b>Paste a sync code</b> there.');
+});
+$('pasteBtn').addEventListener('click',()=>{ $('codeBox').classList.toggle('hidden'); $('codeIn').value=''; $('codeIn').focus(); });
+$('codeGo').addEventListener('click', async ()=>{
+  try { restore(await fromCode($('codeIn').value)); $('codeIn').value=''; }
+  catch(e){ msg('bad','That doesn\'t look like a complete sync code. Make sure you copied all of it (it starts with KOHI).'); }
+});
+function refreshProgress(){
+  showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
+  showProgress($('pAdj'),   total('jadj_stats_v1','jadj_peers_v1'));
+  showProgress($('pCnt'),   total('jcnt_stats_v1','jcnt_peers_v1'));
+  showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
+}
+showLast();
+
 if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
