@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon-favicon-64.png">
+<link rel="apple-touch-icon" href="icon-verb-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Verb Quiz">
+<meta name="theme-color" content="#3b5bdb">
 <script>(function(){var d;try{d=localStorage.getItem('jvq_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
 <title>Japanese Verb Conjugation Quiz</title>
 <style>
@@ -49,6 +55,20 @@
 
   ruby rt{font-size:.45em;color:var(--muted)}
   body.nofuri ruby rt{visibility:hidden}
+  .rw{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
+  .rw .rr{display:none;font-size:clamp(11px,.38em,22px);line-height:1.3;color:var(--accent);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;white-space:nowrap}
+  body.roma .rw .rr{display:block}
+  header h1{display:flex;align-items:center;gap:10px}
+  .homelink{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--muted);text-decoration:none;flex:none}
+  .homelink:hover{color:var(--accent);border-color:var(--accent)}
+  .listenq{display:inline-flex;align-items:center;gap:10px;font-size:20px;padding:14px 26px;border-radius:999px;border:2px solid var(--accent);
+    background:var(--accentbg);color:var(--accent);cursor:pointer;font-family:inherit;margin:14px 0 6px}
+  .listenq:hover{filter:brightness(1.05)} .listenq:active{transform:scale(.98)}
+  .listenq .ico{font-size:26px;line-height:1}
+  .reportline{margin-top:12px;font-size:12px;text-align:right}
+  .reportline a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+  .reportline a:hover{color:var(--accent);border-color:var(--accent)}
+  .homo{margin-top:6px;font-size:13px;color:var(--muted)}
 
   /* Filters */
   h2{font-size:16px;margin:0 0 12px}
@@ -111,7 +131,7 @@
 </head>
 <body>
 <header>
-  <h1>活用 Verb Conjugation Quiz</h1>
+  <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>活用 Verb Conjugation Quiz</h1>
   <nav>
     <button data-tab="quiz" class="active">Quiz</button>
     <button data-tab="filters">Filters</button>
@@ -119,6 +139,7 @@
   </nav>
   <div class="toggles">
     <label class="toggle"><input type="checkbox" id="furiToggle" checked> Furigana</label>
+    <label class="toggle" title="Show romaji above Japanese words"><input type="checkbox" id="romaToggle"> Romaji</label>
     <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
     <label class="toggle" title="Read the answer aloud as soon as you submit"><input type="checkbox" id="autoToggle"> Auto-play audio</label>
   </div>
@@ -135,6 +156,7 @@
     <div class="modebar" id="modebar">
       <button class="btn small" id="reviewBtn" title="Drill only the items with your worst track record">Review weak spots</button>
       <button class="btn small" id="wrapBtn" title="Finish with 5 more questions, then see a summary">Wrap up</button>
+      <button class="btn small" id="listenBtn" title="Hear the verb instead of reading it">🎧 Listening</button>
     </div>
     <div class="modeinfo hidden" id="modeInfo"></div>
     <div id="quizBody">
@@ -404,27 +426,27 @@ const VERB_DATA = `
 連絡[れんらく]する|to contact|irr|4
 案内[あんない]する|to guide|irr|4
 持[も]って来[く]る|to bring|irr|4
-意味[いみ]する|meaning (+する)|irr|5
-買[か]い物[もの]する|shopping (+する)|irr|5
+意味[いみ]する|to mean; to signify|irr|5
+買[か]い物[もの]する|to shop; to go shopping|irr|5
 曇[くも]る|to become cloudy; to become dim|u|5|nv
 コピーする|to copy|irr|5
-作文[さくぶん]する|composition; writing (+する)|irr|5
-仕事[しごと]する|job (+する)|irr|5
-授業[じゅぎょう]する|lesson; class work (+する)|irr|5
-テストする|test (+する)|irr|5
-旅行[りょこう]する|travel (+する)|irr|5
+作文[さくぶん]する|to write (an essay); to compose|irr|5
+仕事[しごと]する|to work|irr|5
+授業[じゅぎょう]する|to teach a class|irr|5
+テストする|to test|irr|5
+旅行[りょこう]する|to travel; to take a trip|irr|5
 練習[れんしゅう]する|to practice|irr|5
 あいさつする|to greet|irr|4
 合[あ]う|to match|u|4
 空[あ]く|to open; to become empty|u|4
 集[あつ]まる|to gather|u|4
-アルバイトする|part-time job (+する)|irr|4
-安心[あんしん]する|relief (+する)|irr|4
+アルバイトする|to work part-time|irr|4
+安心[あんしん]する|to feel relieved; to be at ease|irr|4
 いじめる|to tease|ru|4
 致[いた]す|(humble) to do|u|4
 いただく|(humble) to receive|u|4
 うかがう|to visit|u|4
-受付[うけつけ]する|receipt (+する)|irr|4
+受付[うけつけ]する|to accept (applications); to receive|irr|4
 打[う]つ|to hit|u|4
 移[うつ]る|to move house or transfer|u|4
 運動[うんどう]する|to exercise|irr|4
@@ -434,45 +456,44 @@ const VERB_DATA = `
 思[おも]い出[だ]す|to remember|u|4
 下[お]りる|to get off|ru|4
 折[お]れる|to break or be folded|ru|4
-会議[かいぎ]する|meeting (+する)|irr|4
-会話[かいわ]する|conversation (+する)|irr|4
+会議[かいぎ]する|to hold a meeting; to confer|irr|4
+会話[かいわ]する|to converse; to have a conversation|irr|4
 片付[かたづ]ける|to tidy up|ru|4
 かまう|to mind|u|4
 通[かよ]う|to commute|u|4
-関係[かんけい]する|relationship (+する)|irr|4
+関係[かんけい]する|to be related to; to be involved in|irr|4
 聞[き]こえる|to be heard|ru|4|nv nx
 決[き]まる|to be decided|u|4|nv
-教育[きょういく]する|education (+する)|irr|4
-競争[きょうそう]する|competition (+する)|irr|4
+教育[きょういく]する|to educate; to train|irr|4
+競争[きょうそう]する|to compete|irr|4
 計画[けいかく]する|to plan|irr|4
 経験[けいけん]する|to experience|irr|4
 けがする|to injure|irr|4
-下宿[げしゅく]する|lodging (+する)|irr|4
-原因[げんいん]する|cause; source (+する)|irr|4
+下宿[げしゅく]する|to board; to lodge|irr|4
+原因[げんいん]する|to be caused by; to result from|irr|4|nv nx
 けんかする|to quarrel|irr|4
-研究[けんきゅう]する|research (+する)|irr|4
-見物[けんぶつ]する|sightseeing (+する)|irr|4
-講義[こうぎ]する|lecture (+する)|irr|4
-交通[こうつう]する|traffic; transportation (+する)|irr|4
-故障[こしょう]する|to break-down|irr|4
+研究[けんきゅう]する|to research; to study|irr|4
+見物[けんぶつ]する|to sightsee; to watch (a show)|irr|4
+講義[こうぎ]する|to lecture|irr|4
+故障[こしょう]する|to break-down|irr|4|nv
 込[こ]む|to be crowded|u|4|nv
 ごらんになる|(respectful) to see|u|4
 下[さ]がる|to get down; to descend|u|4
 差[さ]し上[あ]げる|(polite) to give|ru|4
-試合[しあい]する|match; game (+する)|irr|4
-試験[しけん]する|examination (+する)|irr|4
+試合[しあい]する|to play a match; to compete|irr|4
+試験[しけん]する|to test; to examine|irr|4
 支度[したく]する|to prepare|irr|4
-しっかりする|firmly; steadily (+する)|irr|4
-失敗[しっぱい]する|failure; mistake (+する)|irr|4
-じゃまする|hindrance; intrusion (+する)|irr|4
+しっかりする|to be firm; to pull oneself together|irr|4
+失敗[しっぱい]する|to fail; to make a mistake|irr|4
+じゃまする|to disturb; to get in the way; to visit (humble)|irr|4
 出席[しゅっせき]する|to attend|irr|4
 出発[しゅっぱつ]する|to depart|irr|4
-紹介[しょうかい]する|introduction (+する)|irr|4
+紹介[しょうかい]する|to introduce|irr|4
 招待[しょうたい]する|to invite|irr|4
 承知[しょうち]する|to consent|irr|4
 食事[しょくじ]する|to have a meal|irr|4
 知[し]らせる|to notify|ru|4
-水泳[すいえい]する|swimming (+する)|irr|4
+水泳[すいえい]する|to swim|irr|4
 過[す]ぎる|to exceed|ru|4
 すく|to become empty|u|4|nv
 進[すす]む|to make progress|u|4
@@ -480,9 +501,9 @@ const VERB_DATA = `
 生活[せいかつ]する|to live|irr|4
 生産[せいさん]する|to produce|irr|4
 世話[せわ]する|to look after|irr|4
-戦争[せんそう]する|war (+する)|irr|4
+戦争[せんそう]する|to wage war; to go to war|irr|4
 相談[そうだん]する|to discuss|irr|4
-卒業[そつぎょう]する|graduation (+する)|irr|4
+卒業[そつぎょう]する|to graduate|irr|4
 退院[たいいん]する|to leave hospital|irr|4
 足[た]す|to add a number|u|4
 尋[たず]ねる|to ask|ru|4
@@ -490,9 +511,8 @@ const VERB_DATA = `
 建[た]てる|to build|ru|4
 立[た]てる|to stand something up|ru|4
 楽[たの]しむ|to enjoy oneself|u|4
-暖房[だんぼう]する|heating (+する)|irr|4
-注意[ちゅうい]する|caution (+する)|irr|4
-注射[ちゅうしゃ]する|injection (+する)|irr|4
+注意[ちゅうい]する|to be careful; to warn|irr|4
+注射[ちゅうしゃ]する|to give an injection|irr|4
 付[つ]く|to be attached|u|4|nv
 漬[つ]ける|to soak; to pickle|ru|4
 伝[つた]える|to report|ru|4
@@ -509,26 +529,26 @@ const VERB_DATA = `
 入院[にゅういん]する|to hospitalise|irr|4
 入学[にゅうがく]する|to enter school or university|irr|4
 ぬれる|to get wet|ru|4|nv
-寝坊[ねぼう]する|sleeping in late (+する)|irr|4
+寝坊[ねぼう]する|to oversleep|irr|4
 乗[の]り換[か]える|to change between buses or trains|ru|4
-拝見[はいけん]する|(humble) to look at (+する)|irr|4
+拝見[はいけん]する|(humble) to see; to look at|irr|4
 始[はじ]める|to begin|ru|4
-発音[はつおん]する|pronunciation (+する)|irr|4
-花見[はなみ]する|cherry-blossom viewing (+する)|irr|4
-反対[はんたい]する|opposition (+する)|irr|4
+発音[はつおん]する|to pronounce|irr|4
+花見[はなみ]する|to view cherry blossoms|irr|4
+反対[はんたい]する|to oppose; to object|irr|4
 光[ひか]る|to shine; to glitter|u|4
 引[ひ]き出[だ]す|to withdraw|u|4
 びっくりする|to be surprised|irr|4|nv
 引[ひ]っ越[こ]す|to move house|u|4
-ファックスする|fax (+する)|irr|4
-復習[ふくしゅう]する|revision (+する)|irr|4
+ファックスする|to fax|irr|4
+復習[ふくしゅう]する|to review (lessons)|irr|4
 太[ふと]る|to become fat|u|4|nv
 降[ふ]り出[だ]す|to start to rain|u|4
-プレゼントする|present (+する)|irr|4
-返事[へんじ]する|reply (+する)|irr|4
-貿易[ぼうえき]する|trade (+する)|irr|4
+プレゼントする|to give a present|irr|4
+返事[へんじ]する|to reply; to answer|irr|4
+貿易[ぼうえき]する|to trade (internationally)|irr|4
 放送[ほうそう]する|to broadcast|irr|4
-翻訳[ほんやく]する|translation (+する)|irr|4
+翻訳[ほんやく]する|to translate|irr|4
 参[まい]る|(humble) to go; to come|u|4
 負[ま]ける|to lose|ru|4
 間違[まちが]える|to make a mistake|ru|4
@@ -538,61 +558,81 @@ const VERB_DATA = `
 召[め]し上[あ]がる|(polite) to eat|u|4
 申[もう]し上[あ]げる|(humble) to say; to tell|ru|4
 申[もう]す|(humble) to be called; to say|u|4
-約束[やくそく]する|promise (+する)|irr|4
+約束[やくそく]する|to promise|irr|4
 焼[や]ける|to burn; to be roasted|ru|4
 痩[や]せる|to become thin|ru|4|nv
 止[や]む|to stop|u|4
 輸出[ゆしゅつ]する|to export|irr|4
 輸入[ゆにゅう]する|to import|irr|4
 揺[ゆ]れる|to shake; to sway|ru|4
-用意[ようい]する|preparation (+する)|irr|4
+用意[ようい]する|to prepare; to get ready|irr|4
 汚[よご]れる|to get dirty|ru|4|nv
-予習[よしゅう]する|preparation for a lesson (+する)|irr|4
-予定[よてい]する|arrangement (+する)|irr|4
-予約[よやく]する|reservation (+する)|irr|4
+予習[よしゅう]する|to prepare for a lesson|irr|4
+予定[よてい]する|to plan; to schedule|irr|4
+予約[よやく]する|to reserve; to book|irr|4
 寄[よ]る|to visit|u|4
-利用[りよう]する|utilization (+する)|irr|4
-留守[るす]する|absence (+する)|irr|4
-冷房[れいぼう]する|air conditioning (+する)|irr|4
-レポートする|report (+する)|irr|4
+利用[りよう]する|to use; to make use of|irr|4
+留守[るす]する|to be away from home|irr|4
+レポートする|to report|irr|4
 別[わか]れる|to separate|ru|4
 沸[わ]く|to boil; to grow hot|u|4
-挨拶[あいさつ]する|greeting; salutation (+する)|irr|3
-合図[あいず]する|sign; signal (+する)|irr|3
+失礼[しつれい]する|to be rude; to excuse oneself; to leave|irr|4
+携帯[けいたい]する|to carry (with oneself)|irr|4
+ジョギングする|to jog|irr|4
+ちゃんとする|to do properly; to straighten up|irr|4
+はっきりする|to become clear|irr|4|nv
+しまう|to put away; to finish (doing)|u|4
+チェックする|to check|irr|4
+ドライブする|to go for a drive|irr|4
+オープンする|to open (a shop, etc.)|irr|4
+生[う]む|to give birth to; to produce|u|4
+迷[まよ]う|to get lost; to hesitate|u|4
+冷蔵[れいぞう]する|to refrigerate|irr|4
+看護[かんご]する|to nurse; to care for|irr|4
+意見[いけん]する|to admonish; to give advice|irr|4
+間違[まちが]う|to be mistaken; to be wrong|u|4|nv
+帰国[きこく]する|to return to one's country|irr|4
+接待[せったい]する|to entertain (guests or clients)|irr|4
+早起[はやお]きする|to get up early|irr|4
+急行[きゅうこう]する|to rush (to a place)|irr|4
+無理[むり]する|to overdo it; to push oneself|irr|4
+朝寝坊[あさねぼう]する|to sleep in; to oversleep|irr|4
+自己紹介[じこしょうかい]する|to introduce oneself|irr|4
+挨拶[あいさつ]する|to greet|irr|3
+合図[あいず]する|to signal; to give a sign|irr|3
 愛[あい]する|to love|irr|3
 諦[あきら]める|to give up; to abandon|ru|3
 飽[あ]きる|to get tired of; to lose interest in|ru|3|nv
-握手[あくしゅ]する|handshake (+する)|irr|3
+握手[あくしゅ]する|to shake hands|irr|3
 明[あ]ける|to dawn; to become daylight|ru|3
 預[あず]ける|to give into custody; to entrust|ru|3
 与[あた]える|to give; to present|ru|3
 当[あ]たる|to be hit; to be successful|u|3|nv
-あちこちする|here and there (+する)|irr|3
 扱[あつか]う|to handle; to deal with|u|3
 当[あ]てる|to hit; to apply a patch|ru|3
 現[あらわ]す|to show; to indicate|u|3
 表[あらわ]す|to express; to show|u|3
 現[あらわ]れる|to appear; to come in sight|ru|3|nv
 合[あ]わせる|to join together; to be opposite|ru|3
-暗記[あんき]する|memorization; learning by heart (+する)|irr|3
-安定[あんてい]する|stability; equilibrium (+する)|irr|3
-維持[いじ]する|maintenance; preservation (+する)|irr|3
-意識[いしき]する|consciousness; senses (+する)|irr|3
+暗記[あんき]する|to memorize; to learn by heart|irr|3
+安定[あんてい]する|to be stable; to stabilize|irr|3
+維持[いじ]する|to maintain; to preserve|irr|3
+意識[いしき]する|to be conscious of; to be aware of|irr|3
 抱[いだ]く|(slang) to embrace; to hug|u|3
-いたずらする|tease; prank (+する)|irr|3
+いたずらする|to play a prank; to mess around with|irr|3
 至[いた]る|to come; to arrive|u|3
-位置[いち]する|place; situation (+する)|irr|3
-一致[いっち]する|coincidence; agreement (+する)|irr|3
-移動[いどう]する|removal; migration (+する)|irr|3
-居眠[いねむ]りする|dozing; nodding off (+する)|irr|3
-違反[いはん]する|violation (of law); transgression (+する)|irr|3
-依頼[いらい]する|request; commission (+する)|irr|3
-いらいらする|getting nervous; irritation (+する)|irr|3
+位置[いち]する|to be located; to be situated|irr|3
+一致[いっち]する|to agree; to match; to coincide|irr|3|nv
+移動[いどう]する|to move; to transfer|irr|3
+居眠[いねむ]りする|to doze off; to nod off|irr|3
+違反[いはん]する|to violate; to break (a rule)|irr|3
+依頼[いらい]する|to request; to commission|irr|3
+いらいらする|to get irritated; to be on edge|irr|3
 祝[いわ]う|to congratulate; to celebrate|u|3
-印刷[いんさつ]する|printing (+する)|irr|3
-引退[いんたい]する|retire (+する)|irr|3
-引用[いんよう]する|quotation; citation (+する)|irr|3
-うがいする|gargle; rinse mouth (+する)|irr|3
+印刷[いんさつ]する|to print|irr|3
+引退[いんたい]する|to retire|irr|3
+引用[いんよう]する|to quote; to cite|irr|3
+うがいする|to gargle|irr|3
 受[う]け取[と]る|to receive; to get|u|3
 動[うご]かす|to move; to shift|u|3
 失[うしな]う|to lose; to part with|u|3
@@ -604,27 +644,27 @@ const VERB_DATA = `
 奪[うば]う|to snatch away|u|3
 裏切[うらぎ]る|to betray; to turn traitor to|u|3
 売[う]れる|to be sold|ru|3|nv
-噂[うわさ]する|rumour; report (+する)|irr|3
-影響[えいきょう]する|influence; effect (+する)|irr|3
-営業[えいぎょう]する|business; trade (+する)|irr|3
+噂[うわさ]する|to gossip about; to talk about (someone)|irr|3
+影響[えいきょう]する|to influence; to affect|irr|3
+営業[えいぎょう]する|to do business; to be open (for business)|irr|3
 描[えが]く|to draw; to paint|u|3
 得[え]る|to get; to gain|ru|3
-延期[えんき]する|postponement; adjournment (+する)|irr|3
-演技[えんぎ]する|acting; performance (+する)|irr|3
-援助[えんじょ]する|assistance; aid (+する)|irr|3
-演説[えんぜつ]する|speech; address (+する)|irr|3
-演奏[えんそう]する|musical performance (+する)|irr|3
+延期[えんき]する|to postpone|irr|3
+演技[えんぎ]する|to act; to perform|irr|3
+援助[えんじょ]する|to assist; to aid|irr|3
+演説[えんぜつ]する|to give a speech|irr|3
+演奏[えんそう]する|to perform (music); to play|irr|3
 追[お]い付[つ]く|to overtake; to catch up (with)|u|3
 追[お]う|to chase; to run after|u|3
 応[おう]じる|to respond; to satisfy|ru|3
-横断[おうだん]する|crossing (+する)|irr|3
+横断[おうだん]する|to cross (a road, etc.)|irr|3
 終[お]える|to finish|ru|3
 覆[おお]う|to cover; to hide|u|3
 贈[おく]る|to send; to give to|u|3
 起[お]こる|to occur; to happen|u|3|nv
 収[おさ]める|to obtain; to reap|ru|3
-おしゃべりする|chattering; talk (+する)|irr|3
-汚染[おせん]する|pollution; contamination (+する)|irr|3
+おしゃべりする|to chat; to chatter|irr|3
+汚染[おせん]する|to pollute; to contaminate|irr|3
 恐[おそ]れる|to fear; to be afraid of|ru|3
 劣[おと]る|to fall behind; to be inferior to|u|3
 溺[おぼ]れる|to be drowned; to indulge in|ru|3|nv
@@ -632,14 +672,14 @@ const VERB_DATA = `
 及[およ]ぼす|to exert; to cause|u|3
 居[お]る|to be (animate); to be|u|3
 降[お]ろす|to take down; to launch|u|3
-会計[かいけい]する|account; finance (+する)|irr|3
-解決[かいけつ]する|settlement; solution (+する)|irr|3
-会合[かいごう]する|meeting; assembly (+する)|irr|3
-開始[かいし]する|start; commencement (+する)|irr|3
-解釈[かいしゃく]する|explanation; interpretation (+する)|irr|3
-外出[がいしゅつ]する|outing; going out (+する)|irr|3
-改善[かいぜん]する|betterment; improvement (+する)|irr|3
-回復[かいふく]する|recovery (from illness); improvement (+する)|irr|3
+会計[かいけい]する|to pay the bill; to settle the account|irr|3
+解決[かいけつ]する|to solve; to settle|irr|3
+会合[かいごう]する|to meet; to assemble|irr|3
+開始[かいし]する|to start; to begin|irr|3
+解釈[かいしゃく]する|to interpret|irr|3
+外出[がいしゅつ]する|to go out|irr|3
+改善[かいぜん]する|to improve|irr|3
+回復[かいふく]する|to recover; to restore|irr|3
 飼[か]う|to keep; to raise|u|3
 換[か]える|to exchange; to interchange|ru|3
 替[か]える|to exchange; to interchange|ru|3
@@ -647,239 +687,232 @@ const VERB_DATA = `
 輝[かがや]く|to shine; to glitter|u|3
 罹[かか]る|to suffer from|u|3
 限[かぎ]る|to restrict; to limit|u|3
-覚悟[かくご]する|resolution; resignation (+する)|irr|3
-学習[がくしゅう]する|study; learning (+する)|irr|3
+覚悟[かくご]する|to be prepared for; to resign oneself to|irr|3
+学習[がくしゅう]する|to study; to learn|irr|3
 隠[かく]す|to hide; to conceal|u|3
-拡大[かくだい]する|magnification; enlargement (+する)|irr|3
-確認[かくにん]する|affirmation; confirmation (+する)|irr|3
-学問[がくもん]する|scholarship; study (+する)|irr|3
+拡大[かくだい]する|to enlarge; to expand; to magnify|irr|3
+確認[かくにん]する|to confirm; to check|irr|3
 隠[かく]れる|to hide; to be hidden|ru|3
 欠[か]ける|to be lacking|ru|3|nv
-加減[かげん]する|addition and subtraction; allowance for (+する)|irr|3
+加減[かげん]する|to adjust; to moderate|irr|3
 囲[かこ]む|to surround; to encircle|u|3
 稼[かせ]ぐ|to earn income; to labor|u|3
 数[かぞ]える|to count|ru|3
 語[かた]る|to talk; to tell|u|3
-がっかりする|feel disappointed; be dejected (+する)|irr|3
-活動[かつどう]する|action; activity (+する)|irr|3
-活用[かつよう]する|conjugation; practical use (+する)|irr|3
+がっかりする|to be disappointed|irr|3
+活動[かつどう]する|to be active; to work (for a cause)|irr|3
+活用[かつよう]する|to make use of; to conjugate|irr|3
 悲[かな]しむ|to be sad; to mourn for|u|3
 被[かぶ]る|to put on (one's head); to wear|u|3
-我慢[がまん]する|patience; endurance (+する)|irr|3
+我慢[がまん]する|to endure; to put up with|irr|3
 刈[か]る|to cut (hair); to mow (grass)|u|3
-感覚[かんかく]する|sense; sensation (+する)|irr|3
-歓迎[かんげい]する|welcome; reception (+する)|irr|3
-観光[かんこう]する|sightseeing (+する)|irr|3
-観察[かんさつ]する|observation; survey (+する)|irr|3
-感謝[かんしゃ]する|thanks; gratitude (+する)|irr|3
-勘定[かんじょう]する|calculation; counting (+する)|irr|3
+歓迎[かんげい]する|to welcome|irr|3
+観光[かんこう]する|to go sightseeing|irr|3
+観察[かんさつ]する|to observe|irr|3
+感謝[かんしゃ]する|to thank; to be grateful|irr|3
+勘定[かんじょう]する|to count; to calculate|irr|3
 感[かん]じる|to feel; to sense|ru|3
-感心[かんしん]する|admiration; Well done! (+する)|irr|3
+感心[かんしん]する|to be impressed; to admire|irr|3
 関[かん]する|to concern; to be related|irr|3
-完成[かんせい]する|complete; completion (+する)|irr|3
-感動[かんどう]する|being deeply moved; excitement (+する)|irr|3
-監督[かんとく]する|supervision; control (+する)|irr|3
-管理[かんり]する|control (+する)|irr|3
-完了[かんりょう]する|completion; conclusion (+する)|irr|3
-関連[かんれん]する|relation; connection (+する)|irr|3
-記憶[きおく]する|memory; recollection (+する)|irr|3
+完成[かんせい]する|to complete; to be completed|irr|3
+感動[かんどう]する|to be moved; to be touched|irr|3
+監督[かんとく]する|to supervise; to direct|irr|3
+管理[かんり]する|to manage; to control|irr|3
+完了[かんりょう]する|to complete; to finish|irr|3
+関連[かんれん]する|to be related; to be connected|irr|3
+記憶[きおく]する|to remember; to memorize|irr|3
 効[き]く|to be effective|u|3|nv
-期待[きたい]する|expectation; anticipation (+する)|irr|3
-帰宅[きたく]する|returning home (+する)|irr|3
+期待[きたい]する|to expect; to hope for|irr|3
+帰宅[きたく]する|to return home|irr|3
 気付[きづ]く|to notice; to recognize|u|3
 気[き]に入[い]る|to be pleased with; to suit|u|3
-記入[きにゅう]する|entry; filling in of forms (+する)|irr|3
-記念[きねん]する|commemoration; memory (+する)|irr|3
-機能[きのう]する|function; faculty (+する)|irr|3
-寄付[きふ]する|contribution; donation (+する)|irr|3
-希望[きぼう]する|hope; wish (+する)|irr|3
-キャンプする|camp (+する)|irr|3
-休憩[きゅうけい]する|rest; break (+する)|irr|3
-吸収[きゅうしゅう]する|absorption; suction (+する)|irr|3
-救助[きゅうじょ]する|relief; aid (+する)|irr|3
-競技[きょうぎ]する|game; match (+する)|irr|3
-供給[きょうきゅう]する|supply; provision (+する)|irr|3
-教授[きょうじゅ]する|teaching; instruction (+する)|irr|3
-強調[きょうちょう]する|emphasis; stress (+する)|irr|3
-共同[きょうどう]する|cooperation; association (+する)|irr|3
-恐怖[きょうふ]する|be afraid; dread (+する)|irr|3
-協力[きょうりょく]する|cooperation; collaboration (+する)|irr|3
-許可[きょか]する|permission; approval (+する)|irr|3
+記入[きにゅう]する|to fill in (a form)|irr|3
+記念[きねん]する|to commemorate|irr|3
+機能[きのう]する|to function; to work|irr|3
+寄付[きふ]する|to donate; to contribute|irr|3
+希望[きぼう]する|to hope; to wish for|irr|3
+キャンプする|to camp|irr|3
+休憩[きゅうけい]する|to take a break; to rest|irr|3
+吸収[きゅうしゅう]する|to absorb|irr|3
+救助[きゅうじょ]する|to rescue|irr|3
+競技[きょうぎ]する|to compete|irr|3
+供給[きょうきゅう]する|to supply; to provide|irr|3
+教授[きょうじゅ]する|to teach; to instruct|irr|3
+強調[きょうちょう]する|to emphasize; to stress|irr|3
+共同[きょうどう]する|to cooperate; to do jointly|irr|3
+恐怖[きょうふ]する|to fear; to dread|irr|3
+協力[きょうりょく]する|to cooperate; to collaborate|irr|3
+許可[きょか]する|to permit; to allow|irr|3
 嫌[きら]う|to hate; to dislike|u|3
 切[き]れる|to cut well; to be sharp|ru|3
-記録[きろく]する|record; minutes (+する)|irr|3
-議論[ぎろん]する|argument; discussion (+する)|irr|3
-禁止[きんし]する|prohibition; ban (+する)|irr|3
-緊張[きんちょう]する|tension; mental strain (+する)|irr|3
+記録[きろく]する|to record; to document|irr|3
+議論[ぎろん]する|to argue; to discuss|irr|3
+禁止[きんし]する|to prohibit; to ban|irr|3
+緊張[きんちょう]する|to be nervous; to be tense|irr|3
 食[く]う|(male) (vulgar) to eat|u|3
 腐[くさ]る|to rot; to go bad|u|3|nv
 下[くだ]す|to lower; to let go down|u|3
-区別[くべつ]する|distinction; differentiation (+する)|irr|3
+区別[くべつ]する|to distinguish; to differentiate|irr|3
 組[く]む|to put together|u|3
 暮[く]らす|to live; to get along|u|3
 繰[く]り返[かえ]す|to repeat; to do something over again|u|3
 狂[くる]う|to go mad; to get out of order|u|3
 苦[くる]しむ|to suffer; to groan|u|3
-苦労[くろう]する|troubles; hardships (+する)|irr|3
+苦労[くろう]する|to struggle; to have a hard time|irr|3
 加[くわ]える|to append; to sum up|ru|3
 加[くわ]わる|to join in; to accede to|u|3
-訓練[くんれん]する|practice; training (+する)|irr|3
-経営[けいえい]する|management; administration (+する)|irr|3
-警告[けいこく]する|warning; advice (+する)|irr|3
-計算[けいさん]する|calculation; reckoning (+する)|irr|3
-掲示[けいじ]する|notice; bulletin (+する)|irr|3
-契約[けいやく]する|contract; compact (+する)|irr|3
-経由[けいゆ]する|go by the way; via (+する)|irr|3
-怪我[けが]する|injury (to animate object); hurt (+する)|irr|3
-化粧[けしょう]する|make-up (cosmetic) (+する)|irr|3
-結果[けっか]する|result; consequence (+する)|irr|3
-決心[けっしん]する|determination; resolution (+する)|irr|3
-欠席[けっせき]する|absence; non-attendance (+する)|irr|3
-決定[けってい]する|decision; determination (+する)|irr|3
-結論[けつろん]する|conclusion (+する)|irr|3
-喧嘩[けんか]する|quarrel; (drunken) brawl (+する)|irr|3
-検査[けんさ]する|inspection (e.g. customs, factory) (+する)|irr|3
-建設[けんせつ]する|construction; establishment (+する)|irr|3
-建築[けんちく]する|construction; architecture (+する)|irr|3
-検討[けんとう]する|consideration; examination (+する)|irr|3
-講演[こうえん]する|lecture; address (+する)|irr|3
-合格[ごうかく]する|success; passing (e.g. exam) (+する)|irr|3
-交換[こうかん]する|exchange; interchange (+する)|irr|3
-合計[ごうけい]する|sum total; total amount (+する)|irr|3
-攻撃[こうげき]する|attack; strike (+する)|irr|3
-貢献[こうけん]する|contribution; services (+する)|irr|3
-広告[こうこく]する|advertisement (+する)|irr|3
-交際[こうさい]する|company; friendship (+する)|irr|3
-構成[こうせい]する|organization; composition (+する)|irr|3
-行動[こうどう]する|action; conduct (+する)|irr|3
-考慮[こうりょ]する|consideration; taking into account (+する)|irr|3
+訓練[くんれん]する|to train; to drill|irr|3
+経営[けいえい]する|to manage; to run (a business)|irr|3
+警告[けいこく]する|to warn|irr|3
+計算[けいさん]する|to calculate|irr|3
+掲示[けいじ]する|to post (a notice)|irr|3
+契約[けいやく]する|to sign a contract; to contract|irr|3
+経由[けいゆ]する|to go via; to pass through|irr|3
+怪我[けが]する|to get hurt; to be injured|irr|3
+化粧[けしょう]する|to put on make-up|irr|3
+決心[けっしん]する|to make up one's mind; to decide|irr|3
+欠席[けっせき]する|to be absent|irr|3
+決定[けってい]する|to decide; to determine|irr|3
+結論[けつろん]する|to conclude|irr|3
+喧嘩[けんか]する|to quarrel; to fight|irr|3
+検査[けんさ]する|to inspect; to examine|irr|3
+建設[けんせつ]する|to construct; to build|irr|3
+建築[けんちく]する|to build; to construct|irr|3
+検討[けんとう]する|to consider; to examine|irr|3
+講演[こうえん]する|to give a lecture|irr|3
+合格[ごうかく]する|to pass (an exam)|irr|3
+交換[こうかん]する|to exchange|irr|3
+合計[ごうけい]する|to add up; to total|irr|3
+攻撃[こうげき]する|to attack|irr|3
+貢献[こうけん]する|to contribute|irr|3
+広告[こうこく]する|to advertise|irr|3
+交際[こうさい]する|to associate with; to date|irr|3
+構成[こうせい]する|to compose; to make up|irr|3
+行動[こうどう]する|to act; to behave|irr|3
+考慮[こうりょ]する|to consider; to take into account|irr|3
 越[こ]える|to exceed; to cross over|ru|3
-コーチする|coach (+する)|irr|3
+コーチする|to coach|irr|3
 凍[こお]る|to freeze; to be frozen over|u|3
-ゴールする|goal (+する)|irr|3
-誤解[ごかい]する|misunderstanding (+する)|irr|3
-呼吸[こきゅう]する|breath; respiration (+する)|irr|3
-克服[こくふく]する|subjugation; conquest (+する)|irr|3
+ゴールする|to reach the goal; to score a goal|irr|3
+誤解[ごかい]する|to misunderstand|irr|3
+呼吸[こきゅう]する|to breathe|irr|3
+克服[こくふく]する|to overcome|irr|3
 越[こ]す|to go over (e.g. with audience)|u|3
-骨折[こっせつ]する|bone fracture (+する)|irr|3
+骨折[こっせつ]する|to break a bone|irr|3
 異[こと]なる|to differ; to vary|u|3|nv nx
 断[ことわ]る|to refuse; to decline|u|3
 好[この]む|to like; to prefer|u|3
 殺[ころ]す|to kill|u|3
 転[ころ]ぶ|to fall down; to fall over|u|3
-混雑[こんざつ]する|confusion; congestion (+する)|irr|3
-婚約[こんやく]する|engagement; betrothal (+する)|irr|3
-混乱[こんらん]する|disorder; chaos (+する)|irr|3
-サービスする|service; support system (+する)|irr|3
-裁判[さいばん]する|trial; judgement (+する)|irr|3
-サインする|autograph; sign (+する)|irr|3
+混雑[こんざつ]する|to be crowded; to be congested|irr|3|nv
+婚約[こんやく]する|to get engaged|irr|3
+混乱[こんらん]する|to be confused; to be in chaos|irr|3
+サービスする|to give for free; to serve|irr|3
+裁判[さいばん]する|to judge; to try (a case)|irr|3
+サインする|to sign|irr|3
 逆[さか]らう|to go against; to oppose|u|3
-作業[さぎょう]する|work; operation (+する)|irr|3
+作業[さぎょう]する|to work; to operate|irr|3
 叫[さけ]ぶ|to shout; to cry|u|3
 避[さ]ける|to avoid (physical contact )|ru|3
 支[ささ]える|to be blocked; to choke|ru|3
 指[さ]す|to point; to put up umbrella|u|3
 誘[さそ]う|to invite; to ask|u|3
-作曲[さっきょく]する|composition; setting (of music) (+する)|irr|3
-さっぱりする|feeling refreshed; feeling relieved (+する)|irr|3
-差別[さべつ]する|discrimination; distinction (+する)|irr|3
+作曲[さっきょく]する|to compose (music)|irr|3
+さっぱりする|to feel refreshed|irr|3
+差別[さべつ]する|to discriminate|irr|3
 覚[さ]ます|to awaken|u|3
 覚[さ]める|to wake; to wake up|ru|3
-左右[さゆう]する|left and right; influence (+する)|irr|3
+左右[さゆう]する|to influence; to control|irr|3
 去[さ]る|to leave; to go away|u|3
-参加[さんか]する|participation (+する)|irr|3
-賛成[さんせい]する|approval; agreement (+する)|irr|3
+参加[さんか]する|to participate; to join|irr|3
+賛成[さんせい]する|to agree; to approve|irr|3
 叱[しか]る|to scold|u|3
-支給[しきゅう]する|payment; allowance (+する)|irr|3
-刺激[しげき]する|stimulus; impetus (+する)|irr|3
-自殺[じさつ]する|suicide (+する)|irr|3
-支出[ししゅつ]する|expenditure; expenses (+する)|irr|3
+支給[しきゅう]する|to provide; to pay|irr|3
+刺激[しげき]する|to stimulate|irr|3
+自殺[じさつ]する|to commit suicide|irr|3
+支出[ししゅつ]する|to spend; to pay out|irr|3
 沈[しず]む|to sink; to feel depressed|u|3
 従[したが]う|to abide (by the rules); to obey|u|3
-実験[じっけん]する|experiment (+する)|irr|3
-実現[じつげん]する|implementation; materialization (+する)|irr|3
-実行[じっこう]する|practice; performance (+する)|irr|3
-実施[じっし]する|enforcement; enact (+する)|irr|3
-失望[しつぼう]する|disappointment; despair (+する)|irr|3
-指導[しどう]する|leadership; guidance (+する)|irr|3
-支配[しはい]する|rule; control (+する)|irr|3
+実験[じっけん]する|to experiment|irr|3
+実現[じつげん]する|to realize; to come true|irr|3
+実行[じっこう]する|to carry out; to execute|irr|3
+実施[じっし]する|to implement; to put into effect|irr|3
+失望[しつぼう]する|to be disappointed; to despair|irr|3
+指導[しどう]する|to guide; to instruct; to coach|irr|3
+支配[しはい]する|to rule; to control|irr|3
 支払[しはら]う|to pay|u|3
-死亡[しぼう]する|death; mortality (+する)|irr|3
-自慢[じまん]する|pride; boast (+する)|irr|3
+死亡[しぼう]する|to die; to pass away|irr|3|nv
+自慢[じまん]する|to boast; to be proud of|irr|3
 示[しめ]す|to denote; to show|u|3
 占[し]める|to comprise; to account for|ru|3
-借金[しゃっきん]する|debt; loan (+する)|irr|3
+借金[しゃっきん]する|to borrow money; to go into debt|irr|3
 しゃべる|to talk; to chat|u|3
-収穫[しゅうかく]する|harvest; crop (+する)|irr|3
-重視[じゅうし]する|importance; stress (+する)|irr|3
-就職[しゅうしょく]する|finding employment; inauguration (+する)|irr|3
-修正[しゅうせい]する|amendment; correction (+する)|irr|3
-渋滞[じゅうたい]する|congestion (e.g. traffic); delay (+する)|irr|3
-集中[しゅうちゅう]する|concentration; focusing the mind (+する)|irr|3
-修理[しゅうり]する|repairing; mending (+する)|irr|3
-宿泊[しゅくはく]する|lodging (+する)|irr|3
-手術[しゅじゅつ]する|surgical operation (+する)|irr|3
-主張[しゅちょう]する|claim; request (+する)|irr|3
-出版[しゅっぱん]する|publication (+する)|irr|3
-使用[しよう]する|use; application (+する)|irr|3
-障害[しょうがい]する|obstacle; impediment (fault) (+する)|irr|3
-上京[じょうきょう]する|proceeding to the capital (Tokyo) (+する)|irr|3
+収穫[しゅうかく]する|to harvest|irr|3
+重視[じゅうし]する|to attach importance to|irr|3
+就職[しゅうしょく]する|to get a job|irr|3
+修正[しゅうせい]する|to correct; to amend|irr|3
+渋滞[じゅうたい]する|to be congested; to be backed up|irr|3|nv
+集中[しゅうちゅう]する|to concentrate; to focus|irr|3
+修理[しゅうり]する|to repair; to fix|irr|3
+宿泊[しゅくはく]する|to stay (overnight); to lodge|irr|3
+手術[しゅじゅつ]する|to operate; to perform surgery|irr|3
+主張[しゅちょう]する|to claim; to insist|irr|3
+出版[しゅっぱん]する|to publish|irr|3
+使用[しよう]する|to use|irr|3
+上京[じょうきょう]する|to go to Tokyo|irr|3
 生[しょう]じる|to produce; to yield|ru|3
-上達[じょうたつ]する|improvement; advance (+する)|irr|3
-衝突[しょうとつ]する|collision; conflict (+する)|irr|3
-承認[しょうにん]する|recognition; acknowledgement (+する)|irr|3
-商売[しょうばい]する|trade; business (+する)|irr|3
-消費[しょうひ]する|consumption; expenditure (+する)|irr|3
-証明[しょうめい]する|proof; verification (+する)|irr|3
-署名[しょめい]する|signature (+する)|irr|3
-処理[しょり]する|processing; dealing with (+する)|irr|3
-進学[しんがく]する|going on to university (+する)|irr|3
-信仰[しんこう]する|(religious) faith; belief (+する)|irr|3
-診察[しんさつ]する|medical examination (+する)|irr|3
-進歩[しんぽ]する|progress; development (+する)|irr|3
-信用[しんよう]する|confidence; dependence (+する)|irr|3
-信頼[しんらい]する|reliance; trust (+する)|irr|3
-推薦[すいせん]する|recommendation (+する)|irr|3
+上達[じょうたつ]する|to improve; to make progress|irr|3
+衝突[しょうとつ]する|to collide; to clash|irr|3
+承認[しょうにん]する|to approve; to recognize|irr|3
+商売[しょうばい]する|to do business; to trade|irr|3
+消費[しょうひ]する|to consume; to spend|irr|3
+証明[しょうめい]する|to prove; to certify|irr|3
+署名[しょめい]する|to sign|irr|3
+処理[しょり]する|to process; to deal with|irr|3
+進学[しんがく]する|to go on to higher education|irr|3
+信仰[しんこう]する|to believe in (a religion)|irr|3
+診察[しんさつ]する|to examine (a patient)|irr|3
+進歩[しんぽ]する|to progress; to advance|irr|3
+信用[しんよう]する|to trust; to have confidence in|irr|3
+信頼[しんらい]する|to trust; to rely on|irr|3
+推薦[すいせん]する|to recommend|irr|3
 救[すく]う|to rescue from; to help out of|u|3
 優[すぐ]れる|to surpass; to outstrip|ru|3
-スケートする|skate(s); skating (+する)|irr|3
+スケートする|to skate|irr|3
 過[す]ごす|to pass; to spend|u|3
 勧[すす]める|to recommend; to advise|ru|3
 進[すす]める|to advance; to promote|ru|3
 済[す]ませる|to be finished|ru|3
-請求[せいきゅう]する|claim; demand (+する)|irr|3
-制限[せいげん]する|restriction; restraint (+する)|irr|3
-成功[せいこう]する|success; hit (+する)|irr|3
-製造[せいぞう]する|manufacture; production (+する)|irr|3
-成長[せいちょう]する|growth; grow to adulthood (+する)|irr|3
-整理[せいり]する|sorting; arrangement (+する)|irr|3
-設計[せっけい]する|plan; design (+する)|irr|3
-設備[せつび]する|equipment; device (+する)|irr|3
-絶滅[ぜつめつ]する|destruction; extinction (+する)|irr|3
-節約[せつやく]する|economising; saving (+する)|irr|3
+請求[せいきゅう]する|to claim; to charge (a fee)|irr|3
+制限[せいげん]する|to restrict; to limit|irr|3
+成功[せいこう]する|to succeed|irr|3
+製造[せいぞう]する|to manufacture|irr|3
+成長[せいちょう]する|to grow (up); to develop|irr|3
+整理[せいり]する|to sort out; to organize|irr|3
+設計[せっけい]する|to design; to plan|irr|3
+絶滅[ぜつめつ]する|to become extinct; to wipe out|irr|3
+節約[せつやく]する|to save; to economize|irr|3
 責[せ]める|to condemn; to blame|ru|3
-専攻[せんこう]する|major subject; special study (+する)|irr|3
-前進[ぜんしん]する|advance; drive (+する)|irr|3
-選択[せんたく]する|selection; choice (+する)|irr|3
-増加[ぞうか]する|increase; addition (+する)|irr|3
-操作[そうさ]する|operation; management (+する)|irr|3
-想像[そうぞう]する|imagination; guess (+する)|irr|3
-相続[そうぞく]する|succession; inheritance (+する)|irr|3
-装置[そうち]する|equipment; installation (+する)|irr|3
-組織[そしき]する|organization; structure (+する)|irr|3
+専攻[せんこう]する|to major in|irr|3
+前進[ぜんしん]する|to advance; to move forward|irr|3
+選択[せんたく]する|to choose; to select|irr|3
+増加[ぞうか]する|to increase|irr|3
+操作[そうさ]する|to operate; to manipulate|irr|3
+想像[そうぞう]する|to imagine|irr|3
+相続[そうぞく]する|to inherit|irr|3
+組織[そしき]する|to organize; to form|irr|3
 注[そそ]ぐ|to pour (into); to irrigate|u|3
 育[そだ]つ|to raise (child); to be brought up|u|3
 備[そな]える|to furnish; to provide for|ru|3
-損[そん]する|loss; disadvantage (+する)|irr|3
-損害[そんがい]する|damage; injury (+する)|irr|3
-尊敬[そんけい]する|respect; esteem (+する)|irr|3
-存在[そんざい]する|existence; being (+する)|irr|3|nv
-尊重[そんちょう]する|respect; esteem (+する)|irr|3
-滞在[たいざい]する|stay; sojourn (+する)|irr|3
+損[そん]する|to lose (money); to suffer a loss|irr|3
+尊敬[そんけい]する|to respect; to look up to|irr|3
+存在[そんざい]する|to exist|irr|3|nv
+尊重[そんちょう]する|to respect; to value|irr|3
+滞在[たいざい]する|to stay|irr|3
 対[たい]する|to face; to confront|irr|3
-代表[だいひょう]する|representative; representation (+する)|irr|3
-逮捕[たいほ]する|arrest; apprehension (+する)|irr|3
-代理[だいり]する|representation; agency (+する)|irr|3
+代表[だいひょう]する|to represent|irr|3
+逮捕[たいほ]する|to arrest|irr|3
+代理[だいり]する|to act on behalf of; to stand in for|irr|3
 倒[たお]す|to throw down; to beat|u|3
 確[たし]かめる|to ascertain|ru|3
 助[たす]ける|to help; to save|ru|3
@@ -890,24 +923,23 @@ const VERB_DATA = `
 達[たっ]する|to reach; to get to|irr|3
 黙[だま]る|to be silent|u|3
 試[ため]す|to attempt; to test|u|3
-便[たよ]りする|news; tidings (+する)|irr|3
 頼[たよ]る|to rely on; to have recourse to|u|3
-誕生[たんじょう]する|birth (+する)|irr|3
-ダンスする|dance (+する)|irr|3
-担当[たんとう]する|(in) charge (+する)|irr|3
-遅刻[ちこく]する|lateness; late coming (+する)|irr|3
-注[ちゅう]する|annotation; explanatory note (+する)|irr|3
-中止[ちゅうし]する|suspension; stoppage (+する)|irr|3
-駐車[ちゅうしゃ]する|parking (e.g. car) (+する)|irr|3
-注目[ちゅうもく]する|notice; attention (+する)|irr|3
-注文[ちゅうもん]する|order; request (+する)|irr|3
-調査[ちょうさ]する|investigation; examination (+する)|irr|3
-貯金[ちょきん]する|(bank) savings (+する)|irr|3
-通過[つうか]する|passage through; passing (+する)|irr|3
-通学[つうがく]する|commuting to school (+する)|irr|3
-通行[つうこう]する|passage; passing (+する)|irr|3
+誕生[たんじょう]する|to be born; to be created|irr|3|nv
+ダンスする|to dance|irr|3
+担当[たんとう]する|to be in charge of|irr|3
+遅刻[ちこく]する|to be late|irr|3
+注[ちゅう]する|to annotate|irr|3
+中止[ちゅうし]する|to cancel; to call off|irr|3
+駐車[ちゅうしゃ]する|to park|irr|3
+注目[ちゅうもく]する|to pay attention to; to watch closely|irr|3
+注文[ちゅうもん]する|to order|irr|3
+調査[ちょうさ]する|to investigate; to survey|irr|3
+貯金[ちょきん]する|to save money|irr|3
+通過[つうか]する|to pass through; to pass (a bill)|irr|3
+通学[つうがく]する|to commute to school|irr|3
+通行[つうこう]する|to pass; to go through|irr|3
 通[つう]じる|to run to; to lead to|ru|3
-通信[つうしん]する|correspondence; communication (+する)|irr|3
+通信[つうしん]する|to communicate; to correspond|irr|3
 捕[つか]まる|to be caught; to be arrested|u|3
 掴[つか]む|to seize; to catch|u|3
 就[つ]く|to settle in (place)|u|3
@@ -915,135 +947,132 @@ const VERB_DATA = `
 詰[つ]める|to pack; to shorten|ru|3
 積[つ]もる|to pile up|u|3
 出会[であ]う|to meet by chance; to come across|u|3
-提案[ていあん]する|proposal; proposition (+する)|irr|3
-抵抗[ていこう]する|electrical resistance; resistance (+する)|irr|3
-提出[ていしゅつ]する|presentation; submission (+する)|irr|3
-デートする|date; go on a date (+する)|irr|3
+提案[ていあん]する|to propose; to suggest|irr|3
+抵抗[ていこう]する|to resist|irr|3
+提出[ていしゅつ]する|to submit; to hand in|irr|3
+デートする|to go on a date|irr|3
 適[てき]する|to fit; to suit|irr|3
-適用[てきよう]する|applying (+する)|irr|3
-徹底[てってい]する|thoroughness; completeness (+する)|irr|3
-徹夜[てつや]する|all night; all night vigil (+する)|irr|3
-到着[とうちゃく]する|arrival (+する)|irr|3
-投票[とうひょう]する|voting; poll (+する)|irr|3
+適用[てきよう]する|to apply (a rule)|irr|3
+徹底[てってい]する|to be thorough|irr|3
+徹夜[てつや]する|to stay up all night|irr|3
+到着[とうちゃく]する|to arrive|irr|3
+投票[とうひょう]する|to vote|irr|3
 通[とお]す|to let pass; to overlook|u|3
 通[とお]り過[す]ぎる|to pass; to pass through|ru|3
 解[と]く|to unfasten|u|3
-読書[どくしょ]する|reading (+する)|irr|3
-独立[どくりつ]する|independence (e.g. Ind. Day) (+する)|irr|3
+読書[どくしょ]する|to read (books)|irr|3
+独立[どくりつ]する|to become independent|irr|3
 解[と]ける|to come untied; to come apart|ru|3
-登山[とざん]する|mountain-climbing (+する)|irr|3
+登山[とざん]する|to climb a mountain|irr|3
 閉[と]じる|to close (e.g. book, eyes); to shut|ru|3
 届[とど]く|to reach|u|3
 飛[と]ばす|to skip over; to omit|u|3
 飛[と]び出[だ]す|to jump out; to rush out|u|3
 留[と]める|to fasten; to turn off|ru|3
 取[と]り上[あ]げる|to take up; to pick up|ru|3
-努力[どりょく]する|great effort; exertion (+する)|irr|3
+努力[どりょく]する|to make an effort; to try hard|irr|3
 取[と]れる|to come off; to be taken off|ru|3
 流[なが]す|to drain; to float|u|3
 眺[なが]める|to view; to gaze at|ru|3
 流[なが]れる|to stream; to flow|ru|3
-納得[なっとく]する|consent; assent (+する)|irr|3
+納得[なっとく]する|to be convinced; to accept; to understand|irr|3
 怠[なま]ける|to be idle; to neglect|ru|3
 悩[なや]む|to be worried; to be troubled|u|3
-何[なん]とかする|somehow; anyhow (+する)|irr|3
+何[なん]とかする|to manage somehow; to do something about|irr|3
 似合[にあ]う|to suit; to match|u|3
 握[にぎ]る|to grasp; to seize|u|3
-にっこりする|smile sweetly; smile (+する)|irr|3
-入場[にゅうじょう]する|entrance; admission (+する)|irr|3
+にっこりする|to smile|irr|3
+入場[にゅうじょう]する|to enter; to be admitted|irr|3
 抜[ぬ]く|to extract; to omit|u|3
 抜[ぬ]ける|to come out; to fall out|ru|3
 願[ねが]う|to desire; to wish|u|3
-熱中[ねっちゅう]する|nuts!; enthusiasm (+する)|irr|3
+熱中[ねっちゅう]する|to be absorbed in; to be crazy about|irr|3
 残[のこ]す|to leave (behind, over); to bequeath|u|3
 乗[の]せる|to place on (something)|ru|3
 除[のぞ]く|to remove; to exclude|u|3
 望[のぞ]む|to desire; to wish for|u|3
-ノックする|knock; fungo (baseball) (+する)|irr|3
+ノックする|to knock|irr|3
 伸[の]ばす|to lengthen; to stretch|u|3
 伸[の]びる|to stretch; to extend|ru|3
 述[の]べる|to state; to express|ru|3
 昇[のぼ]る|to arise; to ascend|u|3
-ハイキングする|hiking (+する)|irr|3
-配達[はいたつ]する|delivery; distribution (+する)|irr|3
+ハイキングする|to hike; to go hiking|irr|3
+配達[はいたつ]する|to deliver|irr|3
 計[はか]る|to measure; to weigh|u|3
 吐[は]く|to breathe; to tell (lies)|u|3
-拍手[はくしゅ]する|clapping hands; applause (+する)|irr|3
-爆発[ばくはつ]する|explosion; detonation (+する)|irr|3
-破産[はさん]する|(personal) bankruptcy (+する)|irr|3
+拍手[はくしゅ]する|to clap; to applaud|irr|3
+爆発[ばくはつ]する|to explode; to erupt|irr|3
+破産[はさん]する|to go bankrupt|irr|3
 外[はず]す|to unfasten; to remove|u|3
-発見[はっけん]する|discovery; detection (+する)|irr|3
-発行[はっこう]する|issue (publications) (+する)|irr|3
-発車[はっしゃ]する|departure of a vehicle (+する)|irr|3
+発見[はっけん]する|to discover|irr|3
+発行[はっこう]する|to publish; to issue|irr|3
+発車[はっしゃ]する|to depart (of a train, bus, etc.)|irr|3
 罰[ばっ]する|to punish; to penalize|irr|3
-発達[はったつ]する|development; growth (+する)|irr|3
-発展[はってん]する|development; growth (+する)|irr|3
-発表[はっぴょう]する|announcement; publication (+する)|irr|3
-発明[はつめい]する|invention (+する)|irr|3
+発達[はったつ]する|to develop; to grow|irr|3
+発展[はってん]する|to develop; to expand|irr|3
+発表[はっぴょう]する|to announce; to present|irr|3
+発明[はつめい]する|to invent|irr|3
 話[はな]し合[あ]う|to discuss; to talk together|u|3
 放[はな]す|to separate; to set free|u|3
 離[はな]す|to part; divide|u|3
 離[はな]れる|to be separated from; to leave|ru|3
 省[はぶ]く|to omit; to eliminate|u|3
 張[は]る|to stick; to paste|u|3
-反抗[はんこう]する|opposition; resistance (+する)|irr|3
-判断[はんだん]する|judgement; decision (+する)|irr|3
-販売[はんばい]する|sale; selling (+する)|irr|3
-比較[ひかく]する|comparison (+する)|irr|3
+反抗[はんこう]する|to rebel; to resist|irr|3
+判断[はんだん]する|to judge; to decide|irr|3
+販売[はんばい]する|to sell|irr|3
+比較[ひかく]する|to compare|irr|3
 轢[ひ]く|to run somebody over (with vehicle)|u|3
-飛行[ひこう]する|aviation (+する)|irr|3
-ぴったりする|exactly; neatly (+する)|irr|3
+飛行[ひこう]する|to fly|irr|3
+ぴったりする|to fit perfectly|irr|3
 引[ひ]っ張[ぱ]る|to pull; to draw|u|3
-否定[ひてい]する|negation; denial (+する)|irr|3
-一言[ひとこと]する|single word (+する)|irr|3
-批判[ひはん]する|criticism; judgement (+する)|irr|3
-批評[ひひょう]する|criticism; review (+する)|irr|3
-評価[ひょうか]する|valuation; estimation (+する)|irr|3
-表現[ひょうげん]する|expression; presentation (+する)|irr|3
+否定[ひてい]する|to deny|irr|3
+批判[ひはん]する|to criticize|irr|3
+批評[ひひょう]する|to review; to critique|irr|3
+評価[ひょうか]する|to evaluate; to appreciate|irr|3
+表現[ひょうげん]する|to express|irr|3
 広[ひろ]がる|to spread (out); to extend|u|3
 含[ふく]む|to hold in the mouth; to bear in mind|u|3
-不自由[ふじゆう]する|discomfort; disability (+する)|irr|3
+不自由[ふじゆう]する|to be inconvenienced; to be in want|irr|3
 防[ふせ]ぐ|to defend (against); to protect|u|3
-不足[ふそく]する|insufficiency; shortage (+する)|irr|3
+不足[ふそく]する|to be insufficient; to run short|irr|3|nv
 打[ぶ]つ|to hit; to strike|u|3
-プラスする|plus (+する)|irr|3
+プラスする|to add|irr|3
 振[ふ]る|to wave; to shake|u|3
 震[ふる]える|to shiver; to shake|ru|3
 触[ふ]れる|to touch; to be touched|ru|3
-分析[ぶんせき]する|analysis (+する)|irr|3
-平均[へいきん]する|equilibrium; balance (+する)|irr|3
+分析[ぶんせき]する|to analyze|irr|3
+平均[へいきん]する|to average|irr|3
 減[へ]らす|to abate; to decrease|u|3
 減[へ]る|to decrease (in size or number)|u|3
-変化[へんか]する|change; variation (+する)|irr|3
-変更[へんこう]する|change; modification (+する)|irr|3
-冒険[ぼうけん]する|risk; venture (+する)|irr|3
-報告[ほうこく]する|report; information (+する)|irr|3
-訪問[ほうもん]する|call; visit (+する)|irr|3
+変化[へんか]する|to change|irr|3
+変更[へんこう]する|to change; to modify|irr|3
+冒険[ぼうけん]する|to take a risk; to go on an adventure|irr|3
+報告[ほうこく]する|to report|irr|3
+訪問[ほうもん]する|to visit|irr|3
 吠[ほ]える|to bark; to bay|ru|3
-保証[ほしょう]する|guarantee; security (+する)|irr|3
-保存[ほぞん]する|preservation; conservation (+する)|irr|3
+保証[ほしょう]する|to guarantee|irr|3
+保存[ほぞん]する|to preserve; to save (a file)|irr|3
 微笑[ほほえ]む|to smile|u|3
-ぼんやりする|absent-minded; block-head (+する)|irr|3
+ぼんやりする|to be absent-minded; to space out|irr|3
 任[まか]せる|to entrust to another; to leave to|ru|3
 増[ま]す|to increase; to grow|u|3
 学[まな]ぶ|to study (in depth); to learn|u|3
-真似[まね]する|mimicry; imitation (+する)|irr|3
+真似[まね]する|to imitate; to copy|irr|3
 招[まね]く|to invite|u|3
 回[まわ]す|to turn; to revolve|u|3
-満足[まんぞく]する|satisfaction (+する)|irr|3
-ミスする|miss (mistake, error, failure); Miss (+する)|irr|3
+満足[まんぞく]する|to be satisfied|irr|3
+ミスする|to make a mistake|irr|3
 満[み]ちる|to be full; to rise (tide)|ru|3|nv
 認[みと]める|to recognize; to appreciate|ru|3
 向[む]く|to face|u|3
 向[む]ける|to turn towards; to point|ru|3
-無視[むし]する|disregard; ignore (+する)|irr|3
+無視[むし]する|to ignore|irr|3
 結[むす]ぶ|to tie; to bind|u|3
 命[めい]じる|to order; to command|ru|3
-命令[めいれい]する|order; command (+する)|irr|3
-メモする|memorandum (+する)|irr|3
-免許[めんきょ]する|license; permit (+する)|irr|3
+命令[めいれい]する|to order; to command|irr|3
+メモする|to take notes; to jot down|irr|3
 申[もう]し込[こ]む|to apply for; to make an application|u|3
-申[もう]し訳[わけ]する|apology; excuse (+する)|irr|3
 燃[も]える|to burn|ru|3
 持[も]ち上[あ]げる|to raise; to lift up|ru|3
 用[もち]いる|to use; to make use of|ru|3
@@ -1054,36 +1083,35 @@ const VERB_DATA = `
 破[やぶ]る|to tear; to violate|u|3
 辞[や]める|to retire|ru|3
 言[ゆ]う|to say|u|3
-優勝[ゆうしょう]する|overall victory; championship (+する)|irr|3
+優勝[ゆうしょう]する|to win (the championship)|irr|3
 譲[ゆず]る|to turn over; to assign|u|3
-ゆっくりする|slowly; at ease (+する)|irr|3
+ゆっくりする|to take one's time; to relax|irr|3
 許[ゆる]す|to permit; to allow|u|3
 酔[よ]う|to get drunk; to become intoxicated|u|3
-要求[ようきゅう]する|request; demand (+する)|irr|3
-用心[ようじん]する|care; precaution (+する)|irr|3
-予期[よき]する|expectation; assume will happen (+する)|irr|3
+要求[ようきゅう]する|to demand; to require|irr|3
+用心[ようじん]する|to be careful; to take precautions|irr|3
+予期[よき]する|to expect; to anticipate|irr|3
 横切[よこぎ]る|to cross (e.g. arms); to traverse|u|3
-予算[よさん]する|estimate; budget (+する)|irr|3
 止[よ]す|to cease; to abolish|u|3
-予測[よそく]する|prediction; estimation (+する)|irr|3
-予報[よほう]する|forecast; prediction (+する)|irr|3
-予防[よぼう]する|prevention; precaution (+する)|irr|3
-理解[りかい]する|understanding; comprehension (+する)|irr|3
-離婚[りこん]する|divorce (+する)|irr|3
-留学[りゅうがく]する|studying abroad (+する)|irr|3
-流行[りゅうこう]する|fashionable; fad (+する)|irr|3
-両替[りょうがえ]する|change; money exchange (+する)|irr|3
-連想[れんそう]する|association (of ideas); suggestion (+する)|irr|3
-連続[れんぞく]する|serial; consecutive (+する)|irr|3
-労働[ろうどう]する|manual labor; toil (+する)|irr|3
+予測[よそく]する|to predict; to forecast|irr|3
+予報[よほう]する|to forecast|irr|3
+予防[よぼう]する|to prevent|irr|3
+理解[りかい]する|to understand|irr|3
+離婚[りこん]する|to divorce|irr|3
+留学[りゅうがく]する|to study abroad|irr|3
+流行[りゅうこう]する|to be in fashion; to be popular|irr|3
+両替[りょうがえ]する|to exchange (money)|irr|3
+連想[れんそう]する|to associate (ideas); to be reminded of|irr|3
+連続[れんぞく]する|to continue; to occur in succession|irr|3
+労働[ろうどう]する|to labor; to work|irr|3
 論[ろん]じる|to argue; to discuss|ru|3
-論争[ろんそう]する|controversy; dispute (+する)|irr|3
+論争[ろんそう]する|to argue; to dispute|irr|3
 分[わ]ける|to divide; to separate|ru|3
 割[わ]る|to divide; to cut|u|3
 遭[あ]う|to meet|u|2
 扇[あお]ぐ|to fan; to flap|u|2
 あきれる|to be amazed; to be shocked|ru|2|nv
-あくびする|yawn (+する)|irr|2
+あくびする|to yawn|irr|2
 挙[あ]げる|to raise; to fly|ru|2
 揚[あ]げる|to lift; to fry|ru|2
 憧[あこが]れる|to long for; to yearn after|ru|2
@@ -1091,8 +1119,7 @@ const VERB_DATA = `
 預[あず]かる|to keep in custody|u|2
 暖[あたた]まる|to warm up; to get warm|u|2
 暖[あたた]める|to warm; to heat|ru|2
-あちらこちらする|here and there (+する)|irr|2
-圧縮[あっしゅく]する|compression; condensation (+する)|irr|2
+圧縮[あっしゅく]する|to compress|irr|2
 あてはまる|to be applicable|u|2|nv nx
 あてはめる|to apply; to adapt|ru|2
 暴[あば]れる|to act violently; to rage|ru|2
@@ -1107,14 +1134,13 @@ const VERB_DATA = `
 あわてる|to become confused|ru|2|nv
 言[い]い出[だ]す|to start talking; to speak|u|2
 言[い]い付[つ]ける|to tell; to tell on (someone)|ru|2
-生[い]き生[い]きする|vividly; lively (+する)|irr|2
-育児[いくじ]する|childcare; nursing (+する)|irr|2
-移転[いてん]する|moving; transfer (+する)|irr|2
+育児[いくじ]する|to raise a child|irr|2
+移転[いてん]する|to move; to relocate|irr|2
 威張[いば]る|to be proud; to swagger|u|2
 嫌[いや]がる|to hate; to dislike|u|2
 煎[い]る|to parch; to fry|u|2
 炒[い]る|to roast; to parch|u|2
-インタビューする|interview (+する)|irr|2
+インタビューする|to interview|irr|2
 飢[う]える|to starve|ru|2
 浮[う]かぶ|to float; to rise to surface|u|2
 浮[う]かべる|to float; to express|ru|2
@@ -1122,10 +1148,10 @@ const VERB_DATA = `
 承[うけたまわ]る|(humble) to hear; to be told|u|2
 受[う]け持[も]つ|to take (be in) charge of|u|2
 薄[うす]める|to dilute; to water down|ru|2
-打合[うちあわ]せする|business meeting; previous arrangement (+する)|irr|2
+打合[うちあわ]せする|to make arrangements; to have a meeting|irr|2
 打[う]ち消[け]す|to deny; to negate|u|2
 討[う]つ|to attack; to avenge|u|2
-うっかりする|carelessly; thoughtlessly (+する)|irr|2
+うっかりする|to be careless; to slip one's mind|irr|2
 映[うつ]す|to project; to reflect|u|2
 映[うつ]る|to be reflected; to harmonize with|u|2
 写[うつ]る|to be photographed; to be projected|u|2
@@ -1136,69 +1162,67 @@ const VERB_DATA = `
 恨[うら]む|to curse; to feel bitter|u|2
 羨[うらや]む|to envy|u|2
 売[う]り切[き]れる|to be sold out|ru|2|nv
-遠足[えんそく]する|trip; hike (+する)|irr|2
-延長[えんちょう]する|extension; elongation (+する)|irr|2
+遠足[えんそく]する|to go on an excursion|irr|2
+延長[えんちょう]する|to extend; to prolong|irr|2
 追[お]い掛[か]ける|to chase or run after someone|ru|2
 追[お]い越[こ]す|to pass (e.g. car); to outdistance|u|2
-応援[おうえん]する|aid; assistance (+する)|irr|2
-応接[おうせつ]する|reception (+する)|irr|2
-応対[おうたい]する|receiving; dealing with (+する)|irr|2
-往復[おうふく]する|(colloquial) round trip (+する)|irr|2
-応用[おうよう]する|application; put to practical use (+する)|irr|2
+応援[おうえん]する|to cheer for; to support|irr|2
+応接[おうせつ]する|to receive (visitors)|irr|2
+応対[おうたい]する|to deal with; to attend to (customers)|irr|2
+往復[おうふく]する|to make a round trip; to go back and forth|irr|2
+応用[おうよう]する|to apply; to put to practical use|irr|2
 拝[おが]む|to worship; to beg|u|2
-お代[か]わりする|second helping; another cup (+する)|irr|2
+お代[か]わりする|to have a second helping|irr|2
 補[おぎな]う|to compensate for|u|2
 怠[おこた]る|to neglect; to be off guard|u|2
 押[おさ]える|to stop; to restrain|ru|2
 治[おさ]める|to govern; to manage|ru|2
 納[おさ]める|to obtain; to reap|ru|2
-御辞儀[おじぎ]する|bow (+する)|irr|2
+御辞儀[おじぎ]する|to bow|irr|2
 教[おそ]わる|to be taught|u|2
 落着[おちつ]く|to calm down; to settle down|u|2
 おどかす|to threaten; to coerce|u|2
 驚[おどろ]かす|to surprise; to frighten|u|2
-お参[まい]りする|worship; shrine visit (+する)|irr|2
+お参[まい]りする|to visit (a shrine or grave)|irr|2
 思[おも]い込[こ]む|to be under impression that|u|2
 思[おも]い付[つ]く|to think of; to hit upon|u|2
 卸[おろ]す|to sell wholesale; grated (vegetables)|u|2
-カーブする|curve; curve ball (baseball) (+する)|irr|2
-開会[かいかい]する|opening of a meeting (+する)|irr|2
-改札[かいさつ]する|examination of tickets (+する)|irr|2
-解散[かいさん]する|breakup; dissolution (+する)|irr|2
-改正[かいせい]する|revision; amendment (+する)|irr|2
-解説[かいせつ]する|explanation; commentary (+する)|irr|2
-改造[かいぞう]する|remodeling; modding (comp) (+する)|irr|2
-開通[かいつう]する|opening; open (+する)|irr|2
-回転[かいてん]する|rotation; revolution (+する)|irr|2|nv
-解答[かいとう]する|answer; solution (+する)|irr|2
-回答[かいとう]する|reply; answer (+する)|irr|2
-解放[かいほう]する|release; liberation (+する)|irr|2
-開放[かいほう]する|open; throw open (+する)|irr|2
-概論[がいろん]する|intro; outline (+する)|irr|2
+カーブする|to curve; to bend|irr|2
+開会[かいかい]する|to open (a meeting)|irr|2
+改札[かいさつ]する|to check tickets|irr|2
+解散[かいさん]する|to break up; to disperse|irr|2
+改正[かいせい]する|to revise; to amend|irr|2
+解説[かいせつ]する|to explain; to comment on|irr|2
+改造[かいぞう]する|to remodel; to convert|irr|2
+開通[かいつう]する|to open (to traffic)|irr|2
+回転[かいてん]する|to rotate; to revolve|irr|2|nv
+解答[かいとう]する|to answer; to solve|irr|2
+回答[かいとう]する|to reply; to respond|irr|2
+解放[かいほう]する|to release; to liberate|irr|2
+開放[かいほう]する|to open (to the public); to leave open|irr|2
 帰[かえ]す|to send back|u|2
 代[か]える|to exchange; to interchange|ru|2
 係[かか]わる|to concern oneself in|u|2
 掻[か]く|to scratch; to perspire|u|2
 嗅[か]ぐ|to sniff; to smell|u|2
-拡充[かくじゅう]する|expansion (+する)|irr|2
-拡張[かくちょう]する|expansion; extension (+する)|irr|2
-可決[かけつ]する|approval; adoption (e.g. motion, bill) (+する)|irr|2
-下降[かこう]する|downward; descent (+する)|irr|2
+拡充[かくじゅう]する|to expand|irr|2
+拡張[かくちょう]する|to expand; to extend|irr|2
+可決[かけつ]する|to approve; to pass (a bill)|irr|2
+下降[かこう]する|to descend; to fall|irr|2
 重[かさ]なる|to be piled up|u|2
 重[かさ]ねる|to pile up; to put something on another|ru|2
-貸[か]し出[だ]しする|lending; loaning (+する)|irr|2
+貸[か]し出[だ]しする|to lend out|irr|2
 かじる|to chew; to bite (at)|u|2
-課税[かぜい]する|taxation (+する)|irr|2
-加速[かそく]する|acceleration (+する)|irr|2
+課税[かぜい]する|to tax|irr|2
+加速[かそく]する|to accelerate|irr|2
 片付[かたづ]く|to put in order; to dispose of|u|2
 固[かた]まる|to harden; to solidify|u|2
 傾[かたむ]く|to incline toward; to slant|u|2
 片寄[かたよ]る|to be one-sided; to incline|u|2
 担[かつ]ぐ|to shoulder; to carry on shoulder|u|2
-括弧[かっこ]する|parenthesis; brackets (+する)|irr|2
-活躍[かつやく]する|activity (+する)|irr|2
-仮定[かてい]する|assumption; supposition (+する)|irr|2
-加熱[かねつ]する|heating (+する)|irr|2
+活躍[かつやく]する|to be active; to play an active role|irr|2
+仮定[かてい]する|to assume; to suppose|irr|2
+加熱[かねつ]する|to heat|irr|2
 兼[か]ねる|to hold (position); to serve|ru|2
 被[かぶ]せる|to cover (with something)|ru|2
 からかう|to ridicule; to tease|u|2
@@ -1207,32 +1231,32 @@ const VERB_DATA = `
 乾[かわ]かす|to dry (clothes, etc.); to desiccate|u|2
 渇[かわ]く|to be thirsty|u|2
 代[かわ]る|to take the place of; to relieve|u|2
-換気[かんき]する|ventilation (+する)|irr|2
-感激[かんげき]する|deep emotion; impression (+する)|irr|2
-鑑賞[かんしょう]する|appreciation (+する)|irr|2
-乾燥[かんそう]する|dry; arid (+する)|irr|2
-観測[かんそく]する|observation (+する)|irr|2
-勘違[かんちが]いする|misunderstanding; wrong guess (+する)|irr|2
-乾杯[かんぱい]する|toast (drink) (+する)|irr|2
-看病[かんびょう]する|nursing (a patient) (+する)|irr|2
-着替[きが]えする|changing clothes; change of clothes (+する)|irr|2
+換気[かんき]する|to ventilate; to air out|irr|2
+感激[かんげき]する|to be deeply moved|irr|2
+鑑賞[かんしょう]する|to appreciate (art, music)|irr|2
+乾燥[かんそう]する|to dry; to become dry|irr|2
+観測[かんそく]する|to observe; to measure|irr|2
+勘違[かんちが]いする|to misunderstand; to be mistaken|irr|2
+乾杯[かんぱい]する|to toast; to drink a toast|irr|2
+看病[かんびょう]する|to nurse (a sick person)|irr|2
+着替[きが]えする|to change clothes|irr|2
 刻[きざ]む|to mince; to carve|u|2
-起床[きしょう]する|rising; getting out of bed (+する)|irr|2
+起床[きしょう]する|to get up; to get out of bed|irr|2
 着[き]せる|to put on clothes|ru|2
-休業[きゅうぎょう]する|closed (e.g. store); business suspended (+する)|irr|2
-休講[きゅうこう]する|lecture cancelled (+する)|irr|2
-休息[きゅうそく]する|rest; relief (+する)|irr|2
-給与[きゅうよ]する|allowance; grant (+する)|irr|2
-休養[きゅうよう]する|rest; break (+する)|irr|2
-強化[きょうか]する|strengthen; intensify (+する)|irr|2
-恐縮[きょうしゅく]する|shame; very kind of you (+する)|irr|2
-行列[ぎょうれつ]する|line; procession (+する)|irr|2
+休業[きゅうぎょう]する|to close (for business); to be closed|irr|2
+休講[きゅうこう]する|to cancel a lecture|irr|2
+休息[きゅうそく]する|to rest|irr|2
+給与[きゅうよ]する|to pay; to grant|irr|2
+休養[きゅうよう]する|to rest; to take a break|irr|2
+強化[きょうか]する|to strengthen; to reinforce|irr|2
+恐縮[きょうしゅく]する|to be grateful; to feel obliged|irr|2
+行列[ぎょうれつ]する|to line up; to queue|irr|2
 斬[き]る|to behead; to murder|u|2
 気[き]を付[つ]ける|to be careful; to pay attention|ru|2
-空想[くうそう]する|daydream; fantasy (+する)|irr|2
+空想[くうそう]する|to daydream; to fantasize|irr|2
 区切[くぎ]る|to punctuate; to cut off|u|2
-くしゃみする|sneeze (+する)|irr|2
-苦心[くしん]する|pain; trouble (+する)|irr|2
+くしゃみする|to sneeze|irr|2
+苦心[くしん]する|to take great pains|irr|2
 崩[くず]す|to destroy; to pull down|u|2
 崩[くず]れる|to collapse; to crumble|ru|2
 砕[くだ]く|to break; to smash|u|2
@@ -1242,35 +1266,35 @@ const VERB_DATA = `
 くっつく|to adhere to; to keep close to|u|2
 くっつける|to attach|ru|2
 配[くば]る|to distribute; to deliver|u|2
-工夫[くふう]する|labourer; worker (+する)|irr|2
-区分[くぶん]する|division; section (+する)|irr|2
+工夫[くふう]する|to devise; to figure out|irr|2
+区分[くぶん]する|to divide; to classify|irr|2
 組[く]み立[た]てる|to assemble; to set up|ru|2
 汲[く]む|to draw (water); to dip|u|2
 酌[く]む|to serve sake|u|2
 悔[く]やむ|to mourn|u|2
-クリーニングする|cleaning; dry cleaning (+する)|irr|2
+クリーニングする|to clean; to dry-clean|irr|2
 くるむ|to be engulfed in; to be enveloped by|u|2
 咥[くわ]える|to hold in one's mouth|ru|2
-稽古[けいこ]する|practice; training (+する)|irr|2
-継続[けいぞく]する|continuation (+する)|irr|2
-警備[けいび]する|defense; guard (+する)|irr|2
-激増[げきぞう]する|sudden increase (+する)|irr|2
-下車[げしゃ]する|alighting; getting off (+する)|irr|2
+稽古[けいこ]する|to practice; to train|irr|2
+継続[けいぞく]する|to continue|irr|2
+警備[けいび]する|to guard|irr|2
+激増[げきぞう]する|to increase sharply|irr|2
+下車[げしゃ]する|to get off (a train, bus)|irr|2
 削[けず]る|to cut down little by little|u|2
 蹴[け]る|to kick|u|2
-見学[けんがく]する|inspection; study by observation (+する)|irr|2
-研修[けんしゅう]する|training (+する)|irr|2
-謙遜[けんそん]する|humble; humility (+する)|irr|2
-孝行[こうこう]する|filial piety (+する)|irr|2
-交差[こうさ]する|cross (+する)|irr|2
-工事[こうじ]する|construction work (+する)|irr|2
-交替[こうたい]する|alternation; change (+する)|irr|2
-肯定[こうてい]する|positive; affirmation (+する)|irr|2
-合同[ごうどう]する|combination; incorporation (+する)|irr|2
-公表[こうひょう]する|official announcement; proclamation (+する)|irr|2
-紅葉[こうよう]する|leaves turning red (in autumn) (+する)|irr|2
-交流[こうりゅう]する|alternating current; intercourse (+する)|irr|2
-合流[ごうりゅう]する|confluence; union (+する)|irr|2
+見学[けんがく]する|to tour; to observe (a class, factory)|irr|2
+研修[けんしゅう]する|to train; to undergo training|irr|2
+謙遜[けんそん]する|to be modest|irr|2
+孝行[こうこう]する|to be devoted to one's parents|irr|2
+交差[こうさ]する|to cross; to intersect|irr|2
+工事[こうじ]する|to do construction work|irr|2
+交替[こうたい]する|to take turns; to switch|irr|2
+肯定[こうてい]する|to affirm|irr|2
+合同[ごうどう]する|to combine; to join together|irr|2
+公表[こうひょう]する|to announce publicly|irr|2
+紅葉[こうよう]する|to turn red (of autumn leaves)|irr|2|nv
+交流[こうりゅう]する|to interact; to exchange|irr|2
+合流[ごうりゅう]する|to merge; to join up|irr|2
 超[こ]える|to exceed; to cross over|ru|2
 焦[こ]がす|to burn; to scorch|u|2
 焦[こ]げる|to burn; to be burned|ru|2
@@ -1281,52 +1305,50 @@ const VERB_DATA = `
 超[こ]す|to cross; to pass|u|2
 擦[こす]る|to rub; to chafe|u|2
 言付[ことづ]ける|to send word; to send a message|ru|2
-御無沙汰[ごぶさた]する|not writing or contacting for a while (+する)|irr|2
+御無沙汰[ごぶさた]する|to not be in touch for a while|irr|2
 こぼす|to spill|u|2
 こぼれる|to overflow; to spill|ru|2
 こらえる|to bear; to stand|ru|2
-娯楽[ごらく]する|pleasure; amusement (+する)|irr|2
-コレクションする|collection; correction (+する)|irr|2
 転[ころ]がす|to roll|u|2
 転[ころ]がる|to roll; to tumble|u|2
-混合[こんごう]する|mixing; mixture (+する)|irr|2
-在学[ざいがく]する|(enrolled) in school (+する)|irr|2
-催促[さいそく]する|request; demand (+する)|irr|2
-採点[さいてん]する|marking; grading (+する)|irr|2
-裁縫[さいほう]する|sewing (+する)|irr|2
+混合[こんごう]する|to mix|irr|2
+在学[ざいがく]する|to be enrolled (at a school)|irr|2
+催促[さいそく]する|to press; to urge|irr|2
+採点[さいてん]する|to grade; to mark|irr|2
+裁縫[さいほう]する|to sew|irr|2
 捜[さが]す|to search; to seek|u|2
 遡[さかのぼ]る|to go back; to go upstream|u|2
 裂[さ]く|to tear; to split|u|2
-削除[さくじょ]する|elimination; cancellation (+する)|irr|2
-作成[さくせい]する|frame; draw up (+する)|irr|2
-作製[さくせい]する|manufacture (+する)|irr|2
+削除[さくじょ]する|to delete|irr|2
+作成[さくせい]する|to draw up; to create (a document)|irr|2
+作製[さくせい]する|to manufacture; to make|irr|2
 探[さぐ]る|to search; to look for|u|2
 囁[ささや]く|to whisper; to murmur|u|2
 刺[さ]さる|to stick; to be stuck|u|2
-差[さ]し引[ひ]きする|deduction; subtraction (+する)|irr|2
+差[さ]し引[ひ]きする|to deduct|irr|2
 刺[さ]す|to pierce; to stab|u|2
 射[さ]す|to shine; to strike|u|2
 挿[さ]す|to insert; to put in|u|2
 注[さ]す|to pour (drink); to serve (drinks)|u|2
-撮影[さつえい]する|photographing (+する)|irr|2
+撮影[さつえい]する|to photograph; to film|irr|2
 錆[さ]びる|to rust; to become rusty|ru|2|nv nx
 冷[さ]ます|to cool; to dampen|u|2
 妨[さまた]げる|to disturb; to prevent|ru|2
 冷[さ]める|to become cool; to wear off|ru|2|nv
 仕上[しあ]がる|to be finished|u|2|nv
-自衛[じえい]する|self-defense (+する)|irr|2
-司会[しかい]する|chairmanship (+する)|irr|2
+自衛[じえい]する|to defend oneself|irr|2
+司会[しかい]する|to host; to chair (a meeting)|irr|2
 敷[し]く|to spread out; to lay out|u|2
 茂[しげ]る|to grow thick; to luxuriate|u|2
-持参[じさん]する|bringing; taking (+する)|irr|2
-四捨五入[ししゃごにゅう]する|rounding up (fractions) (+する)|irr|2
-自習[じしゅう]する|self-study (+する)|irr|2
+持参[じさん]する|to bring; to take along|irr|2
+四捨五入[ししゃごにゅう]する|to round off (a number)|irr|2
+自習[じしゅう]する|to study on one's own|irr|2
 静[しず]まる|to quieten down; to calm down|u|2
-下書[したが]きする|rough copy; draft (+する)|irr|2
-実習[じっしゅう]する|practice; training (+する)|irr|2
-執筆[しっぴつ]する|writing (+する)|irr|2
-失恋[しつれん]する|disappointed love; broken heart (+する)|irr|2
-指定[してい]する|designation; specification (+する)|irr|2
+下書[したが]きする|to draft|irr|2
+実習[じっしゅう]する|to practice; to train (hands-on)|irr|2
+執筆[しっぴつ]する|to write (a book, article)|irr|2
+失恋[しつれん]する|to be heartbroken|irr|2
+指定[してい]する|to designate; to specify|irr|2
 縛[しば]る|to tie; to bind|u|2
 しびれる|to become numb|ru|2|nv
 しぼむ|to wither; to fade (away)|u|2|nv nx
@@ -1334,82 +1356,78 @@ const VERB_DATA = `
 締[し]め切[き]る|to shut up|u|2
 湿[しめ]る|to be wet; to become wet|u|2
 しゃがむ|to squat|u|2
-写生[しゃせい]する|sketching; drawing from nature (+する)|irr|2
-しゃっくりする|hiccough; hiccup (+する)|irr|2
+写生[しゃせい]する|to sketch|irr|2
+しゃっくりする|to hiccup|irr|2
 しゃぶる|to suck; to chew|u|2
-じゃんけんする|rock-scissors-paper game (+する)|irr|2
-集会[しゅうかい]する|meeting; assembly (+する)|irr|2
-住居[じゅうきょ]する|dwelling; house (+する)|irr|2
-集金[しゅうきん]する|money collection (+する)|irr|2
-集合[しゅうごう]する|gathering; assembly (+する)|irr|2
-修繕[しゅうぜん]する|repair; mending (+する)|irr|2
-就任[しゅうにん]する|inauguration; assumption of office (+する)|irr|2
-終了[しゅうりょう]する|end; close (+する)|irr|2
-縮小[しゅくしょう]する|reduction; curtailment (+する)|irr|2
-受験[じゅけん]する|taking an examination (+する)|irr|2
-出勤[しゅっきん]する|going to work; at work (+する)|irr|2
-出張[しゅっちょう]する|official tour; business trip (+する)|irr|2
-循環[じゅんかん]する|circulation; rotation (+する)|irr|2
-消化[しょうか]する|digestion (+する)|irr|2
-乗車[じょうしゃ]する|taking a train; entraining (+する)|irr|2
-消毒[しょうどく]する|disinfection; sterilization (+する)|irr|2
-蒸発[じょうはつ]する|evaporation; unexplained disappearance (+する)|irr|2
-勝負[しょうぶ]する|victory or defeat; match (+する)|irr|2
-小便[しょうべん]する|(colloquial) urine; piss (+する)|irr|2
-消耗[しょうもう]する|exhaustion; consumption (+する)|irr|2
-省略[しょうりゃく]する|omission; abbreviation (+する)|irr|2
-申請[しんせい]する|application; request (+する)|irr|2
-診断[しんだん]する|diagnosis (+する)|irr|2
-侵入[しんにゅう]する|penetration; invasion (+する)|irr|2
-炊事[すいじ]する|cooking; culinary arts (+する)|irr|2
-推定[すいてい]する|presumption; assumption (+する)|irr|2
+じゃんけんする|to play rock-paper-scissors|irr|2
+集会[しゅうかい]する|to hold a meeting; to assemble|irr|2
+集金[しゅうきん]する|to collect money|irr|2
+集合[しゅうごう]する|to gather; to meet up|irr|2
+修繕[しゅうぜん]する|to repair; to mend|irr|2
+就任[しゅうにん]する|to take office|irr|2
+終了[しゅうりょう]する|to end; to finish|irr|2
+縮小[しゅくしょう]する|to reduce; to scale down|irr|2
+受験[じゅけん]する|to take an exam|irr|2
+出勤[しゅっきん]する|to go to work|irr|2
+出張[しゅっちょう]する|to go on a business trip|irr|2
+循環[じゅんかん]する|to circulate|irr|2
+消化[しょうか]する|to digest|irr|2
+乗車[じょうしゃ]する|to board (a train, bus)|irr|2
+消毒[しょうどく]する|to disinfect; to sterilize|irr|2
+蒸発[じょうはつ]する|to evaporate|irr|2
+勝負[しょうぶ]する|to compete; to have a match|irr|2
+小便[しょうべん]する|to urinate|irr|2
+消耗[しょうもう]する|to wear out; to use up|irr|2
+省略[しょうりゃく]する|to omit; to abbreviate|irr|2
+申請[しんせい]する|to apply for|irr|2
+診断[しんだん]する|to diagnose|irr|2
+侵入[しんにゅう]する|to invade; to break in|irr|2
+炊事[すいじ]する|to cook|irr|2
+推定[すいてい]する|to estimate; to presume|irr|2
 透[す]き通[とお]る|to be(come) transparent|u|2
 涼[すず]む|to cool oneself; to cool off|u|2
-スタートする|start (+する)|irr|2
-すっきりする|shapely; clear (+する)|irr|2
-ストップする|stop (+する)|irr|2
+スタートする|to start|irr|2
+すっきりする|to feel refreshed|irr|2
+ストップする|to stop|irr|2
 澄[す]む|to clear (e.g. weather)|u|2
 清[す]む|to become clear (water, air, etc.)|u|2|nv
 ずらす|to put off; to delay|u|2
 刷[す]る|to print|u|2
 すれちがう|to pass by one another; to disagree|u|2
 ずれる|to slide; to slip off|ru|2
-制作[せいさく]する|work (film, book) (+する)|irr|2
-製作[せいさく]する|manufacture; production (+する)|irr|2
-清書[せいしょ]する|clean copy (+する)|irr|2
-清掃[せいそう]する|cleaning (+する)|irr|2
-生存[せいぞん]する|existence; being (+する)|irr|2|nv
-生長[せいちょう]する|growth; increment (+する)|irr|2
-整備[せいび]する|adjustment; completion (+する)|irr|2
-成立[せいりつ]する|coming into existence; arrangements (+する)|irr|2
+制作[せいさく]する|to produce (a film, artwork)|irr|2
+製作[せいさく]する|to manufacture; to produce|irr|2
+清書[せいしょ]する|to make a clean copy|irr|2
+清掃[せいそう]する|to clean|irr|2
+生存[せいぞん]する|to survive; to exist|irr|2|nv
+生長[せいちょう]する|to grow (of plants)|irr|2
+整備[せいび]する|to maintain; to service|irr|2
+成立[せいりつ]する|to be established; to be concluded|irr|2
 背負[せお]う|to be burdened with|u|2
-接近[せっきん]する|getting closer; drawing nearer (+する)|irr|2
+接近[せっきん]する|to approach; to get closer|irr|2
 接[せっ]する|to come in contact with; to connect|irr|2
-接続[せつぞく]する|connection; union (+する)|irr|2
+接続[せつぞく]する|to connect|irr|2
 迫[せま]る|to draw near; to press|u|2
 攻[せ]める|to attack; to assault|ru|2
-専制[せんせい]する|despotism; autocracy (+する)|irr|2
-宣伝[せんでん]する|propaganda; publicity (+する)|irr|2
-相違[そうい]する|difference; discrepancy (+する)|irr|2|nv
-増減[ぞうげん]する|increase and decrease; fluctuation (+する)|irr|2
-創作[そうさく]する|production; literary creation (+する)|irr|2
-造船[ぞうせん]する|shipbuilding (+する)|irr|2
-増大[ぞうだい]する|enlargement (+する)|irr|2
-送別[そうべつ]する|farewell; send-off (+する)|irr|2
+宣伝[せんでん]する|to advertise; to publicize|irr|2
+相違[そうい]する|to differ|irr|2|nv
+増減[ぞうげん]する|to fluctuate|irr|2
+創作[そうさく]する|to create; to write (fiction)|irr|2
+造船[ぞうせん]する|to build ships|irr|2
+増大[ぞうだい]する|to increase; to grow|irr|2
 属[ぞく]する|to belong to; to come under|irr|2
-速達[そくたつ]する|express; special delivery (+する)|irr|2
-測定[そくてい]する|measurement (+する)|irr|2
-測量[そくりょう]する|measurement; surveying (+する)|irr|2
+測定[そくてい]する|to measure|irr|2
+測量[そくりょう]する|to survey; to measure|irr|2
 剃[そ]る|to shave|u|2
 反[そ]る|to warp; to be warped|u|2
 逸[そ]れる|to stray (turn) from subject|ru|2
 揃[そろ]う|to become complete; to be equal|u|2|nv
 揃[そろ]える|to put things in order; to arrange|ru|2
 存[ぞん]じる|(humble) to know|ru|2
-対照[たいしょう]する|contrast; antithesis (+する)|irr|2
-体操[たいそう]する|gymnastics; physical exercises (+する)|irr|2
-ダイヤルする|dial (+する)|irr|2
-対立[たいりつ]する|confrontation; opposition (+する)|irr|2
+対照[たいしょう]する|to contrast; to compare|irr|2
+体操[たいそう]する|to exercise; to do gymnastics|irr|2
+ダイヤルする|to dial|irr|2
+対立[たいりつ]する|to be opposed; to confront|irr|2
 高[たか]める|to raise; to lift|ru|2
 耕[たがや]す|to till; to plow|u|2
 炊[た]く|to boil; to cook|u|2
@@ -1420,16 +1438,15 @@ const VERB_DATA = `
 立[た]ち止[ど]まる|to stop; to halt|u|2
 建[た]つ|to erect; to be erected|u|2
 発[た]つ|to depart (on a plane, train, etc.)|u|2
-脱線[だっせん]する|derailment; digression (+する)|irr|2
-妥当[だとう]する|valid; proper (+する)|irr|2
+脱線[だっせん]する|to derail; to digress|irr|2
 例[たと]える|to compare; to liken|ru|2
 だます|to trick; to cheat|u|2
 溜[た]まる|to collect; to gather|u|2
 ためらう|to hesitate|u|2
 溜[た]める|to amass; to accumulate|ru|2
 足[た]る|to be sufficient; to be enough|u|2|nv nx
-断水[だんすい]する|water outage (+する)|irr|2
-断定[だんてい]する|conclusion; decision (+する)|irr|2
+断水[だんすい]する|to have the water cut off|irr|2|nv
+断定[だんてい]する|to conclude; to declare|irr|2
 誓[ちか]う|to swear; to vow|u|2
 近付[ちかづ]ける|to bring near; to put close|ru|2
 近寄[ちかよ]る|to approach; to draw near|u|2
@@ -1437,22 +1454,21 @@ const VERB_DATA = `
 縮[ちぢ]む|to shrink; to be contracted|u|2
 縮[ちぢ]める|to shorten; to reduce|ru|2
 縮[ちぢ]れる|to be wavy; to be curled|ru|2
-抽象[ちゅうしょう]する|abstract (+する)|irr|2
-超過[ちょうか]する|excess; being more than (+する)|irr|2
-彫刻[ちょうこく]する|carving; engraving (+する)|irr|2
-調整[ちょうせい]する|regulation; adjustment (+する)|irr|2
-調節[ちょうせつ]する|regulation; adjustment (+する)|irr|2
-直通[ちょくつう]する|direct communication (+する)|irr|2
-貯蔵[ちょぞう]する|storage; preservation (+する)|irr|2
+超過[ちょうか]する|to exceed|irr|2
+彫刻[ちょうこく]する|to carve; to sculpt|irr|2
+調整[ちょうせい]する|to adjust; to coordinate|irr|2
+調節[ちょうせつ]する|to regulate; to adjust|irr|2
+直通[ちょくつう]する|to go direct; to connect directly|irr|2
+貯蔵[ちょぞう]する|to store|irr|2
 散[ち]らかす|to scatter around; to leave untidy|u|2
 散[ち]らかる|to be in disorder|u|2
 散[ち]らす|to scatter; to disperse|u|2
 散[ち]る|to fall; to scatter (e.g. blossoms)|u|2
-追加[ついか]する|addition; supplement (+する)|irr|2
-通勤[つうきん]する|commuting to work (+する)|irr|2
-通知[つうち]する|notice; notification (+する)|irr|2
-通訳[つうやく]する|interpretation (+する)|irr|2
-通用[つうよう]する|popular use; circulation (+する)|irr|2
+追加[ついか]する|to add|irr|2
+通勤[つうきん]する|to commute to work|irr|2
+通知[つうち]する|to notify|irr|2
+通訳[つうやく]する|to interpret|irr|2
+通用[つうよう]する|to be accepted; to pass (as)|irr|2
 付[つ]き合[あ]う|to associate with; to keep company with|u|2
 突[つ]き当[あ]たる|to run into; to collide with|u|2
 点[つ]く|to catch fire; (electricity) comes on|u|2
@@ -1474,32 +1490,30 @@ const VERB_DATA = `
 釣[つ]り合[あ]う|to balance; to be in harmony|u|2
 吊[つ]る|to hang|u|2
 吊[つる]す|to hang|u|2
-低下[ていか]する|fall; decline (+する)|irr|2
-停止[ていし]する|suspension; interruption (+する)|irr|2
-停車[ていしゃ]する|stopping (e.g. train) (+する)|irr|2
-停電[ていでん]する|failure of electricity (+する)|irr|2
-出入[でい]りする|in and out; coming and going (+する)|irr|2
-手入[てい]れする|repairs; maintenance (+する)|irr|2
+低下[ていか]する|to decline; to fall|irr|2
+停止[ていし]する|to stop; to suspend|irr|2
+停車[ていしゃ]する|to stop (of a vehicle)|irr|2
+停電[ていでん]する|to have a power outage|irr|2|nv
+出入[でい]りする|to go in and out|irr|2
+手入[てい]れする|to take care of; to maintain|irr|2
 出来上[できあ]がる|to be finished; to be ready|u|2|nv
-凸凹[でこぼこ]する|unevenness; roughness (+する)|irr|2
 出迎[でむか]える|to meet; to greet|ru|2
 照[て]らす|to shine on; to illuminate|u|2
 照[て]る|to shine|u|2
-展開[てんかい]する|develop (+する)|irr|2
-伝染[でんせん]する|contagion (+する)|irr|2
-転々[てんてん]する|moving from place to place (+する)|irr|2
-統一[とういつ]する|unity; consolidation (+する)|irr|2
-統計[とうけい]する|scattering; a scatter (+する)|irr|2
-投書[とうしょ]する|letter to the editor (+する)|irr|2
-登場[とうじょう]する|entry (on stage) (+する)|irr|2
-等分[とうぶん]する|division into equal parts (+する)|irr|2
+展開[てんかい]する|to develop; to unfold|irr|2
+伝染[でんせん]する|to be contagious; to spread|irr|2
+転々[てんてん]する|to move from place to place|irr|2
+統一[とういつ]する|to unify|irr|2
+投書[とうしょ]する|to write a letter (to a newspaper)|irr|2
+登場[とうじょう]する|to appear; to enter (the stage)|irr|2
+等分[とうぶん]する|to divide equally|irr|2
 通[とお]り掛[か]かる|to happen to pass by|u|2|nv
 溶[と]かす|to melt; to dissolve|u|2
 尖[とが]る|to taper to a point; to become sharp|u|2
-どきどきする|throb; beat (fast) (+する)|irr|2
+どきどきする|to pound (of the heart); to be nervous|irr|2
 溶[と]く|to dissolve (paint)|u|2
 退[ど]く|to step aside; to move (out of the way)|u|2
-特売[とくばい]する|special sale (+する)|irr|2
+特売[とくばい]する|to sell at a special price|irr|2
 溶[と]け込[こ]む|to melt into|u|2|nv nx
 溶[と]ける|to melt; to thaw|ru|2|nv nx
 退[ど]ける|to remove; to take away|ru|2
@@ -1515,9 +1529,9 @@ const VERB_DATA = `
 取[と]り出[だ]す|to take out; to produce|u|2
 採[と]る|to adopt (measure, proposal)|u|2
 捕[と]る|to take; to catch (fish)|u|2
-トレーニングする|training (+する)|irr|2
+トレーニングする|to train; to work out|irr|2
 治[なお]す|to cure; to heal|u|2
-仲直[なかなお]りする|reconciliation; make peace with (+する)|irr|2
+仲直[なかなお]りする|to make up; to reconcile|irr|2
 長引[ながび]く|to be prolonged; to drag on|u|2
 慰[なぐさ]める|to comfort; to console|ru|2
 亡[な]くす|to lose (a family member, e.g. a wife or child)|u|2
@@ -1532,9 +1546,9 @@ const VERB_DATA = `
 匂[にお]う|to be fragrant; to smell|u|2
 逃[に]がす|to let loose; to set free|u|2
 憎[にく]む|to hate; to detest|u|2
-にこにこする|with a friendly grin; smilingly (+する)|irr|2
+にこにこする|to smile; to grin|irr|2
 濁[にご]る|to become muddy; to get impure|u|2|nv
-入社[にゅうしゃ]する|entry to a company (+する)|irr|2
+入社[にゅうしゃ]する|to join a company|irr|2
 睨[にら]む|to glare at; to scowl at|u|2
 煮[に]る|to boil; to cook|ru|2
 縫[ぬ]う|to sew|u|2
@@ -1547,25 +1561,25 @@ const VERB_DATA = `
 延[の]ばす|to lengthen; to stretch|u|2
 延[の]びる|to be prolonged|ru|2
 上[のぼ]る|to ascend; to go up|u|2
-乗換[のりかえ]する|transfer (trains, buses, etc.) (+する)|irr|2
+乗換[のりかえ]する|to transfer (trains, buses)|irr|2
 載[の]る|to appear (in print); to be recorded|u|2|nv
-のろのろする|slowly; sluggishly (+する)|irr|2
-売買[ばいばい]する|trade; buying and selling (+する)|irr|2
+のろのろする|to move slowly; to dawdle|irr|2
+売買[ばいばい]する|to buy and sell; to trade|irr|2
 這[は]う|to creep; to crawl|u|2
 生[は]える|to grow; to spring up|ru|2
 はがす|to tear off; to peel off|u|2
 測[はか]る|to measure; to weigh|u|2
 量[はか]る|to measure; to weigh|u|2
-はきはきする|lucidly (+する)|irr|2
+はきはきする|to be brisk; to speak clearly|irr|2
 掃[は]く|to sweep; to brush|u|2
 挟[はさ]まる|to get between; to be caught in|u|2
 挟[はさ]む|to interpose; to hold between|u|2
 外[はず]れる|to be disconnected; to get out of place|ru|2
-発揮[はっき]する|exhibition; demonstration (+する)|irr|2
-発射[はっしゃ]する|firing; shooting (+する)|irr|2
-発電[はつでん]する|generation (e.g. power) (+する)|irr|2
-発売[はつばい]する|sale (+する)|irr|2
-話合[はなしあ]いする|discussion; conference (+する)|irr|2
+発揮[はっき]する|to show; to demonstrate (ability)|irr|2
+発射[はっしゃ]する|to launch; to fire|irr|2
+発電[はつでん]する|to generate electricity|irr|2
+発売[はつばい]する|to release; to put on sale|irr|2
+話合[はなしあ]いする|to discuss; to talk over|irr|2
 話[はな]し掛[か]ける|to accost a person|ru|2
 放[はな]れる|to leave; to get free|ru|2
 跳[は]ねる|to jump; to leap|ru|2
@@ -1573,39 +1587,36 @@ const VERB_DATA = `
 流行[はや]る|to flourish; to thrive|u|2
 払[はら]い込[こ]む|to deposit; to pay in|u|2
 払[はら]い戻[もど]す|to repay; to pay back|u|2
-バランスする|balance (+する)|irr|2
+バランスする|to balance|irr|2
 張[は]り切[き]る|to be in high spirits|u|2
-反映[はんえい]する|reflection; influence (+する)|irr|2
-万歳[ばんざい]する|hurrah; cheers (+する)|irr|2
-反省[はんせい]する|reflection; reconsideration (+する)|irr|2
-日帰[ひがえ]りする|day trip (+する)|irr|2
-ぴかぴかする|glitter; sparkle (+する)|irr|2
+反映[はんえい]する|to reflect|irr|2
+万歳[ばんざい]する|to cheer "banzai"|irr|2
+反省[はんせい]する|to reflect on; to regret|irr|2
+日帰[ひがえ]りする|to make a day trip|irr|2
+ぴかぴかする|to sparkle; to glitter|irr|2
 引[ひ]き受[う]ける|to undertake; to take up|ru|2
 引[ひ]き返[かえ]す|to repeat; to send back|u|2
-引算[ひきざん]する|subtraction (+する)|irr|2
+引算[ひきざん]する|to subtract|irr|2
 引[ひ]き止[と]める|to detain; to check|ru|2
-ぴたりする|tightly; closely (+する)|irr|2
 引[ひ]っ掛[か]かる|to be caught in; to be stuck in|u|2
-筆記[ひっき]する|(taking) notes; copying (+する)|irr|2
+筆記[ひっき]する|to take notes; to write down|irr|2
 ひっくり返[かえ]す|to turn over; to overturn|u|2
 引[ひ]っ繰[く]り返[かえ]る|to be overturned; to be upset|u|2
-引越[ひっこ]しする|moving (dwelling etc.) (+する)|irr|2
+引越[ひっこ]しする|to move (house)|irr|2
 引[ひ]っ込[こ]む|to draw back; to sink|u|2
-一休[ひとやす]みする|a rest (+する)|irr|2
+一休[ひとやす]みする|to take a short break|irr|2
 捻[ひね]る|to turn (a switch) on or off; to twist|u|2
 響[ひび]く|to resound|u|2
 冷[ひ]やす|to cool; to refrigerate|u|2
-評論[ひょうろん]する|criticism; critique (+する)|irr|2
-昼寝[ひるね]する|nap (at home); siesta (+する)|irr|2
+評論[ひょうろん]する|to criticize; to review|irr|2
+昼寝[ひるね]する|to take a nap|irr|2
 広[ひろ]げる|to spread; to extend|ru|2
-広々[ひろびろ]する|extensive; spacious (+する)|irr|2
 広[ひろ]める|to broaden; to propagate|ru|2
-瓶詰[びんづめ]する|bottling; bottled (+する)|irr|2
 殖[ふ]える|to increase; to multiply|ru|2
 深[ふか]まる|to deepen; to heighten|u|2
-普及[ふきゅう]する|diffusion; spread (+する)|irr|2
+普及[ふきゅう]する|to spread; to become widespread|irr|2
 拭[ふ]く|to wipe; to dry|u|2
-複写[ふくしゃ]する|copy; duplicate (+する)|irr|2
+複写[ふくしゃ]する|to copy; to duplicate|irr|2
 含[ふく]める|to include; to instruct|ru|2
 膨[ふく]らます|to swell; to expand|u|2
 膨[ふく]らむ|to expand; to swell (out)|u|2
@@ -1613,39 +1624,39 @@ const VERB_DATA = `
 塞[ふさ]がる|to be plugged up; to be shut up|u|2
 塞[ふさ]ぐ|to stop up; to close up|u|2
 ふざける|to romp; to gambol|ru|2
-無沙汰[ぶさた]する|neglecting to stay in contact (+する)|irr|2
-附属[ふぞく]する|attached; belonging (+する)|irr|2
+無沙汰[ぶさた]する|to not be in touch for a while|irr|2
+附属[ふぞく]する|to be attached to; to belong to|irr|2
 ぶつかる|to strike; to collide with|u|2
 ぶつける|to knock; to run into|ru|2
 増[ふ]やす|to increase; to add to|u|2
 ぶらさげる|to hang; to suspend|ru|2
-プリントする|print; handout (+する)|irr|2
+プリントする|to print|irr|2
 振舞[ふるま]う|to behave; to conduct oneself|u|2
-ふわふわする|light; soft (+する)|irr|2
-噴火[ふんか]する|eruption (+する)|irr|2
-分解[ぶんかい]する|analysis; disassembly (+する)|irr|2
-分布[ぶんぷ]する|distribution (+する)|irr|2
-分類[ぶんるい]する|classification (+する)|irr|2
-閉会[へいかい]する|closure (+する)|irr|2
-並行[へいこう]する|(going) side by side; concurrent (+する)|irr|2
+ふわふわする|to be fluffy; to feel light-headed|irr|2
+噴火[ふんか]する|to erupt|irr|2|nv
+分解[ぶんかい]する|to take apart; to decompose|irr|2
+分布[ぶんぷ]する|to be distributed|irr|2
+分類[ぶんるい]する|to classify|irr|2
+閉会[へいかい]する|to close (a meeting)|irr|2
+並行[へいこう]する|to run parallel; to happen at the same time|irr|2
 凹[へこ]む|to be dented; to be indented|u|2
 隔[へだ]てる|to be shut out|ru|2
-編集[へんしゅう]する|editing; compilation (+する)|irr|2
-防止[ぼうし]する|prevention; check (+する)|irr|2
-包装[ほうそう]する|packing; wrapping (+する)|irr|2
-包帯[ほうたい]する|bandage; dressing (+する)|irr|2
+編集[へんしゅう]する|to edit|irr|2
+防止[ぼうし]する|to prevent|irr|2
+包装[ほうそう]する|to wrap; to pack|irr|2
+包帯[ほうたい]する|to bandage|irr|2
 放[ほう]る|to let go|u|2
-募集[ぼしゅう]する|recruiting; taking applications (+する)|irr|2
+募集[ぼしゅう]する|to recruit; to invite applications|irr|2
 干[ほ]す|to air; to dry|u|2
 ほどく|to unfasten|u|2
 掘[ほ]る|to dig; to excavate|u|2
 彫[ほ]る|to carve; to engrave|u|2
-マイナスする|minus (+する)|irr|2
+マイナスする|to subtract|irr|2
 巻[ま]く|to wind; to coil|u|2
 撒[ま]く|to scatter; to sprinkle|u|2
 蒔[ま]く|to sow (seeds)|u|2
 曲[ま]げる|to bend; to crook|ru|2
-まごまごする|confused (+する)|irr|2
+まごまごする|to be flustered; to be at a loss|irr|2
 交[ま]ざる|to be mixed; to be blended with|u|2
 混[ま]ざる|to be mixed; to be blended with|u|2
 交[ま]じる|to be mixed; to be blended with|u|2
@@ -1658,7 +1669,7 @@ const VERB_DATA = `
 纏[まと]まる|to be collected; to be settled|u|2
 まとめる|to put in order; to collect|ru|2
 真似[まね]る|to mimic; to imitate|ru|2
-回[まわ]り道[みち]する|detour (+する)|irr|2
+回[まわ]り道[みち]する|to take a detour|irr|2
 見送[みおく]る|to see off; to farewell|u|2
 見下[みお]ろす|to overlook; to command a view of|u|2
 見直[みなお]す|to look again|u|2
@@ -1667,14 +1678,14 @@ const VERB_DATA = `
 見舞[みま]う|to ask after (health); to visit|u|2
 診[み]る|to examine (medical)|ru|2
 剥[む]く|to peel; to skin|u|2
-矛盾[むじゅん]する|contradiction; inconsistency (+する)|irr|2
+矛盾[むじゅん]する|to contradict; to be inconsistent|irr|2|nv nx
 蒸[む]す|to steam; to poultice|u|2
 恵[めぐ]まれる|to be blessed with; to be rich in|ru|2
 巡[めぐ]る|to go around|u|2
 目指[めざ]す|to aim at; to have an eye on|u|2
 目立[めだ]つ|to be conspicuous; to stand out|u|2
-免税[めんぜい]する|tax exemption; duty exemption (+する)|irr|2
-面接[めんせつ]する|interview (+する)|irr|2
+免税[めんぜい]する|to exempt from tax|irr|2
+面接[めんせつ]する|to interview|irr|2
 儲[もう]かる|to be profitable; to yield a profit|u|2
 儲[もう]ける|to get; to earn|ru|2
 潜[もぐ]る|to dive (into or under water)|u|2
@@ -1683,17 +1694,16 @@ const VERB_DATA = `
 揉[も]む|to rub; to crumple (up)|u|2
 燃[も]やす|to burn|u|2
 盛[も]る|to serve (food, etc.); to fill up|u|2
-問答[もんどう]する|questions and answers; dialogue (+する)|irr|2
+問答[もんどう]する|to have a dialogue; to question and answer|irr|2
 訳[やく]す|to translate|u|2
-火傷[やけど]する|burn; scald (+する)|irr|2
-夜行[やこう]する|walking around at night; night train (+する)|irr|2
+火傷[やけど]する|to get burned|irr|2
 やっつける|to attack (an enemy); to beat|ru|2
 破[やぶ]く|to tear; to rip|u|2
 破[やぶ]れる|to get torn; to wear out|ru|2
-郵送[ゆうそう]する|mailing (+する)|irr|2
-輸血[ゆけつ]する|blood transfusion (+する)|irr|2
-輸送[ゆそう]する|transport; transportation (+する)|irr|2
-油断[ゆだん]する|negligence; unpreparedness (+する)|irr|2
+郵送[ゆうそう]する|to mail; to post|irr|2
+輸血[ゆけつ]する|to give a blood transfusion|irr|2
+輸送[ゆそう]する|to transport|irr|2
+油断[ゆだん]する|to be careless; to let one's guard down|irr|2
 ゆでる|to boil|ru|2
 よこす|to send; to forward|u|2
 汚[よご]す|to disgrace; to dishonour|u|2
@@ -1702,19 +1712,19 @@ const VERB_DATA = `
 呼[よ]び出[だ]す|to summon; to call (e.g. phone)|u|2
 蘇[よみがえ]る|to be resurrected; to be revived|u|2
 よる|to come from|u|2
-来日[らいにち]する|arrival in Japan; coming to Japan (+する)|irr|2
-落第[らくだい]する|failure; dropping out of a class (+する)|irr|2
-リポートする|report; paper (+する)|irr|2
+来日[らいにち]する|to come to Japan|irr|2
+落第[らくだい]する|to fail (an exam or year)|irr|2
+リポートする|to report|irr|2
 略[りゃく]す|to abbreviate|u|2
-領収[りょうしゅう]する|receipt; voucher (+する)|irr|2
-留守番[るすばん]する|care-taking; caretaker (+する)|irr|2
-冷凍[れいとう]する|freezing; cold storage (+する)|irr|2
-連合[れんごう]する|union; alliance (+する)|irr|2
-録音[ろくおん]する|(audio) recording (+する)|irr|2
+領収[りょうしゅう]する|to receive (payment)|irr|2
+留守番[るすばん]する|to look after the house|irr|2
+冷凍[れいとう]する|to freeze|irr|2
+連合[れんごう]する|to unite; to ally|irr|2
+録音[ろくおん]する|to record (audio)|irr|2
 分[わ]かれる|to branch off; to diverge from|ru|2
 湧[わ]く|to boil; to grow hot|u|2
 詫[わ]びる|to apologize|ru|2
-割算[わりざん]する|division (math) (+する)|irr|2
+割算[わりざん]する|to divide|irr|2
 `;
 
 const VERBS = VERB_DATA.trim().split('\n').map(line => {
@@ -1876,6 +1886,40 @@ function explain(v,f){
   return {group, rule, use:FORM_USE[f], notes};
 }
 //ENGINE-END
+
+/* ================= ROMAJI DISPLAY ================= */
+// Hepburn-style romaji, spelled the way you'd type it (long vowels written out: べんきょう → benkyou)
+const toRomaji = (() => {
+  const B={あ:'a',い:'i',う:'u',え:'e',お:'o',か:'ka',き:'ki',く:'ku',け:'ke',こ:'ko',が:'ga',ぎ:'gi',ぐ:'gu',げ:'ge',ご:'go',
+    さ:'sa',し:'shi',す:'su',せ:'se',そ:'so',ざ:'za',じ:'ji',ず:'zu',ぜ:'ze',ぞ:'zo',た:'ta',ち:'chi',つ:'tsu',て:'te',と:'to',
+    だ:'da',ぢ:'ji',づ:'zu',で:'de',ど:'do',な:'na',に:'ni',ぬ:'nu',ね:'ne',の:'no',は:'ha',ひ:'hi',ふ:'fu',へ:'he',ほ:'ho',
+    ば:'ba',び:'bi',ぶ:'bu',べ:'be',ぼ:'bo',ぱ:'pa',ぴ:'pi',ぷ:'pu',ぺ:'pe',ぽ:'po',ま:'ma',み:'mi',む:'mu',め:'me',も:'mo',
+    や:'ya',ゆ:'yu',よ:'yo',ら:'ra',り:'ri',る:'ru',れ:'re',ろ:'ro',わ:'wa',ゐ:'i',ゑ:'e',を:'o',ん:'n',ゔ:'vu',
+    ぁ:'a',ぃ:'i',ぅ:'u',ぇ:'e',ぉ:'o'};
+  const SMALL={ゃ:'a',ゅ:'u',ょ:'o'};
+  return kana => {
+    const s=[...kana.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60))];
+    let out='';
+    for (let i=0;i<s.length;i++){
+      const c=s[i], n=s[i+1];
+      if (c==='っ'){ const nx=toRomaji(s.slice(i+1).join('')); out+= /^[bcdfghjkmprstvwz]/.test(nx) ? (nx.startsWith('ch')?'t':nx[0]) : ''; continue; }
+      if (c==='ー'){ const m=out.match(/[aiueo]$/); out+= m?m[0]:'-'; continue; }
+      if (c==='ん'){ out+= n && /[あいうえおやゆよ]/.test(n) ? "n'" : 'n'; continue; }
+      let r=B[c];
+      if (r===undefined){ out+=c; continue; }
+      if (n && SMALL[n]){                                  // きゃ → kya, しゃ → sha, じゃ → ja
+        r = /^(sh|ch|j)/.test(r) ? r.slice(0,-1)+SMALL[n] : r.slice(0,-1)+'y'+SMALL[n]; i++;
+      } else if (n && /[ぁぃぅぇぉ]/.test(n) && r.length>1){ // ふぁ → fa, てぃ → ti
+        r = r.slice(0,-1)+B[n]; i++;
+      }
+      out+=r;
+    }
+    return out;
+  };
+})();
+// A word with romaji stacked above it (shown only while the Romaji toggle is on)
+const wordHTML = b => `<span class="rw"><span class="rr">${toRomaji(toReading(b))}</span><span class="rj">${toRuby(b)}</span></span>`;
+
 
 /* ================= ROMAJI → KANA ================= */
 const ROMA = (() => {
@@ -2051,8 +2095,7 @@ function nextQuestion(){
   recentVerbs = [v.b, ...recentVerbs].slice(0,5);
   current={v,f,answer:conjugate(v,f)};
   answered=false;
-  $('qVerb').innerHTML=toRuby(v.b);
-  $('qMeaning').textContent=v.m+'  ·  '+v.lvl;
+  renderQ();
   $('qForm').textContent=FORM_BY_ID[f].label+' ('+FORM_BY_ID[f].jp+')';
   $('qCat').textContent=FORM_BY_ID[f].cat;
   const inp=$('answer'); inp.value=''; inp.className=''; inp.readOnly=false; inp.focus();
@@ -2068,7 +2111,12 @@ function check(reveal){
   if (!given && !reveal) return;
   inp.value=given;
   const {v,f,answer}=current;
-  const ok = !reveal && (given===toReading(answer) || given===toKanji(answer));
+  let ok = !reveal && (given===toReading(answer) || given===toKanji(answer));
+  let homo=null;   // listening: a different verb that sounds the same (e.g. 帰る / 変える) also counts
+  if (listening && !reveal && !ok){
+    homo = soundAlikes(v).find(o => allowed(o,f) && given===toReading(conjugate(o,f))) || null;
+    ok = !!homo;
+  }
   answered=true;
   record(session,v,f,ok); record(lifetime,v,f,ok); updateSrs(v,f,ok);
   store.set(LS_STATS, JSON.stringify(lifetime)); recombine();
@@ -2081,13 +2129,17 @@ function check(reveal){
   const ex=explain(v,f), say=toReading(answer);
   let html=`<div class="feedback ${ok?'ok':'bad'}">
     <div class="head">${ok?'Correct!':(reveal?'Answer':'Not quite')}${!ok&&!reveal?` — you wrote ${escH(given)}`:''}</div>
-    <div class="correct">${toRuby(answer)} <span class="pill">${toReading(answer)}</span> ${speakBtn(say)}</div>`;
+    <div class="correct">${wordHTML(answer)} <span class="pill">${toReading(answer)}</span> ${speakBtn(say)}</div>`;
   if (!ok){
     html+=`<div class="rule"><b>${toKanji(v.b)}</b> is a ${ex.group}. ${ex.rule}</div>`;
     html+=ex.notes.map(n=>`<div class="note">⚠ ${n}</div>`).join('');
   }
-  html+=`<div class="rule" style="color:var(--muted);font-size:13px">${ex.use}</div></div>`;
+  html+=`<div class="rule" style="color:var(--muted);font-size:13px">${ex.use}</div>`;
+  if (homo) html+=`<div class="homo">You heard ${toKanji(homo.b)} (${homo.m}), which sounds the same, so that counts.</div>`;
+  else if (listening && soundAlikes(v).length) html+=`<div class="homo">Sounds the same: ${soundAlikes(v).map(o=>toKanji(o.b)+' ('+escH(o.m)+')').join(', ')}</div>`;
+  html+=`<div class="reportline"><a href="${reportHref(v,f,answer,reveal?'':given)}">⚑ Report a mistake in this question</a></div></div>`;
   $('feedback').innerHTML=html;
+  if (listening) renderQ(true);
   updateScore(); updateModeUI();
   if (autoT.checked) TTS.say(say);
 }
@@ -2165,7 +2217,7 @@ function renderStats(){
     .sort((a,b)=>b[2]-a[2]).slice(0,10);
   html+=`<h3>Most-missed verbs (lifetime)</h3>`;
   html+= missed.length ? `<table><tr><th>Verb</th><th class="num">Missed</th><th>Accuracy</th></tr>`+
-    missed.map(([b,o,m])=>`<tr><td>${toRuby(b)} <span style="color:var(--muted)">${VERBS.find(v=>v.b===b)?.m||''}</span></td><td class="num">${m}</td><td>${bar(pct(o))}</td></tr>`).join('')+'</table>'
+    missed.map(([b,o,m])=>`<tr><td>${wordHTML(b)} <span style="color:var(--muted)">${VERBS.find(v=>v.b===b)?.m||''}</span></td><td class="num">${m}</td><td>${bar(pct(o))}</td></tr>`).join('')+'</table>'
     : '<div style="color:var(--muted);font-size:14px">None yet.</div>';
   $('statsBody').innerHTML=html;
 }
@@ -2273,6 +2325,14 @@ furi.addEventListener('change',()=>{
   document.body.classList.toggle('nofuri',!furi.checked);
   store.set(LS_FURI, furi.checked?'on':'off');
 });
+const LS_ROMA='jvq_roma_v1', romaT=$('romaToggle');
+romaT.checked = store.get(LS_ROMA)==='on';
+document.body.classList.toggle('roma', romaT.checked);
+romaT.addEventListener('change',()=>{
+  document.body.classList.toggle('roma', romaT.checked);
+  store.set(LS_ROMA, romaT.checked?'on':'off');
+  if (!answered) $('answer').focus();
+});
 
 
 /* ================= DARK MODE + AUDIO ================= */
@@ -2300,6 +2360,55 @@ autoT.addEventListener('change',()=>store.set(LS_AUTO, autoT.checked?'on':'off')
 for (const id of ['feedback','summary']) $(id).addEventListener('click',e=>{
   const b=e.target.closest('.speak'); if(!b) return; TTS.say(b.dataset.say); if (id==='feedback') $('answer').focus();
 });
+
+/* ================= LISTENING MODE ================= */
+// Hide the verb, play it aloud, show it again once answered.
+const LS_LISTEN='jvq_listen_v1';
+let listening = TTS.ok && store.get(LS_LISTEN)==='on';
+const SOUND = {};
+for (const v of VERBS){ const r=toReading(v.b); (SOUND[r]=SOUND[r]||[]).push(v); }
+const soundAlikes = v => SOUND[toReading(v.b)].filter(o=>o!==v);
+function renderQ(revealed){
+  if (!current) return;
+  const v=current.v;
+  if (listening && !revealed){
+    $('qVerb').innerHTML=`<button type="button" class="listenq" id="playQ" title="Play again"><span class="ico">🔊</span> Listen</button>`;
+    $('qMeaning').textContent=v.lvl+'  ·  type the form of the verb you hear';
+    $('playQ').addEventListener('click',()=>{ TTS.say(toReading(v.b)); $('answer').focus(); });
+    TTS.say(toReading(v.b));   // spoken straight away so iOS treats it as part of the tap / key press
+  } else {
+    $('qVerb').innerHTML=wordHTML(v.b);
+    $('qMeaning').textContent=v.m+'  ·  '+v.lvl;
+  }
+}
+function setListenUI(){
+  const b=$('listenBtn');
+  b.classList.toggle('on', listening);
+  b.textContent = listening ? '🎧 Listening: on' : '🎧 Listening';
+  if (!TTS.ok){ b.disabled=true; b.title='This browser has no speech support'; }
+}
+$('listenBtn').addEventListener('click',()=>{
+  listening=!listening; store.set(LS_LISTEN, listening?'on':'off'); setListenUI();
+  if (current && !summaryOpen) renderQ(answered);
+  $('answer').focus();
+});
+setListenUI();
+
+/* ================= REPORT A MISTAKE ================= */
+const REPORT_TO='support.kohikori@gmail.com';
+function reportHref(v,f,answer,given){
+  const subj=`Mistake report: Verb Quiz – ${toKanji(v.b)} (${FORM_BY_ID[f].label})`;
+  const body=[
+    'App: Verb Conjugation Quiz',
+    `Verb: ${toKanji(v.b)} (${toReading(v.b)}) – ${v.m} [${v.lvl}, ${GROUP_LABEL[v.g]}]`,
+    `Form asked: ${FORM_BY_ID[f].label} (${FORM_BY_ID[f].jp})`,
+    `App's answer: ${toKanji(answer)} (${toReading(answer)})`,
+    `My answer: ${given||'(revealed)'}`,
+    listening?'Mode: listening':'',
+    '','What looks wrong:',''
+  ].filter((x,i,a)=>x!==''||i>=a.length-3).join('\n');
+  return 'mailto:'+REPORT_TO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
 
 /* ================= REVIEW MODE · WRAP UP · SESSION SUMMARY ================= */
 const REVIEW_SIZE=25, REVIEW_MIN=0.3, WRAP_COUNT=5;
@@ -2394,8 +2503,8 @@ function showSummary(){
   const rows=[...miss.values()].sort((a,b)=>b.n-a.n);
   const missHtml = rows.length
     ? `<h3>To review (${rows.length})</h3><table><tr><th>Verb</th><th>Form</th><th>Correct</th><th>You wrote</th></tr>`+rows.map(e=>`<tr>
-        <td>${toRuby(e.v.b)}</td><td>${FORM_BY_ID[e.f].label}</td>
-        <td>${toRuby(e.answer)} ${speakBtn(toReading(e.answer))}</td>
+        <td>${wordHTML(e.v.b)}</td><td>${FORM_BY_ID[e.f].label}</td>
+        <td>${wordHTML(e.answer)} ${speakBtn(toReading(e.answer))}</td>
         <td>${e.given?escH(e.given):'<span style="color:var(--muted)">(revealed)</span>'}${e.n>1?` <span class="pill">missed ×${e.n}</span>`:''}</td></tr>`).join('')+'</table>'
     : (session.t ? '<div style="text-align:center;color:var(--muted)">No misses this session. Nice work.</div>' : '');
   openSummary(reviewDone() ? 'Review complete' : 'Session complete', summaryTotals(), missHtml);
@@ -2404,6 +2513,7 @@ function showSummary(){
 if (!store.persistent) $('storeWarn').classList.remove('hidden');
 updateScore();
 nextQuestion();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>

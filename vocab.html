@@ -4,6 +4,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon-favicon-64.png">
+<link rel="apple-touch-icon" href="icon-vocab-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vocab Quiz">
+<meta name="theme-color" content="#0b7285">
 <script>(function(){var d;try{d=localStorage.getItem('jvocab_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
 <title>Japanese Vocabulary Quiz</title>
 <style>
@@ -43,6 +49,20 @@
   .override{font-size:12px;color:var(--muted);background:none;border:none;text-decoration:underline;cursor:pointer;padding:0;font-weight:400}
   ruby rt{font-size:.5em;color:var(--muted)}
   body.nofuri ruby rt{visibility:hidden}
+  .rw{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
+  .rw .rr{display:none;font-size:clamp(11px,.38em,22px);line-height:1.3;color:var(--accent);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;white-space:nowrap}
+  body.roma .rw .rr{display:block}
+  header h1{display:flex;align-items:center;gap:10px}
+  .homelink{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--muted);text-decoration:none;flex:none}
+  .homelink:hover{color:var(--accent);border-color:var(--accent)}
+  .listenq{display:inline-flex;align-items:center;gap:10px;font-size:20px;padding:14px 26px;border-radius:999px;border:2px solid var(--accent);
+    background:var(--accentbg);color:var(--accent);cursor:pointer;font-family:inherit;margin:14px 0 6px}
+  .listenq:hover{filter:brightness(1.05)} .listenq:active{transform:scale(.98)}
+  .listenq .ico{font-size:26px;line-height:1}
+  .reportline{margin-top:12px;font-size:12px;text-align:right}
+  .reportline a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+  .reportline a:hover{color:var(--accent);border-color:var(--accent)}
+  .homo{margin-top:6px;font-size:13px;color:var(--muted)}
   h2{font-size:16px;margin:0 0 12px}
   h3{font-size:13px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
   .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px}
@@ -107,7 +127,7 @@
 </head>
 <body>
 <header>
-  <h1>語彙 Vocabulary Quiz</h1>
+  <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>語彙 Vocabulary Quiz</h1>
   <nav>
     <button data-tab="quiz" class="active">Quiz</button>
     <button data-tab="filters">Filters</button>
@@ -116,6 +136,7 @@
   </nav>
   <div class="toggles">
     <label class="toggle"><input type="checkbox" id="furiToggle" checked> Furigana</label>
+    <label class="toggle" title="Show romaji above Japanese words"><input type="checkbox" id="romaToggle"> Romaji</label>
     <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
     <label class="toggle" title="Read the answer aloud as soon as you submit"><input type="checkbox" id="autoToggle"> Auto-play audio</label>
   </div>
@@ -127,6 +148,7 @@
     <div class="modebar" id="modebar">
       <button class="btn small" id="reviewBtn" title="Drill only the items with your worst track record">Review weak spots</button>
       <button class="btn small" id="wrapBtn" title="Finish with 5 more questions, then see a summary">Wrap up</button>
+      <button class="btn small" id="listenBtn" title="Hear the word instead of reading it">🎧 Listening</button>
     </div>
     <div class="modeinfo hidden" id="modeInfo"></div>
     <div id="quizBody">
@@ -184,7 +206,37 @@ const KANJI = /[\u4e00-\u9fff々]/;
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const bracketRuby = s => esc(s).replace(/([\u4e00-\u9fff々]+)\[([^\]]+)\]/g, '<ruby>$1<rt>$2</rt></ruby>').replace(/\{([^|}]+)\|([^}]+)\}/g, '<ruby>$1<rt>$2</rt></ruby>');
 // Align a reading to a word so furigana sits over the kanji only (e.g. 新しい → 新[あたら]しい)
-function wordRuby(w, r){
+const toRomaji = (() => {
+  const B={あ:'a',い:'i',う:'u',え:'e',お:'o',か:'ka',き:'ki',く:'ku',け:'ke',こ:'ko',が:'ga',ぎ:'gi',ぐ:'gu',げ:'ge',ご:'go',
+    さ:'sa',し:'shi',す:'su',せ:'se',そ:'so',ざ:'za',じ:'ji',ず:'zu',ぜ:'ze',ぞ:'zo',た:'ta',ち:'chi',つ:'tsu',て:'te',と:'to',
+    だ:'da',ぢ:'ji',づ:'zu',で:'de',ど:'do',な:'na',に:'ni',ぬ:'nu',ね:'ne',の:'no',は:'ha',ひ:'hi',ふ:'fu',へ:'he',ほ:'ho',
+    ば:'ba',び:'bi',ぶ:'bu',べ:'be',ぼ:'bo',ぱ:'pa',ぴ:'pi',ぷ:'pu',ぺ:'pe',ぽ:'po',ま:'ma',み:'mi',む:'mu',め:'me',も:'mo',
+    や:'ya',ゆ:'yu',よ:'yo',ら:'ra',り:'ri',る:'ru',れ:'re',ろ:'ro',わ:'wa',ゐ:'i',ゑ:'e',を:'o',ん:'n',ゔ:'vu',
+    ぁ:'a',ぃ:'i',ぅ:'u',ぇ:'e',ぉ:'o'};
+  const SMALL={ゃ:'a',ゅ:'u',ょ:'o'};
+  return kana => {
+    const s=[...kana.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60))];
+    let out='';
+    for (let i=0;i<s.length;i++){
+      const c=s[i], n=s[i+1];
+      if (c==='っ'){ const nx=toRomaji(s.slice(i+1).join('')); out+= /^[bcdfghjkmprstvwz]/.test(nx) ? (nx.startsWith('ch')?'t':nx[0]) : ''; continue; }
+      if (c==='ー'){ const m=out.match(/[aiueo]$/); out+= m?m[0]:'-'; continue; }
+      if (c==='ん'){ out+= n && /[あいうえおやゆよ]/.test(n) ? "n'" : 'n'; continue; }
+      let r=B[c];
+      if (r===undefined){ out+=c; continue; }
+      if (n && SMALL[n]){                                  // きゃ → kya, しゃ → sha, じゃ → ja
+        r = /^(sh|ch|j)/.test(r) ? r.slice(0,-1)+SMALL[n] : r.slice(0,-1)+'y'+SMALL[n]; i++;
+      } else if (n && /[ぁぃぅぇぉ]/.test(n) && r.length>1){ // ふぁ → fa, てぃ → ti
+        r = r.slice(0,-1)+B[n]; i++;
+      }
+      out+=r;
+    }
+    return out;
+  };
+})();
+// A word with romaji stacked above it (shown only while the Romaji toggle is on)
+const wordRuby = (w, r) => `<span class="rw"><span class="rr">${esc(toRomaji(r||w))}</span><span class="rj">${wordRubyBase(w, r)}</span></span>`;
+function wordRubyBase(w, r){
   if (!r || !KANJI.test(w)) return esc(w);
   const parts = w.match(/[\u4e00-\u9fff々]+|[^\u4e00-\u9fff々]+/g);
   const re = new RegExp('^' + parts.map(p => KANJI.test(p[0]) ? '(.+?)' : '(' + p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')').join('') + '$');
@@ -359,8 +411,7 @@ function nextQuestion(){
     for (let i=0;i<p.length;i++){ r-=ws[i]; if (r<=0){ pick=p[i]; break; } }
   }
   current=pick; lastId=pick.id; qCount++; answered=false; lastResult=null;
-  $('qWord').innerHTML=wordRuby(pick.w, pick.r);
-  $('qMeta').textContent=pick.lvl+'  ·  '+pick.pos.map(p=>POS_LABEL[p].replace(/ \(.*\)/,'').replace(/s$/,'')).join(' / ');
+  renderQ();
   const inp=$('answer'); inp.value=''; inp.className=''; inp.readOnly=false; inp.focus();
   $('feedback').innerHTML=''; $('submitBtn').textContent='Check';
   updateModeUI();
@@ -379,7 +430,11 @@ function check(reveal){
   if (answered){ nextQuestion(); return; }
   const inp=$('answer'), given=inp.value.trim();
   if (!given && !reveal) return;
-  const w=current, g = reveal ? {ok:false} : grade(w, given);
+  const w=current;
+  let g = reveal ? {ok:false} : grade(w, given);
+  if (listening && !reveal && !g.ok){   // a different word that sounds the same (e.g. 橋 / 箸) also counts
+    for (const o of soundAlikes(w)){ const g2=grade(o, given); if (g2.ok){ g={...g2, homo:o}; break; } }
+  }
   answered=true;
   bumpAll(session,w,g.ok?1:0,1); bumpAll(lifetime,w,g.ok?1:0,1);
   store.set(LS_STATS, JSON.stringify(lifetime)); recombine();
@@ -393,6 +448,7 @@ function check(reveal){
   inp.className = g.ok?'ok':'bad'; inp.readOnly=true;
   setNextLabel();
   renderFeedback(g, given, reveal);
+  if (listening) renderQ(true);
   updateScore(); updateModeUI();
   if (autoT.checked) TTS.say(w.r||w.w);
 }
@@ -410,6 +466,9 @@ function renderFeedback(g, given, reveal){
     <div class="meanings">${esc(splitMeanings(w.m).join(' · '))} ${speakBtn(w.r||w.w,'word')}</div>
     ${extras.length ? `<div class="also">Also accepted: ${extras.join(', ')}</div>` : ''}
     ${w.ej ? `<div class="ex"><div class="jp">${bracketRuby(w.ej)} ${speakBtn(exKana(w.ej))}</div><div class="en">${esc(w.ee)}</div></div>` : ''}
+    ${g.homo ? `<div class="homo">That's the meaning of ${esc(g.homo.w)}, which sounds the same, so it counts.</div>`
+      : (listening && soundAlikes(w).length ? `<div class="homo">Sounds the same: ${soundAlikes(w).slice(0,4).map(o=>esc(o.w)+' ('+esc(splitMeanings(o.m)[0])+')').join(', ')}</div>` : '')}
+    <div class="reportline"><a href="${reportHref(w, reveal?'':given)}">⚑ Report a mistake in this word</a></div>
   </div>`;
   const ob=$('overrideBtn');
   if (ob) ob.addEventListener('click', overrideCorrect);
@@ -588,6 +647,10 @@ const furi=$('furiToggle');
 furi.checked = store.get(LS_FURI)!=='off';
 document.body.classList.toggle('nofuri',!furi.checked);
 furi.addEventListener('change',()=>{ document.body.classList.toggle('nofuri',!furi.checked); store.set(LS_FURI,furi.checked?'on':'off'); });
+const LS_ROMA='jvocab_roma_v1', romaT=$('romaToggle');
+romaT.checked = store.get(LS_ROMA)==='on';
+document.body.classList.toggle('roma', romaT.checked);
+romaT.addEventListener('change',()=>{ document.body.classList.toggle('roma', romaT.checked); store.set(LS_ROMA, romaT.checked?'on':'off'); });
 
 /* ================= DARK MODE + AUDIO ================= */
 const LS_DARK='jvocab_dark_v1', LS_AUTO='jvocab_autoplay_v1';
@@ -693,6 +756,58 @@ function pickReview(){
   return pickWeighted(cand, x=>x[1])[0];
 }
 function resetSession(){ session=blankStats(); streak=0; bestStreak=0; sessionLog=[]; for (const k in seenThisSession) delete seenThisSession[k]; }
+/* ================= LISTENING MODE ================= */
+// Hide the word, play it aloud, show it again once answered.
+const LS_LISTEN='jvocab_listen_v1';
+let listening = TTS.ok && store.get(LS_LISTEN)==='on';
+const sayOf = w => w.r||w.w;
+const SOUND = {};
+for (const w of WORDS){ const k=sayOf(w); (SOUND[k]=SOUND[k]||[]).push(w); }
+const soundAlikes = w => SOUND[sayOf(w)].filter(o=>o!==w);
+function renderQ(revealed){
+  if (!current) return;
+  const w=current, meta=w.lvl+'  ·  '+w.pos.map(p=>POS_LABEL[p].replace(/ \(.*\)/,'').replace(/s$/,'')).join(' / ');
+  if (listening && !revealed){
+    $('qWord').innerHTML=`<button type="button" class="listenq" id="playQ" title="Play again"><span class="ico">🔊</span> Listen</button>`;
+    $('qMeta').textContent=meta+'  ·  type what the word means';
+    $('playQ').addEventListener('click',()=>{ TTS.say(sayOf(w)); $('answer').focus(); });
+    TTS.say(sayOf(w));   // spoken straight away so iOS treats it as part of the tap / key press
+  } else {
+    $('qWord').innerHTML=wordRuby(w.w, w.r);
+    $('qMeta').textContent=meta;
+  }
+}
+function setListenUI(){
+  const b=$('listenBtn');
+  b.classList.toggle('on', listening);
+  b.textContent = listening ? '🎧 Listening: on' : '🎧 Listening';
+  if (!TTS.ok){ b.disabled=true; b.title='This browser has no speech support'; }
+}
+$('listenBtn').addEventListener('click',()=>{
+  listening=!listening; store.set(LS_LISTEN, listening?'on':'off'); setListenUI();
+  if (current && !summaryOpen) renderQ(answered);
+  $('answer').focus();
+});
+setListenUI();
+
+/* ================= REPORT A MISTAKE ================= */
+const REPORT_TO='support.kohikori@gmail.com';
+function reportHref(w, given){
+  const subj=`Mistake report: Vocab Quiz – ${w.w}`;
+  const lines=[
+    'App: Vocabulary Quiz',
+    `Word: ${w.w}${w.r?' ('+w.r+')':''} [${w.lvl}, ${w.t||w.pos.join(', ')}]`,
+    `Meanings shown: ${splitMeanings(w.m).join('; ')}`,
+    w.x ? `Also accepted: ${w.x}` : '',
+    w.ej ? `Example: ${exKana(w.ej)===w.ej ? w.ej : w.ej.replace(/\[[^\]]*\]/g,'').replace(/\{([^|}]+)\|[^}]+\}/g,'$1')} – ${w.ee}` : '',
+    `My answer: ${given||'(revealed)'}`,
+    listening ? 'Mode: listening' : '',
+    `Word ID: ${w.id}`
+  ].filter(Boolean);
+  const body=lines.join('\n')+'\n\nWhat looks wrong:\n';
+  return 'mailto:'+REPORT_TO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
+
 function showSummary(){
   const miss=new Map();
   for (const e of sessionLog){ if (e.ok) continue; const m=miss.get(e.w.id)||{...e,n:0}; m.n++; m.given=e.given; miss.set(e.w.id,m); }
@@ -708,6 +823,7 @@ function showSummary(){
 
 if (!store.persistent) $('storeWarn').classList.remove('hidden');
 updateScore(); nextQuestion();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
