@@ -2105,6 +2105,28 @@ function nextQuestion(){
   $('submitBtn').textContent='Check';
   updateModeUI();
 }
+/* Katakana and hiragana count as the same (プレゼントすれば = ぷれぜんとすれば).
+   A long-vowel mark ー can also be typed as the vowel itself (コーチ = こおち; おう / えい spellings work too). */
+const toHira = s => s.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+const VOWEL_KANA = {a:'あ',i:'い',u:'う',e:'え',o:'お'};
+function kanaVariants(expected){
+  let out=[''];
+  const h=toHira(expected);
+  for (let i=0;i<h.length;i++){
+    const c=h[i];
+    if (c!=='ー'){ out=out.map(x=>x+c); continue; }
+    const v=(toRomaji(h[i-1]||'').match(/[aiueo]$/)||[''])[0];
+    const opts=['ー'];
+    if (v) opts.push(VOWEL_KANA[v]);
+    if (v==='o') opts.push('う');
+    if (v==='e') opts.push('い');
+    out=out.flatMap(x=>opts.map(o=>x+o));
+    if (out.length>64) out=out.slice(0,64);
+  }
+  return out;
+}
+const kanaMatch = (given, expected) => kanaVariants(expected).includes(toHira(given));
+
 function check(reveal){
   if (!current || summaryOpen) return;
   if (answered){ nextQuestion(); return; }
@@ -2113,10 +2135,10 @@ function check(reveal){
   if (!given && !reveal) return;
   inp.value=given;
   const {v,f,answer}=current;
-  let ok = !reveal && (given===toReading(answer) || given===toKanji(answer));
+  let ok = !reveal && (kanaMatch(given, toReading(answer)) || given===toKanji(answer));
   let homo=null;   // listening: a different verb that sounds the same (e.g. 帰る / 変える) also counts
   if (listening && !reveal && !ok){
-    homo = soundAlikes(v).find(o => allowed(o,f) && given===toReading(conjugate(o,f))) || null;
+    homo = soundAlikes(v).find(o => allowed(o,f) && kanaMatch(given, toReading(conjugate(o,f)))) || null;
     ok = !!homo;
   }
   answered=true;
