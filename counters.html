@@ -826,6 +826,18 @@ romaT.addEventListener('change',()=>{ document.body.classList.toggle('roma', rom
 const darkT=$('darkToggle');
 darkT.checked=document.documentElement.classList.contains('dark');
 darkT.addEventListener('change',()=>{ document.documentElement.classList.toggle('dark',darkT.checked); store.set(LS.dark, darkT.checked?'on':'off'); });
+let TTS_LAST=null;
+function ttsNote(err){   // tells the user why audio failed instead of staying silent
+  let n=document.getElementById('ttsNote');
+  if (!n){ n=document.createElement('div'); n.id='ttsNote';
+    n.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);max-width:92vw;z-index:99;background:var(--card);color:var(--text);border:1px solid var(--bad);border-radius:10px;padding:10px 14px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.18)';
+    document.body.appendChild(n); }
+  const hint = err==='not-allowed' ? 'Your browser blocked it. Tap a 🔊 button again.'
+    : (err==='language-unavailable'||err==='voice-unavailable') ? 'No Japanese voice is installed on this device.'
+    : 'Your browser\'s speech engine reported a problem.';
+  n.textContent='🔇 Audio couldn\'t play ('+err+'). '+hint;
+  clearTimeout(n._t); n._t=setTimeout(()=>n.remove(),6000);
+}
 const TTS=(()=>{
   const ok = typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined';
   let voice=null;
@@ -833,8 +845,16 @@ const TTS=(()=>{
     voice = ja.find(v=>/natural|online|google|nanami|kyoko|o-ren|haruka/i.test(v.name)) || ja[0] || null; };
   if (ok){ pickV(); speechSynthesis.onvoiceschanged=pickV; }
   return { ok,
-    say(text){ if(!ok||!text) return; speechSynthesis.cancel();
-      const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; if(voice) u.voice=voice; u.rate=0.9; speechSynthesis.speak(u); },
+    say(text){ if(!ok||!text) return;
+      const ss=speechSynthesis;
+      if (!voice) pickV();                                  // voices often load late
+      const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; if(voice) u.voice=voice; u.rate=0.9;
+      u.onerror=e=>{ if (e.error!=='interrupted' && e.error!=='canceled') ttsNote(e.error); };
+      TTS_LAST=u;                                            // keep a reference: Safari can drop unreferenced utterances
+      if (ss.speaking || ss.pending) ss.cancel();
+      if (ss.paused) ss.resume();
+      ss.speak(u);                                           // speak right away, inside the tap, or browsers may block it
+    },
     stop(){ if(ok) try{ speechSynthesis.cancel(); }catch(e){} } };
 })();
 const escH = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
