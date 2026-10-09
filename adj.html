@@ -100,6 +100,8 @@
   :root.dark #storeWarn{background:#3a3212!important;border-color:#6b5d1e!important;color:#f0c14b!important}
   nav button.active{background:var(--accentbg)}
   .feedback.ok{border-color:var(--okline)} .feedback.bad{border-color:var(--badline)}
+  .feedback.warn{background:var(--pill);border:1px solid var(--warn)} .feedback.warn .head{color:var(--warn);font-weight:600;margin-bottom:4px}
+  #answer.warnin{border-color:var(--warn)}
   .feedback .rule{color:var(--sub)} .feedback .note{color:var(--warn)}
   .feedback .ex{border-top-color:var(--line)} .feedback .ex .en{color:var(--muted)}
   .added,.fixnote{color:var(--warn)}
@@ -959,6 +961,30 @@ function kanaVariants(expected){
 }
 const kanaMatch = (given, expected) => kanaVariants(expected).includes(toHira(given));
 
+/* ---- spelling slip in the stem: ask once to fix it before grading ----
+   If the conjugated ending is right and only the unchanged start of the word has a small typo
+   (べんきょしました for べんきょうしました), the answer isn't graded yet; you get one chance to fix it. */
+function editDist(a,b){
+  const d=Array.from({length:a.length+1},(_,i)=>[i]);
+  for (let j=1;j<=b.length;j++) d[0][j]=j;
+  for (let i=1;i<=a.length;i++) for (let j=1;j<=b.length;j++)
+    d[i][j]=Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[a.length][b.length];
+}
+function stemSlip(given, dict, expected){
+  const g=toHira(given), d=toHira(dict), e=toHira(expected);
+  let k=0; while (k<d.length && k<e.length && d[k]===e[k]) k++;      // the part the conjugation leaves alone
+  const stem=e.slice(0,k), tail=e.slice(k);
+  if (stem.length<2 || !tail || !g.endsWith(tail)) return false;       // ending must be exactly right
+  const gs=g.slice(0, g.length-tail.length);
+  if (!gs || gs===stem) return false;
+  // the sound right before the ending belongs to the conjugation (食べ-ない, not 食ば-ない / 食べら-ない),
+  // so it has to match; the one exception is a dropped long vowel (べんきょ for べんきょう)
+  const sameEnd = gs.slice(-1)===stem.slice(-1), droppedLong = /[うい]$/.test(stem) && gs===stem.slice(0,-1);
+  if (!sameEnd && !droppedLong) return false;
+  const n=editDist(gs, stem);
+  return n>0 && n <= (stem.length>=5 ? 2 : 1);
+}
 function check(reveal){
   if (!current || summaryOpen) return;
   if (answered){ nextQuestion(); return; }
@@ -973,6 +999,14 @@ function check(reveal){
   if (listening && !reveal && !ok){
     homo = soundAlikes(v).find(o => allowed(o,f) && answers(o,f).some(a=>kanaMatch(given, toReading(a)))) || null;
     ok = !!homo;
+  }
+  if (!ok && !reveal && !current.retry && ALL.some(a=>stemSlip(given, toReading(v.b), toReading(a)))){
+    current.retry=true;                      // not graded yet: one chance to fix the typo
+    const what = listening ? 'the word you heard' : `${toKanji(v.b)} (${toReading(v.b)})`;
+    $('feedback').innerHTML=`<div class="feedback warn"><div class="head">✏️ Please check your spelling</div>
+      <div>The ending looks right, but the start doesn't match ${what}. Fix it and press Enter.</div></div>`;
+    inp.className='warnin'; inp.focus();
+    return;
   }
   answered=true;
   record(session,v,f,ok); record(lifetime,v,f,ok); updateSrs(v,f,ok);

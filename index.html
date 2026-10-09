@@ -25,6 +25,14 @@
   .hidden{display:none!important}
 
   .brand{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .syncbtn{margin-left:auto;align-self:flex-start;flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--muted);
+    display:grid;place-items:center;cursor:pointer;transition:color .15s,border-color .15s}
+  .syncbtn:hover,.syncbtn[aria-expanded="true"]{color:var(--accent);border-color:var(--accent)}
+  .syncbtn svg{transition:transform .35s}
+  .syncbtn[aria-expanded="true"] svg{transform:rotate(180deg)}
+  .syncbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sync{position:relative}
+  .syncx{position:absolute;top:10px;right:12px;border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:4px}
   .brand img{width:52px;height:52px;border-radius:12px;flex:none}
   .brand h1{margin:0;font-size:26px;letter-spacing:-.01em;color:var(--ink)}
   .tagline{margin:4px 0 0;color:var(--muted);font-size:15px}
@@ -93,8 +101,9 @@
     <img src="icon-home-180.png" alt="">
     <div>
       <h1>Kohikori</h1>
-      <p class="tagline">Free Japanese practice, built by a learner for learners.</p>
+      <p class="tagline">Free Japanese practice – built by and for learners.</p>
     </div>
+    <button class="syncbtn" id="syncToggle" title="Backup &amp; sync" aria-label="Backup &amp; sync" aria-expanded="false" aria-controls="sync"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 3v5h5"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 21v-5h-5"/></svg></button>
   </div>
 
   <!-- install help: shown only where it applies -->
@@ -108,7 +117,7 @@
       <li>Scroll down and choose <b>Add to Home Screen</b>.</li>
     </ol>
     It opens full-screen like an app and works offline.
-    <div class="note">Already have progress here? The installed app keeps its own copy of your stats. Tap <b>Copy sync code</b> under Backup &amp; sync below first, then <b>Paste a sync code</b> in the installed app.</div>
+    <div class="note">Already have progress here? The installed app keeps its own copy of your stats. Tap the 🔄 button at the top, then <b>Copy sync code</b>, and use <b>Paste a sync code</b> in the installed app.</div>
   </div>
   <div class="install hidden" id="installOther">
     <button class="x" id="dismissOther" aria-label="Dismiss">×</button>
@@ -143,11 +152,9 @@
       <div class="progress none" id="pVocab"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
     </a>
   </div>
-      <span class="go" aria-hidden="true">›</span>
-    </a>
-  </div>
 
-  <section class="sync" id="sync">
+  <section class="sync hidden" id="sync">
+    <button class="x syncx" id="syncClose" aria-label="Close">×</button>
     <h2>Backup &amp; sync</h2>
     <p class="sub">Your progress is saved on each device separately. To move it between your phone and laptop, back up on one and restore on the other. Restoring <b>merges</b> results, so nothing gets overwritten. Do it in both directions and both devices end up with everything.</p>
     <div class="syncrow">
@@ -362,6 +369,15 @@ function refreshProgress(){
   showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
 }
 showLast();
+function openSync(open){
+  $('sync').classList.toggle('hidden', !open);
+  $('syncToggle').setAttribute('aria-expanded', open);
+  if (open) $('sync').scrollIntoView({behavior:'smooth', block:'start'});
+}
+$('syncToggle').addEventListener('click',()=>openSync($('sync').classList.contains('hidden')));
+$('syncClose').addEventListener('click',()=>{ openSync(false); $('syncToggle').focus(); });
+if (location.hash==='#sync') openSync(true);
+window.addEventListener('hashchange',()=>{ if (location.hash==='#sync') openSync(true); });
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
   navigator.serviceWorker.register('sw.js').catch(()=>{});
