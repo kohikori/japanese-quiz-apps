@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kohikori · Japanese Practice</title>
-<meta name="description" content="Free Japanese practice apps: kana, verb and adjective conjugation, counters and JLPT vocabulary quizzes, made by a learner for learners.">
+<meta name="description" content="Free Japanese practice apps: kana, verb and adjective conjugation, counters, JLPT vocabulary and listening quizzes, made by a learner for learners.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-favicon-64.png">
 <link rel="apple-touch-icon" href="icon-home-180.png">
@@ -157,6 +157,12 @@
       <p class="jp">語彙</p><p>Translate</p>
       <div class="progress none" id="pVocab"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
     </a>
+    <a class="app" href="listen.html">
+      <div class="tile" style="background:#2f9e44">聴</div>
+      <h2>Listening</h2>
+      <p class="jp">聞き取り</p><p>Listen</p>
+      <div class="progress none" id="pListen"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
+    </a>
   </div>
 
   <section class="sync hidden" id="sync">
@@ -210,6 +216,7 @@ function showProgress(el, {c,t}){
 showProgress($('pKana'),  total('jkana_stats_v1','jkana_peers_v1'));
 showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
 showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
+showProgress($('pListen'), total('jlisten_stats_v1','jlisten_peers_v1'));
 showProgress($('pAdj'),   total('jadj_stats_v1','jadj_peers_v1'));
 showProgress($('pCnt'),   total('jcnt_stats_v1','jcnt_peers_v1'));
 
@@ -242,6 +249,7 @@ const SYNC_APPS = [
   {key:'adj',   name:'Adjectives', p:'jadj_',   app:'jadj-adjective-quiz'},
   {key:'cnt',   name:'Counters',   p:'jcnt_',   app:'jcnt-counters-quiz'},
   {key:'vocab', name:'Vocabulary', p:'jvocab_', app:'jvocab-quiz', syn:true},
+  {key:'listen', name:'Listening', p:'jlisten_', app:'jlisten-quiz'},
 ];
 const jget = k => { try { return JSON.parse(get(k)||'null'); } catch(e){ return null; } };
 const jset = (k,v) => set(k, JSON.stringify(v));
@@ -376,6 +384,7 @@ function refreshProgress(){
   showProgress($('pAdj'),   total('jadj_stats_v1','jadj_peers_v1'));
   showProgress($('pCnt'),   total('jcnt_stats_v1','jcnt_peers_v1'));
   showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
+  showProgress($('pListen'), total('jlisten_stats_v1','jlisten_peers_v1'));
 }
 showLast();
 function openSync(open){
