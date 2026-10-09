@@ -24,6 +24,8 @@ const D = {
   '4,800 JLPT words with example sentences. Type the meaning in English, and small typos are forgiven.':'例文つきのJLPT単語約4,800語。意味を英語で入力します。小さなタイプミスは許容されます。',
   'Verbs':'動詞', 'Adjectives':'形容詞', 'Vocabulary':'語彙', 'Not started':'未開始',
   '18 forms':'18の活用形', '16 forms':'16の形', '14 counters':'14の助数詞', '4,800 words':'約4,800語',
+  'Conjugate':'活用する', 'Describe':'形容する', 'Tally':'数える', 'Translate':'訳す',
+  "Have an idea for an improvement or addition? I'd love to hear it.":'改善や追加のアイデアがあれば、ぜひ教えてください。',
   'Type in romaji':'ローマ字入力', 'Listening mode':'リスニング', 'Example sentences':'例文つき', 'Beginner friendly':'初心者向け', 'Learn tab':'学習タブ', 'Multiple choice':'選択式',
   'Not started yet':'まだ始めていません',
   'Put Kohikori on your home screen':'Kohikoriをホーム画面に追加', 'It opens full-screen like an app and works offline.':'アプリのように全画面で開き、オフラインでも使えます。',
@@ -77,7 +79,7 @@ const D = {
   // kana quiz
   "Kana":"かな",
   "Hiragana & katakana":"ひらがな・カタカナ",
-  "Read & write":"読み書き",
+  "Read & Write":"読み書き",
   "かな Kana Quiz":"かなクイズ",
   "Hiragana & Katakana Quiz":"ひらがな・カタカナクイズ",
   "Draw":"書く",
