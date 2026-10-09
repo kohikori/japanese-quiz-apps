@@ -63,6 +63,10 @@
   .reportline a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
   .reportline a:hover{color:var(--accent);border-color:var(--accent)}
   .homo{margin-top:6px;font-size:13px;color:var(--muted)}
+  .word.rev{white-space:normal;font-size:32px;line-height:1.35;margin:18px 0 10px}
+  .word.rev .enq{display:inline-block;max-width:560px}
+  .feedback .jpans{font-size:30px;line-height:1.9;color:var(--text)}
+  @media (max-width:420px){ .word.rev{font-size:26px} }
   h2{font-size:16px;margin:0 0 12px}
   h3{font-size:13px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
   .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px}
@@ -151,6 +155,7 @@
       <button class="btn small" id="reviewBtn" title="Drill only the items with your worst track record">Review weak spots</button>
       <button class="btn small" id="wrapBtn" title="Finish with 5 more questions, then see a summary">Wrap up</button>
       <button class="btn small" id="listenBtn" title="Hear the word instead of reading it">🎧 Listening</button>
+      <button class="btn small" id="revBtn" title="See the English, answer in Japanese">⇄ Answer in Japanese</button>
     </div>
     <div class="modeinfo hidden" id="modeInfo"></div>
     <div id="quizBody">
@@ -160,8 +165,9 @@
       <div class="buttons">
         <button class="btn primary" id="submitBtn">Check</button>
         <button class="btn" id="revealBtn">Show answer</button>
+        <button class="btn hidden" id="hintBtn" title="Show the first sound">💡 Hint</button>
       </div>
-      <div class="hint">Enter = check / next · any listed meaning counts · "to", "a", "the", small typos, missing letters and swapped letters are forgiven</div>
+      <div class="hint" id="hintLine">Enter = check / next · any listed meaning counts · "to", "a", "the", small typos, missing letters and swapped letters are forgiven</div>
       <div id="feedback"></div>
     </div>
     <div id="emptyPool" class="hidden" style="text-align:center;color:var(--muted)">No words match your filters. Enable at least one part of speech and level.</div>
@@ -386,7 +392,7 @@ function weight(w){
   const s=seenThisSession[w.id];
   if (s){ if (s.ok || s.n>=2) return 0; if (qCount - s.at < RETRY_GAP) return 0; }
   if (filters.weighted===false) return 1;
-  const box=srs[w.id];
+  const box=srs[skey(w)];
   const posBoost = Math.max(...w.pos.map(p=>accBoost(combined.pos[p])));
   return (box===undefined ? 1 : BOX_WEIGHT[box]) * posBoost * accBoost(combined.words[w.id]);
 }
@@ -420,9 +426,9 @@ function nextQuestion(){
 }
 
 function setSrs(w, ok){
-  const prev=srs[w.id];
-  srs[w.id] = ok ? Math.min(4, prev===undefined ? 1 : prev+1) : 0;
-  srsT[w.id]=Date.now();
+  const k=skey(w), prev=srs[k];
+  srs[k] = ok ? Math.min(4, prev===undefined ? 1 : prev+1) : 0;
+  srsT[k]=Date.now();
   store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
   return prev;
 }
@@ -430,11 +436,16 @@ function setSrs(w, ok){
 function check(reveal){
   if (!current || summaryOpen) return;
   if (answered){ nextQuestion(); return; }
-  const inp=$('answer'), given=inp.value.trim();
+  const inp=$('answer');
+  if (/^(konami|こなみ|コナミ)$/i.test(inp.value.trim()) && window.kohikoriToggleJa){   // secret: switch the interface language
+    inp.value=''; window.kohikoriToggleJa(); return;
+  }
+  if (reverse && inp.value) inp.value=romajiToKana(inp.value.trim(), true);
+  const given=inp.value.trim();
   if (!given && !reveal) return;
   const w=current;
-  let g = reveal ? {ok:false} : grade(w, given);
-  if (listening && !reveal && !g.ok){   // a different word that sounds the same (e.g. 橋 / 箸) also counts
+  let g = reveal ? {ok:false} : (reverse ? gradeJa(w, given) : grade(w, given));
+  if (!reverse && listening && !reveal && !g.ok){   // a different word that sounds the same (e.g. 橋 / 箸) also counts
     for (const o of soundAlikes(w)){ const g2=grade(o, given); if (g2.ok){ g={...g2, homo:o}; break; } }
   }
   answered=true;
@@ -457,6 +468,7 @@ function check(reveal){
 
 function renderFeedback(g, given, reveal){
   const w=current;
+  if (reverse) return renderFeedbackJa(g, given, reveal);
   const head = g.ok ? (g.exact ? 'Correct!' : `Correct — close enough to “${esc(g.match)}”`)
                     : (reveal ? 'Answer' : `Not quite — you wrote “${esc(given)}”`);
   const override = (!g.ok && !reveal) ? `<button class="override" id="overrideBtn">I was right</button>` : '';
@@ -479,10 +491,10 @@ function renderFeedback(g, given, reveal){
 function overrideCorrect(){
   if (!lastResult || lastResult.ok) return;
   const {w,prevBox,given}=lastResult;
-  const saved = addUserSyn(w, given||'');
+  const saved = reverse ? false : addUserSyn(w, given||'');
   bumpAll(session,w,1,0); bumpAll(lifetime,w,1,0);
   store.set(LS_STATS, JSON.stringify(lifetime)); recombine();
-  srs[w.id] = Math.min(4, prevBox===undefined ? 1 : prevBox+1); srsT[w.id]=Date.now();
+  srs[skey(w)] = Math.min(4, prevBox===undefined ? 1 : prevBox+1); srsT[skey(w)]=Date.now();
   store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
   seenThisSession[w.id].ok=true;
   lastResult.ok=true;
@@ -762,7 +774,7 @@ const exKana = s => s.replace(/([\u4e00-\u9fff々]+)\[([^\]]+)\]/g,'$2').replace
 const SRS_ERR=[1,0.4,0.2,0.1,0.05];
 // How shaky is this word? Its own record (accuracy + last result), nudged a little by its part of speech.
 function weakness(w){
-  const we=errRate(combined.words[w.id]), b=srs[w.id], se = b===undefined ? null : SRS_ERR[Math.min(b,4)];
+  const we=errRate(combined.words[w.id]), b=srs[skey(w)], se = b===undefined ? null : SRS_ERR[Math.min(b,4)];
   if (we===null && se===null) return null;
   const o=combined.words[w.id];
   if (!((o && o.t>o.c) || b===0)) return null;   // never missed: not a weak spot
@@ -780,6 +792,178 @@ function pickReview(){
   return pickWeighted(cand, x=>x[1])[0];
 }
 function resetSession(){ session=blankStats(); streak=0; bestStreak=0; sessionLog=[]; for (const k in seenThisSession) delete seenThisSession[k]; }
+/* ================= ROMAJI → KANA ================= */
+const ROMA = (() => {
+  const t = {a:'あ',i:'い',u:'う',e:'え',o:'お'};
+  const rows = {k:'かきくけこ',g:'がぎぐげご',s:'さしすせそ',z:'ざじずぜぞ',t:'たちつてと',d:'だぢづでど',
+    n:'なにぬねの',h:'はひふへほ',b:'ばびぶべぼ',p:'ぱぴぷぺぽ',m:'まみむめも',r:'らりるれろ'};
+  const V='aiueo';
+  for (const c in rows) for (let i=0;i<5;i++) t[c+V[i]] = rows[c][i];
+  Object.assign(t,{ya:'や',yu:'ゆ',yo:'よ',wa:'わ',wo:'を',wi:'うぃ',we:'うぇ',
+    shi:'し',chi:'ち',tsu:'つ',fu:'ふ',ji:'じ',
+    fa:'ふぁ',fi:'ふぃ',fe:'ふぇ',fo:'ふぉ',
+    xa:'ぁ',xi:'ぃ',xu:'ぅ',xe:'ぇ',xo:'ぉ',la:'ぁ',li:'ぃ',lu:'ぅ',le:'ぇ',lo:'ぉ',
+    xya:'ゃ',xyu:'ゅ',xyo:'ょ',lya:'ゃ',lyu:'ゅ',lyo:'ょ',xtu:'っ',ltu:'っ',xtsu:'っ',ltsu:'っ',
+    'nn':'ん',"n'":'ん','-':'ー'});
+  const small={a:'ゃ',u:'ゅ',o:'ょ'};
+  for (const c of 'kgnhbpmr') for (const v in small) t[c+'y'+v]=rows[c][1]+small[v];
+  for (const v in small){
+    t['sh'+v]='し'+small[v]; t['sy'+v]='し'+small[v]; t['zy'+v]='じ'+small[v]; t['jy'+v]='じ'+small[v];
+    t['j'+v]='じ'+small[v]; t['ch'+v]='ち'+small[v]; t['ty'+v]='ち'+small[v]; t['cy'+v]='ち'+small[v]; t['dy'+v]='ぢ'+small[v];
+  }
+  t.she='しぇ'; t.je='じぇ'; t.che='ちぇ'; t.ti='ち'; t.tu='つ'; t.si='し'; t.zi='じ'; t.hu='ふ';
+  t.di='ぢ'; t.du='づ'; t.ja='じゃ'; t.ju='じゅ'; t.jo='じょ';
+  return t;
+})();
+const ROMA_PREFIX = new Set();
+for (const k in ROMA) for (let i=1;i<=k.length;i++) ROMA_PREFIX.add(k.slice(0,i));
+
+function romajiToKana(str, final){
+  let out='', i=0;
+  const s=str.toLowerCase();
+  while (i<s.length){
+    const ch=s[i];
+    if (!/[a-z'\-]/.test(ch)){ out+=str[i]; i++; continue; }
+    if (ch==='n'){
+      const nx=s[i+1];
+      if (nx===undefined){ out+= final?'ん':'n'; i++; continue; }
+      if (nx==='n'){
+        const n2=s[i+2];
+        if (n2===undefined){ out+='ん'; i+=2; continue; }
+        if ('aiueoy'.includes(n2)){ out+='ん'; i+=1; continue; }
+        out+='ん'; i+=2; continue;
+      }
+      if (nx==="'"){ out+='ん'; i+=2; continue; }
+      if (!'aiueoy'.includes(nx)){ out+='ん'; i++; continue; }
+    }
+    // double consonant → っ
+    if (/[bcdfghjkmprstvwz]/.test(ch) && (s[i+1]===ch || (ch==='t' && s[i+1]==='c' && s[i+2]==='h'))){
+      out+='っ'; i++; continue;
+    }
+    let matched=false;
+    for (let len=4;len>=1;len--){
+      const sub=s.substr(i,len);
+      if (sub.length===len && ROMA[sub]){ out+=ROMA[sub]; i+=len; matched=true; break; }
+    }
+    if (matched) continue;
+    const rest=s.slice(i);
+    if (ROMA_PREFIX.has(rest)){ out+=str.slice(i); break; }  // still typing
+    out+=str[i]; i++;
+  }
+  return out;
+}
+
+/* Katakana and hiragana count as the same (プレゼントすれば = ぷれぜんとすれば).
+   A long-vowel mark ー can also be typed as the vowel itself (コーチ = こおち; おう / えい spellings work too). */
+const toHira = s => s.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+const VOWEL_KANA = {a:'あ',i:'い',u:'う',e:'え',o:'お'};
+function kanaVariants(expected){
+  let out=[''];
+  const h=toHira(expected);
+  for (let i=0;i<h.length;i++){
+    const c=h[i];
+    if (c!=='ー'){ out=out.map(x=>x+c); continue; }
+    const v=(toRomaji(h[i-1]||'').match(/[aiueo]$/)||[''])[0];
+    const opts=['ー'];
+    if (v) opts.push(VOWEL_KANA[v]);
+    if (v==='o') opts.push('う');
+    if (v==='e') opts.push('い');
+    out=out.flatMap(x=>opts.map(o=>x+o));
+    if (out.length>64) out=out.slice(0,64);
+  }
+  return out;
+}
+const kanaMatch = (given, expected) => kanaVariants(expected).includes(toHira(given));
+
+
+/* ================= ENGLISH → JAPANESE (reverse mode) ================= */
+const LS_REV='jvocab_reverse_v1';
+let reverse = store.get(LS_REV)==='on';
+const skey = w => reverse ? 'r:'+w.id : w.id;           // weak spots are tracked separately for each direction
+// words that share an English meaning, so "hot" accepts 暑い, 熱い, 辛い…
+const MEANING_IX = {};
+for (const w of WORDS) for (const m of splitMeanings(w.m)) for (const k of variants(m)) (MEANING_IX[k]=MEANING_IX[k]||new Set()).add(w);
+function sameMeaning(w){
+  const out=new Set();
+  for (const m of splitMeanings(w.m).slice(0,3)) for (const k of variants(m)) for (const o of (MEANING_IX[k]||[])) if (o!==w) out.add(o);
+  return [...out];
+}
+function jaForms(w){
+  const r=toHira(w.r||w.w), f=new Set([w.w, r]);
+  if (w.pos.includes('noun') && w.pos.includes('verb')){ f.add(w.w+'する'); f.add(r+'する'); }   // 勉強 → 勉強する
+  if (w.pos.includes('naadj')){ f.add(w.w+'な'); f.add(r+'な'); }                                 // 静か → 静かな
+  return [...f];
+}
+function jaMatch(w, given){
+  const g=given.replace(/[\s　。、!！?？]/g,'');
+  return jaForms(w).some(f => f===g || kanaMatch(g, f));
+}
+function gradeJa(w, given){
+  if (jaMatch(w, given)) return {ok:true, exact:true};
+  const alt=sameMeaning(w).find(o=>jaMatch(o, given));
+  if (alt) return {ok:true, exact:true, alt};
+  return {ok:false};
+}
+function renderFeedbackJa(g, given, reveal){
+  const w=current;
+  const head = g.ok ? 'Correct!' : (reveal ? 'Answer' : `Not quite — you wrote “${esc(given)}”`);
+  const override = (!g.ok && !reveal) ? `<button class="override" id="overrideBtn">I was right</button>` : '';
+  const others = sameMeaning(w).slice(0,5);
+  $('feedback').innerHTML = `<div class="feedback ${g.ok?'ok':'bad'}">
+    <div class="head"><span>${head}</span>${override}</div>
+    <div class="jpans">${wordRuby(w.w, w.r)} ${w.r?`<span class="pill">${esc(w.r)}</span>`:''} ${speakBtn(w.r||w.w,'word')}</div>
+    <div class="meanings">${esc(splitMeanings(w.m).join(' · '))}</div>
+    ${g.alt ? `<div class="homo">You wrote ${esc(g.alt.w)}${g.alt.r?' ('+esc(g.alt.r)+')':''}, which also means “${esc(splitMeanings(g.alt.m)[0])}”, so it counts.</div>` : ''}
+    ${others.length && !g.alt ? `<div class="also">Also accepted: ${others.map(o=>esc(o.w)).join(', ')}</div>` : ''}
+    ${w.ej ? `<div class="ex"><div class="jp">${bracketRuby(w.ej)} ${speakBtn(exKana(w.ej))}</div><div class="en">${esc(w.ee)}</div></div>` : ''}
+    <div class="reportline"><a href="${reportHref(w, reveal?'':given)}">⚑ Report a mistake in this word</a></div>
+  </div>`;
+  const ob=$('overrideBtn');
+  if (ob) ob.addEventListener('click', overrideCorrect);
+}
+const HINT_EN = $('hintLine').innerHTML;
+function setRevUI(){
+  const b=$('revBtn');
+  b.classList.toggle('on', reverse);
+  b.textContent = reverse ? '⇄ Answer in Japanese: on' : '⇄ Answer in Japanese';
+  $('answer').placeholder = reverse ? 'type in Japanese…' : 'type the English meaning…';
+  $('hintLine').innerHTML = reverse
+    ? 'Enter = check / next · type romaji (<i>taberu</i> → たべる) or use a Japanese keyboard · words with the same meaning count too'
+    : HINT_EN;
+  $('hintBtn').classList.toggle('hidden', !reverse);
+  const lb=$('listenBtn');
+  if (lb){ lb.disabled = reverse || !TTS.ok; lb.title = reverse ? 'Listening works in the Japanese → English direction' : 'Hear the word instead of reading it'; }
+}
+$('hintBtn').addEventListener('click',()=>{
+  if (!current || answered) return;
+  const r=current.r||current.w;
+  $('qMeta').textContent=$('qMeta').textContent.replace(/  ·  starts with .*$/,'')+`  ·  starts with ${r[0]}… (${[...r].length} kana)`;
+  $('answer').focus();
+});
+// live romaji → kana while typing (reverse mode only; a Japanese keyboard's own input is left alone)
+let composingJa=false, nnIdxJa=null;
+$('answer').addEventListener('compositionstart',()=>composingJa=true);
+$('answer').addEventListener('compositionend',()=>composingJa=false);
+$('answer').addEventListener('input',e=>{
+  if (!reverse || composingJa || answered) return;
+  const inp=$('answer'); let raw=inp.value;
+  if (!/[a-z'\-]/i.test(raw)) return;
+  if (nnIdxJa!==null && e.inputType==='insertText' && raw.length===nnIdxJa+2 && raw[nnIdxJa]==='ん' && /[aiueoy]/i.test(raw[nnIdxJa+1]))
+    raw=raw.slice(0,nnIdxJa+1)+'n'+raw.slice(nnIdxJa+1);
+  nnIdxJa=null;
+  const conv=romajiToKana(raw,false);
+  if (/nn$/i.test(raw) && conv.endsWith('ん')) nnIdxJa=conv.length-1;
+  if (conv!==inp.value){ inp.value=conv; inp.setSelectionRange(conv.length,conv.length); }
+});
+$('revBtn').addEventListener('click',()=>{
+  reverse=!reverse; store.set(LS_REV, reverse?'on':'off');
+  if (reverse && listening){ listening=false; store.set(LS_LISTEN,'off'); setListenUI(); }
+  setRevUI();
+  if (reviewState){ reviewState=null; }        // weak spots differ by direction
+  if (!summaryOpen){ if (answered || !current) nextQuestion(); else { $('answer').value=''; renderQ(); $('answer').focus(); } }
+  updateModeUI();
+});
+
 /* ================= LISTENING MODE ================= */
 // Hide the word, play it aloud, show it again once answered.
 const LS_LISTEN='jvocab_listen_v1';
@@ -791,6 +975,12 @@ const soundAlikes = w => SOUND[sayOf(w)].filter(o=>o!==w);
 function renderQ(revealed){
   if (!current) return;
   const w=current, meta=w.lvl+'  ·  '+w.pos.map(p=>POS_LABEL[p].replace(/ \(.*\)/,'').replace(/s$/,'')).join(' / ');
+  $('qWord').classList.toggle('rev', reverse);
+  if (reverse){
+    $('qWord').innerHTML=`<span class="enq">${esc(splitMeanings(w.m).slice(0,3).join(' / '))}</span>`;
+    $('qMeta').textContent=meta+'  ·  answer in Japanese';
+    return;
+  }
   if (listening && !revealed){
     $('qWord').innerHTML=`<button type="button" class="listenq" id="playQ" title="Play again"><span class="ico">🔊</span> Listen</button>`;
     $('qMeta').textContent=meta+'  ·  type what the word means';
@@ -813,6 +1003,7 @@ $('listenBtn').addEventListener('click',()=>{
   $('answer').focus();
 });
 setListenUI();
+setRevUI();
 
 /* ================= REPORT A MISTAKE ================= */
 const REPORT_TO='support.kohikori@gmail.com';
@@ -825,7 +1016,8 @@ function reportHref(w, given){
     w.x ? `Also accepted: ${w.x}` : '',
     w.ej ? `Example: ${exKana(w.ej)===w.ej ? w.ej : w.ej.replace(/\[[^\]]*\]/g,'').replace(/\{([^|}]+)\|[^}]+\}/g,'$1')} – ${w.ee}` : '',
     `My answer: ${given||'(revealed)'}`,
-    listening ? 'Mode: listening' : '',
+    listening && !reverse ? 'Mode: listening' : '',
+    reverse ? 'Mode: English → Japanese' : '',
     `Word ID: ${w.id}`
   ].filter(Boolean);
   const body=lines.join('\n')+'\n\nWhat looks wrong:\n';
@@ -867,5 +1059,6 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) naviga
   fit();
 })();
 </script>
+<script src="ja.js"></script>
 </body>
 </html>
