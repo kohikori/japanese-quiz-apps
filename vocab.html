@@ -437,7 +437,7 @@ function check(reveal){
   if (!current || summaryOpen) return;
   if (answered){ nextQuestion(); return; }
   const inp=$('answer');
-  if (/^(konami|こなみ|コナミ)$/i.test(inp.value.trim()) && window.kohikoriToggleJa){   // secret: switch the interface language
+  if (window.kohikoriIsKonami && window.kohikoriIsKonami(inp.value) && window.kohikoriToggleJa){   // secret: switch the interface language
     inp.value=''; window.kohikoriToggleJa(); return;
   }
   if (reverse && inp.value) inp.value=romajiToKana(inp.value.trim(), true);

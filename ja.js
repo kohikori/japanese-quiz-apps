@@ -274,7 +274,23 @@ function fire(){
   if (!on){ lsSet(KEY,'ja'); start(); toast('🎮 日本語モード ON'); }
   else { lsSet(KEY,'en'); toast('🎮 English mode'); setTimeout(()=>location.reload(), 700); }
 }
-window.kohikoriToggleJa = fire;   // the vocab quiz calls this when someone types "konami"
+window.kohikoriToggleJa = fire;
+// Typing "konami" in any quiz's answer box also works, however the keyboard spells it:
+// konami / KONAMI / ｋｏｎａｍｉ (full-width) / こなみ / コナミ
+const isKonami = v => /^(konami|こなみ)$/.test(String(v).normalize('NFKC').trim().toLowerCase()
+  .replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60)));
+window.kohikoriIsKonami = isKonami;
+function typedCode(box, e){
+  if (!box || box.id!=='answer' || box.readOnly || !isKonami(box.value)) return false;
+  e.preventDefault(); e.stopImmediatePropagation(); box.value=''; box.blur(); fire(); return true;
+}
+document.addEventListener('keydown', e=>{
+  if (e.key!=='Enter' || e.isComposing || e.keyCode===229) return;     // Enter that only confirms a Japanese-keyboard word is ignored
+  typedCode(e.target, e);
+}, true);
+document.addEventListener('click', e=>{
+  if (e.target.closest && e.target.closest('#submitBtn')) typedCode(document.getElementById('answer'), e);
+}, true);   // the vocab quiz calls this when someone types "konami"
 const KEYS={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',b:'b',B:'b',a:'a',A:'a'};
 document.addEventListener('keydown', e=>{ const k=KEYS[e.key]; if (k) step(k); else pos=0; }, true);
 // phone: swipes for the arrows, then two taps for B and A
