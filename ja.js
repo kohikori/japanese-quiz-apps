@@ -77,6 +77,7 @@ const D = {
   // kana quiz
   "Kana":"かな",
   "Hiragana & katakana":"ひらがな・カタカナ",
+  "Read & write":"読み書き",
   "かな Kana Quiz":"かなクイズ",
   "Hiragana & Katakana Quiz":"ひらがな・カタカナクイズ",
   "Draw":"書く",
