@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon-favicon-64.png">
+<link rel="apple-touch-icon" href="icon-kana-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kana">
+<meta name="theme-color" content="#7048e8">
+<script>(function(){var d;try{d=localStorage.getItem('jkana_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+<title>Hiragana &amp; Katakana Quiz</title>
+<style>
+  :root{
+    --bg:#fafafa; --card:#fff; --text:#222; --muted:#777; --line:#e3e3e3;
+    --accent:#3b5bdb; --ok:#2b8a3e; --okbg:#ebfbee; --bad:#c92a2a; --badbg:#fff5f5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans",sans-serif;background:var(--bg);color:var(--text)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap;gap:10px}
+  header h1{font-size:18px;margin:0;font-weight:600}
+  nav button{background:none;border:none;padding:8px 14px;font-size:14px;color:var(--muted);cursor:pointer;border-radius:6px}
+  nav button.active{color:var(--accent);background:#edf2ff;font-weight:600}
+  .toggle{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer}
+  main{max-width:760px;margin:28px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px}
+  .hidden{display:none!important}
+
+  /* Quiz */
+  .scorebar{display:flex;gap:18px;justify-content:center;font-size:13px;color:var(--muted);margin-bottom:16px}
+  .scorebar b{color:var(--text)}
+  .verb{font-size:52px;text-align:center;margin:10px 0 4px;line-height:1.6}
+  .meaning{text-align:center;color:var(--muted);font-size:15px}
+  .target{text-align:center;margin:22px 0 18px;font-size:18px}
+  .target .form{font-weight:600;color:var(--accent)}
+  .target .cat{display:block;font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+  #answer{width:100%;font-size:28px;padding:12px 16px;border:2px solid var(--line);border-radius:10px;text-align:center;outline:none;font-family:inherit}
+  #answer:focus{border-color:var(--accent)}
+  #answer.ok{border-color:var(--ok);background:var(--okbg)}
+  #answer.bad{border-color:var(--bad);background:var(--badbg)}
+  .buttons{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  button.btn{font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-family:inherit}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:12px}
+  .feedback{margin-top:20px;padding:16px 18px;border-radius:10px;font-size:15px;line-height:1.6}
+  .feedback.ok{background:var(--okbg);border:1px solid #b2f2bb}
+  .feedback.bad{background:var(--badbg);border:1px solid #ffc9c9}
+  .feedback .head{font-weight:600;margin-bottom:4px}
+  .feedback.ok .head{color:var(--ok)} .feedback.bad .head{color:var(--bad)}
+  .feedback .correct{font-size:26px;line-height:1.7}
+  .feedback .rule{margin-top:8px;color:#333}
+  .feedback .note{margin-top:6px;color:#8a5a00;font-size:14px}
+  .pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:#f1f3f5;color:#555;margin-left:6px;vertical-align:middle}
+
+  ruby rt{font-size:.45em;color:var(--muted)}
+  body.nofuri ruby rt{visibility:hidden}
+  .rw{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
+  .rw .rr{display:none;font-size:clamp(11px,.38em,22px);line-height:1.3;color:var(--accent);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;white-space:nowrap}
+  body.roma .rw .rr{display:block}
+  header h1{display:flex;align-items:center;gap:10px}
+  .homelink{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--muted);text-decoration:none;flex:none}
+  .homelink:hover{color:var(--accent);border-color:var(--accent)}
+  .listenq{display:inline-flex;align-items:center;gap:10px;font-size:20px;padding:14px 26px;border-radius:999px;border:2px solid var(--accent);
+    background:var(--accentbg);color:var(--accent);cursor:pointer;font-family:inherit;margin:14px 0 6px}
+  .listenq:hover{filter:brightness(1.05)} .listenq:active{transform:scale(.98)}
+  .listenq .ico{font-size:26px;line-height:1}
+  .reportline{margin-top:12px;font-size:12px;text-align:right}
+  .reportline a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+  .reportline a:hover{color:var(--accent);border-color:var(--accent)}
+  .homo{margin-top:6px;font-size:13px;color:var(--muted)}
+  .feedback .also{font-size:13px;color:var(--muted);margin:2px 0 8px}
+
+  /* Filters */
+  h2{font-size:16px;margin:0 0 12px}
+  h3{font-size:13px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px}
+  .checks label{font-size:14px;display:flex;gap:8px;align-items:center;cursor:pointer}
+  .small-links{font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0}
+  .small-links a{color:var(--accent);cursor:pointer;margin-left:6px}
+  .poolinfo{margin-top:18px;font-size:13px;color:var(--muted)}
+
+  /* Stats */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+  th{font-size:12px;color:var(--muted);font-weight:600}
+  td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .bar{height:6px;background:#f1f3f5;border-radius:3px;width:90px;display:inline-block;vertical-align:middle;overflow:hidden}
+  .bar i{display:block;height:100%}
+  .totals{display:flex;gap:30px;margin-bottom:10px}
+  .totals div{font-size:13px;color:var(--muted)}
+  .totals b{display:block;font-size:24px;color:var(--text)}
+  .reset{margin-top:20px;font-size:12px}
+
+  /* ---- quality-of-life additions: dark mode, audio, review / wrap-up ---- */
+  :root{--accentbg:#edf2ff;--okline:#b2f2bb;--badline:#ffc9c9;--pill:#f1f3f5;--pilltext:#555;--warn:#8a5a00;--sub:#333}
+  :root.dark{--bg:#15171c;--card:#1e2128;--text:#e4e6ea;--muted:#9aa0aa;--line:#353a45;--accent:#7b93f7;--ok:#69db7c;--okbg:#17301f;
+    --bad:#ff8787;--badbg:#3a1d21;--accentbg:#262d48;--okline:#2b6a3a;--badline:#7a2e35;--pill:#2a2e37;--pilltext:#c8ccd3;--warn:#f0c14b;--sub:#cfd3da;color-scheme:dark}
+  :root.dark button.primary{background:#4c6ef5;border-color:#4c6ef5}
+  :root.dark #storeWarn{background:#3a3212!important;border-color:#6b5d1e!important;color:#f0c14b!important}
+  nav button.active{background:var(--accentbg)}
+  .feedback.ok{border-color:var(--okline)} .feedback.bad{border-color:var(--badline)}
+  .feedback .rule{color:var(--sub)} .feedback .note{color:var(--warn)}
+  .feedback .ex{border-top-color:var(--line)} .feedback .ex .en{color:var(--muted)}
+  .added,.fixnote{color:var(--warn)}
+  .pill{background:var(--pill);color:var(--pilltext)} .bar{background:var(--pill)}
+  #answer,#listSearch{background-color:var(--card);color:var(--text)}
+  button.btn:not(.primary){background-color:var(--card);color:var(--text)}
+  .toggles{display:flex;gap:14px;flex-wrap:wrap}
+  .modebar{display:flex;gap:8px;justify-content:center;margin:-4px 0 14px;flex-wrap:wrap}
+  button.btn.small{font-size:12px;padding:5px 12px}
+  button.btn.on{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+  .modeinfo{text-align:center;font-size:12px;color:var(--accent);margin:-6px 0 14px}
+  .modeinfo.warn{color:var(--warn)}
+  .speak{background:none;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:13px;padding:1px 7px;color:var(--text);vertical-align:middle;font-family:inherit;line-height:1.5}
+  .speak:hover{border-color:var(--accent)}
+  #summary h2{text-align:center;font-size:20px;margin:0 0 14px}
+  #summary .totals{justify-content:center;text-align:center}
+
+  /* ---- support & feedback footer ---- */
+  .sitefoot{max-width:760px;margin:8px auto 40px;padding:18px 16px 0;border-top:1px solid var(--line);
+    display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+  .sitefoot p{margin:0;line-height:1.6;max-width:46ch}
+  .sitefoot .links{display:flex;gap:8px;flex-wrap:wrap}
+  .sitefoot a{display:inline-block;padding:7px 14px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);text-decoration:none;font-size:13px}
+  .sitefoot a:hover{border-color:var(--accent);color:var(--accent)}
+  .sitefoot a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sitefoot a.donate{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+  @media (max-width:520px){.sitefoot{justify-content:center;text-align:center}}
+  .verb{white-space:nowrap}  /* keep the quiz word on one line; script shrinks it to fit */
+  @media (max-width:420px){main{padding:0 10px}.card{padding:22px 14px}}
+
+  /* ---- counters quiz ---- */
+  .qpic{text-align:center;margin:6px 0 2px;line-height:1.25}
+  .pic{display:inline-block;font-size:34px;letter-spacing:2px;max-width:330px;word-break:break-all}
+  .pic.one{font-size:56px}
+  .qlabel{text-align:center;font-size:20px;margin:6px 0 4px}
+  .qlabel b{font-size:26px;color:var(--accent)}
+  .qlabel .en{font-size:14px;color:var(--muted)}
+  .qhint{text-align:center;font-size:14px;color:var(--text);margin:4px 0 16px}
+  .qhint b{font-size:20px;color:var(--accent);margin:0 4px}
+  .qhint .cw{color:var(--muted);font-size:13px}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .choice{display:flex;align-items:center;gap:10px;padding:12px 14px;font-size:22px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;text-align:left}
+  .choice:hover:not(:disabled){border-color:var(--accent)}
+  .choice .k{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 6px;flex:none}
+  .choice .rw{align-items:flex-start}
+  .choice.right{border-color:var(--ok);background:var(--okbg)}
+  .choice.wrong{border-color:var(--bad);background:var(--badbg)}
+  .choice:disabled{cursor:default}
+  .feedback .also{font-size:13px;color:var(--muted);margin:2px 0 8px}
+  /* learn tab */
+  .intro{font-size:14.5px;line-height:1.6}
+  .intro p{margin:0 0 10px}
+  .intro ul{margin:0 0 10px;padding-left:20px}
+  .intro li{margin:4px 0}
+  .legend{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .lcard{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0 14px}
+  .lhead{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+  .ck{font-size:30px;width:52px;height:52px;flex:none;display:grid;place-items:center;border-radius:12px;background:var(--accentbg);color:var(--accent);font-weight:600}
+  .cwhat{font-size:14px;font-weight:600}
+  .cex{font-size:13px;color:var(--muted);margin-top:3px}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .grid.one{grid-template-columns:repeat(2,1fr);margin-top:6px}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;min-width:0}
+  .cell:hover{border-color:var(--accent)}
+  .cell .num{font-size:12px;color:var(--muted)}
+  .cell .rd{font-size:15px;white-space:nowrap}
+  .cell .alt{font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .cell .rr{display:none;font-size:10.5px;color:var(--accent)}
+  body.roma .cell .rr{display:block}
+  .cell.irr{background:var(--accentbg);border-color:var(--accent)}
+  .cell.irr .rd{color:var(--accent);font-weight:600}
+  .cell.mini{display:inline-block;width:16px;height:12px;padding:0;cursor:default}
+  .lrule{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
+  @media (max-width:420px){ .lcard{padding:12px 8px} .cell{padding:6px 0} .cell .rd{font-size:11.5px;letter-spacing:-.02em} .cell .alt{font-size:9.5px} .grid{gap:3px} .pic{font-size:28px} .choice{font-size:19px;padding:10px} }
+  @media (max-width:360px){ .grid{grid-template-columns:repeat(4,1fr)} .grid.one{grid-template-columns:repeat(2,1fr)} }
+
+  /* ---- kana quiz ---- */
+  .dirbar{display:flex;justify-content:center;gap:0;margin:0 auto 16px;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content;max-width:100%}
+  .dirbtn{border:none;background:var(--card);color:var(--muted);padding:8px 14px;font-size:14px;cursor:pointer;font-family:inherit;border-right:1px solid var(--line)}
+  .dirbtn:last-child{border-right:none}
+  .dirbtn.on{background:var(--accentbg);color:var(--accent);font-weight:600}
+  .qprompt{text-align:center;line-height:1.15;margin:4px 0 2px;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+  .qprompt.kana{font-size:112px}
+  .qprompt.roma{font-size:64px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:500;letter-spacing:.02em;padding:22px 0 14px}
+  .qsub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:16px}
+  .choices.kana .cv{font-size:44px;line-height:1.1;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+  .choices.roma .cv{font-size:26px}
+  .choice{justify-content:center;position:relative;min-height:72px}
+  .choice .k{position:absolute;left:10px;top:8px}
+  .feedback .ans{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 6px}
+  .feedback .ans .big{font-size:52px;line-height:1;font-family:"Noto Sans JP","Hiragino Sans",system-ui,sans-serif}
+  .feedback .ans .rom{font-size:24px;font-weight:600}
+  .feedback .note,.feedback .tip{font-size:14px;margin-top:6px;line-height:1.55}
+  .feedback .tip{color:var(--text)}
+  .drawlink{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit}
+  .drawlink:hover{border-color:var(--accent)}
+  .nextrow{display:flex;justify-content:center;margin-top:14px}
+  /* learn */
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+  .segbtn{border:none;background:var(--card);color:var(--muted);padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit}
+  .segbtn.on{background:var(--accentbg);color:var(--accent);font-weight:600}
+  .lead{font-size:14.5px;line-height:1.6;margin:0 0 6px}
+  .note2{font-size:13.5px;color:var(--muted);line-height:1.55;margin:4px 0 8px}
+  .ktable{display:grid;grid-template-columns:28px repeat(var(--cols),1fr);gap:5px;margin:6px 0 4px}
+  .kh{font-size:12px;color:var(--muted);display:grid;place-items:center}
+  .kh.rowl{font-weight:600}
+  .kc{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px 5px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;min-width:0}
+  .kc:hover{border-color:var(--accent)}
+  .kc.empty{border:none;background:none;cursor:default}
+  .kc .kg{font-size:28px;line-height:1.15;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+  .kc .kr{font-size:12px;color:var(--muted)}
+  .kc.odd{border-color:var(--accent);background:var(--accentbg)} .kc.odd .kr{color:var(--accent);font-weight:600}
+  .kc .pen{position:absolute;top:1px;right:3px;font-size:11px;opacity:.55}
+  .kc .pen:hover{opacity:1}
+  /* draw */
+  .drawtop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .strip{display:flex;gap:4px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .sc{flex:none;width:38px;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font-size:20px;cursor:pointer;font-family:"Noto Sans JP","Hiragino Sans",system-ui,sans-serif}
+  .sc.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent)}
+  .sc.done{box-shadow:inset 0 -3px 0 var(--ok)}
+  .drawhead{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0}
+  .drawhead .dch{font-size:30px;font-family:"Noto Sans JP","Hiragino Sans",system-ui,sans-serif}
+  .drawhead .drom{font-size:22px;font-weight:600}
+  .arrow{border:1px solid var(--line);background:var(--card);color:var(--text);width:40px;height:40px;border-radius:10px;font-size:20px;cursor:pointer}
+  .padwrap{display:flex;justify-content:center}
+  #pad{width:min(340px,100%);aspect-ratio:1;border:1px solid var(--line);border-radius:14px;background:var(--card);touch-action:none;user-select:none;-webkit-user-select:none}
+  #pad .gridl{stroke:var(--line);stroke-width:.6;stroke-dasharray:2 2}
+  #pad .guide path{fill:none;stroke:var(--line);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+  :root:not(.dark) #pad .guide path{stroke:#dfe3e8}
+  #pad .guide.hide{display:none}
+  #pad .done path{fill:none;stroke:var(--text);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+  #pad .ink{fill:none;stroke:var(--accent);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+  #pad .startdot{fill:#2b8a3e}
+  #pad .startnum{fill:#fff;font-size:5.6px;font-weight:700;text-anchor:middle;font-family:system-ui,sans-serif;pointer-events:none}
+  #pad .hintpath{fill:none;stroke:#2b8a3e;stroke-opacity:.45;stroke-width:5;stroke-linecap:round;stroke-dasharray:3 4}
+  #pad.shake{animation:shake .3s}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .drawstatus{text-align:center;font-size:14px;min-height:36px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+  .drawstatus.good{color:var(--ok);font-weight:600}
+  .drawstatus.warn{color:var(--warn)}
+  .drawtools{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:6px}
+  /* filters & stats */
+  .rows{display:flex;flex-wrap:wrap;gap:6px}
+  .rowchip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;font-size:15px;cursor:pointer}
+  .rowchip.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent)}
+  .rowchip input{display:none}
+  .heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:4px}
+  .hc{display:grid;place-items:center;height:34px;border:1px solid;border-radius:7px;font-size:17px;font-family:"Noto Sans JP","Hiragino Sans",system-ui,sans-serif;color:#222}
+  :root.dark .hc{color:var(--text)}
+  .legend2{font-size:12px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .legend2 .sw{display:inline-block;width:14px;height:12px;border:1px solid var(--line);border-radius:3px}
+  @media (max-width:420px){ .qprompt.kana{font-size:96px} .kc .kg{font-size:23px} .ktable{gap:3px;grid-template-columns:22px repeat(var(--cols),1fr)} .choices.kana .cv{font-size:40px} }
+</style>
+</head>
+<body>
+<header>
+  <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>かな Kana Quiz</h1>
+  <nav>
+    <button data-tab="quiz" class="active">Quiz</button>
+    <button data-tab="learn">Learn</button>
+    <button data-tab="draw">Draw</button>
+    <button data-tab="filters">Filters</button>
+    <button data-tab="stats">Stats</button>
+  </nav>
+  <div class="toggles">
+    <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
+    <label class="toggle" title="Read each character aloud after you answer"><input type="checkbox" id="autoToggle"> Auto-play audio</label>
+  </div>
+</header>
+<main>
+  <section id="tab-quiz" class="card">
+    <div id="storeWarn" class="hidden" style="font-size:12px;color:var(--warn);background:var(--pill);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:14px;text-align:center">This viewer blocks saving, so lifetime stats won't persist.</div>
+    <div class="scorebar"><span>Session: <b id="sScore">0 / 0</b></span><span>Streak: <b id="sStreak">0</b></span></div>
+    <div class="dirbar" role="group" aria-label="Direction">
+      <button type="button" class="dirbtn" data-dir="k2r">あ → a</button>
+      <button type="button" class="dirbtn" data-dir="r2k">a → あ</button>
+      <button type="button" class="dirbtn" data-dir="mix">Mixed</button>
+    </div>
+    <div id="quizBody">
+      <div class="qprompt" id="qPrompt"></div>
+      <div class="qsub" id="qSub"></div>
+      <div class="choices" id="choices"></div>
+      <div id="feedback"></div>
+      <div class="nextrow"><button class="btn primary hidden" id="nextBtn">Next →</button></div>
+      <div class="hint">Tap an answer or press 1–4 · Enter = next</div>
+    </div>
+    <div id="emptyPool" class="hidden" style="text-align:center;color:var(--muted)">No characters selected. Pick at least one row or set on the Filters tab.</div>
+  </section>
+  <section id="tab-learn" class="card hidden"><h2>Hiragana &amp; katakana</h2><div id="learnBody"></div></section>
+  <section id="tab-draw" class="card hidden">
+    <h2>Practice writing</h2>
+    <div class="drawtop"><div class="seg" id="drawSeg"></div></div>
+    <div class="strip" id="drawStrip"></div>
+    <div class="drawhead"><button type="button" class="arrow" id="drawPrev" aria-label="Previous character">‹</button><div id="drawRom"></div><button type="button" class="arrow" id="drawNextBtn" aria-label="Next character">›</button></div>
+    <div class="padwrap"><svg id="pad" viewBox="0 0 109 109" aria-label="Drawing area"></svg></div>
+    <div class="drawstatus" id="drawStatus"></div>
+    <div class="drawtools">
+      <button type="button" class="btn small" id="drawWatch">▶ Watch stroke order</button>
+      <button type="button" class="btn small" id="drawReset">↺ Start over</button>
+      <button type="button" class="btn small" id="drawMemory">🙈 From memory</button>
+    </div>
+    <div class="hint">Trace each stroke in order, starting at the green dot. Stroke-order data from KanjiVG (CC BY-SA 3.0).</div>
+  </section>
+  <section id="tab-filters" class="card hidden"><h2>Filters</h2><div id="filterBody"></div><div class="poolinfo" id="poolInfo"></div></section>
+  <section id="tab-stats" class="card hidden"><h2>Stats</h2><div id="statsBody"></div>
+    <h3>Sync between devices</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px"><b>Tip:</b> the <a href="./#sync">home page</a> backs up and restores all quizzes at once. Export a file here, open the quiz on another computer or phone, and import it there. Results are combined without double-counting.</div>
+    <div class="buttons" style="justify-content:flex-start;margin-top:0">
+      <button class="btn" id="exportBtn">Export progress</button>
+      <button class="btn" id="importBtn">Import progress</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+    </div>
+    <div id="syncMsg" style="font-size:13px;margin-top:8px"></div>
+    <div id="syncInfo" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+    <button class="btn reset" id="resetBtn">Reset lifetime stats</button></section>
+</main>
+<footer class="sitefoot">
+  <p>Built by one learner, for others. Found a wrong answer or have an idea? I'd love to hear it.</p>
+  <div class="links">
+    <a href="mailto:support.kohikori@gmail.com?subject=Feedback:%20Kana%20Quiz">Send feedback</a>
+    <a class="donate" href="https://paypal.me/kohikori" target="_blank" rel="noopener">☕ Donate via PayPal</a>
+  </div>
+</footer>
+<script>
+/* Kana list + stroke-order paths. Stroke data: KanjiVG, © Ulrich Apel, CC BY-SA 3.0 (kanjivg.tagaini.net) */
+const KANA = {"items":[{"h":"あ","k":"ア","r":"a","set":"basic","row":"a","col":0},{"h":"い","k":"イ","r":"i","set":"basic","row":"a","col":1},{"h":"う","k":"ウ","r":"u","set":"basic","row":"a","col":2},{"h":"え","k":"エ","r":"e","set":"basic","row":"a","col":3},{"h":"お","k":"オ","r":"o","set":"basic","row":"a","col":4},{"h":"か","k":"カ","r":"ka","set":"basic","row":"k","col":0},{"h":"き","k":"キ","r":"ki","set":"basic","row":"k","col":1},{"h":"く","k":"ク","r":"ku","set":"basic","row":"k","col":2},{"h":"け","k":"ケ","r":"ke","set":"basic","row":"k","col":3},{"h":"こ","k":"コ","r":"ko","set":"basic","row":"k","col":4},{"h":"さ","k":"サ","r":"sa","set":"basic","row":"s","col":0},{"h":"し","k":"シ","r":"shi","set":"basic","row":"s","col":1},{"h":"す","k":"ス","r":"su","set":"basic","row":"s","col":2},{"h":"せ","k":"セ","r":"se","set":"basic","row":"s","col":3},{"h":"そ","k":"ソ","r":"so","set":"basic","row":"s","col":4},{"h":"た","k":"タ","r":"ta","set":"basic","row":"t","col":0},{"h":"ち","k":"チ","r":"chi","set":"basic","row":"t","col":1},{"h":"つ","k":"ツ","r":"tsu","set":"basic","row":"t","col":2},{"h":"て","k":"テ","r":"te","set":"basic","row":"t","col":3},{"h":"と","k":"ト","r":"to","set":"basic","row":"t","col":4},{"h":"な","k":"ナ","r":"na","set":"basic","row":"n","col":0},{"h":"に","k":"ニ","r":"ni","set":"basic","row":"n","col":1},{"h":"ぬ","k":"ヌ","r":"nu","set":"basic","row":"n","col":2},{"h":"ね","k":"ネ","r":"ne","set":"basic","row":"n","col":3},{"h":"の","k":"ノ","r":"no","set":"basic","row":"n","col":4},{"h":"は","k":"ハ","r":"ha","set":"basic","row":"h","col":0},{"h":"ひ","k":"ヒ","r":"hi","set":"basic","row":"h","col":1},{"h":"ふ","k":"フ","r":"fu","set":"basic","row":"h","col":2},{"h":"へ","k":"ヘ","r":"he","set":"basic","row":"h","col":3},{"h":"ほ","k":"ホ","r":"ho","set":"basic","row":"h","col":4},{"h":"ま","k":"マ","r":"ma","set":"basic","row":"m","col":0},{"h":"み","k":"ミ","r":"mi","set":"basic","row":"m","col":1},{"h":"む","k":"ム","r":"mu","set":"basic","row":"m","col":2},{"h":"め","k":"メ","r":"me","set":"basic","row":"m","col":3},{"h":"も","k":"モ","r":"mo","set":"basic","row":"m","col":4},{"h":"や","k":"ヤ","r":"ya","set":"basic","row":"y","col":0},{"h":"ゆ","k":"ユ","r":"yu","set":"basic","row":"y","col":2},{"h":"よ","k":"ヨ","r":"yo","set":"basic","row":"y","col":4},{"h":"ら","k":"ラ","r":"ra","set":"basic","row":"r","col":0},{"h":"り","k":"リ","r":"ri","set":"basic","row":"r","col":1},{"h":"る","k":"ル","r":"ru","set":"basic","row":"r","col":2},{"h":"れ","k":"レ","r":"re","set":"basic","row":"r","col":3},{"h":"ろ","k":"ロ","r":"ro","set":"basic","row":"r","col":4},{"h":"わ","k":"ワ","r":"wa","set":"basic","row":"w","col":0},{"h":"を","k":"ヲ","r":"wo","set":"basic","row":"w","col":4},{"h":"ん","k":"ン","r":"n","set":"basic","row":"nn","col":0},{"h":"が","k":"ガ","r":"ga","set":"dakuten","row":"g","col":0},{"h":"ぎ","k":"ギ","r":"gi","set":"dakuten","row":"g","col":1},{"h":"ぐ","k":"グ","r":"gu","set":"dakuten","row":"g","col":2},{"h":"げ","k":"ゲ","r":"ge","set":"dakuten","row":"g","col":3},{"h":"ご","k":"ゴ","r":"go","set":"dakuten","row":"g","col":4},{"h":"ざ","k":"ザ","r":"za","set":"dakuten","row":"z","col":0},{"h":"じ","k":"ジ","r":"ji","set":"dakuten","row":"z","col":1},{"h":"ず","k":"ズ","r":"zu","set":"dakuten","row":"z","col":2},{"h":"ぜ","k":"ゼ","r":"ze","set":"dakuten","row":"z","col":3},{"h":"ぞ","k":"ゾ","r":"zo","set":"dakuten","row":"z","col":4},{"h":"だ","k":"ダ","r":"da","set":"dakuten","row":"d","col":0},{"h":"ぢ","k":"ヂ","r":"ji","set":"dakuten","row":"d","col":1},{"h":"づ","k":"ヅ","r":"zu","set":"dakuten","row":"d","col":2},{"h":"で","k":"デ","r":"de","set":"dakuten","row":"d","col":3},{"h":"ど","k":"ド","r":"do","set":"dakuten","row":"d","col":4},{"h":"ば","k":"バ","r":"ba","set":"dakuten","row":"b","col":0},{"h":"び","k":"ビ","r":"bi","set":"dakuten","row":"b","col":1},{"h":"ぶ","k":"ブ","r":"bu","set":"dakuten","row":"b","col":2},{"h":"べ","k":"ベ","r":"be","set":"dakuten","row":"b","col":3},{"h":"ぼ","k":"ボ","r":"bo","set":"dakuten","row":"b","col":4},{"h":"ぱ","k":"パ","r":"pa","set":"handakuten","row":"p","col":0},{"h":"ぴ","k":"ピ","r":"pi","set":"handakuten","row":"p","col":1},{"h":"ぷ","k":"プ","r":"pu","set":"handakuten","row":"p","col":2},{"h":"ぺ","k":"ペ","r":"pe","set":"handakuten","row":"p","col":3},{"h":"ぽ","k":"ポ","r":"po","set":"handakuten","row":"p","col":4},{"h":"きゃ","k":"キャ","r":"kya","set":"combo","row":"ky","col":0},{"h":"きゅ","k":"キュ","r":"kyu","set":"combo","row":"ky","col":1},{"h":"きょ","k":"キョ","r":"kyo","set":"combo","row":"ky","col":2},{"h":"しゃ","k":"シャ","r":"sha","set":"combo","row":"sh","col":0},{"h":"しゅ","k":"シュ","r":"shu","set":"combo","row":"sh","col":1},{"h":"しょ","k":"ショ","r":"sho","set":"combo","row":"sh","col":2},{"h":"ちゃ","k":"チャ","r":"cha","set":"combo","row":"ch","col":0},{"h":"ちゅ","k":"チュ","r":"chu","set":"combo","row":"ch","col":1},{"h":"ちょ","k":"チョ","r":"cho","set":"combo","row":"ch","col":2},{"h":"にゃ","k":"ニャ","r":"nya","set":"combo","row":"ny","col":0},{"h":"にゅ","k":"ニュ","r":"nyu","set":"combo","row":"ny","col":1},{"h":"にょ","k":"ニョ","r":"nyo","set":"combo","row":"ny","col":2},{"h":"ひゃ","k":"ヒャ","r":"hya","set":"combo","row":"hy","col":0},{"h":"ひゅ","k":"ヒュ","r":"hyu","set":"combo","row":"hy","col":1},{"h":"ひょ","k":"ヒョ","r":"hyo","set":"combo","row":"hy","col":2},{"h":"みゃ","k":"ミャ","r":"mya","set":"combo","row":"my","col":0},{"h":"みゅ","k":"ミュ","r":"myu","set":"combo","row":"my","col":1},{"h":"みょ","k":"ミョ","r":"myo","set":"combo","row":"my","col":2},{"h":"りゃ","k":"リャ","r":"rya","set":"combo","row":"ry","col":0},{"h":"りゅ","k":"リュ","r":"ryu","set":"combo","row":"ry","col":1},{"h":"りょ","k":"リョ","r":"ryo","set":"combo","row":"ry","col":2},{"h":"ぎゃ","k":"ギャ","r":"gya","set":"combo","row":"gy","col":0},{"h":"ぎゅ","k":"ギュ","r":"gyu","set":"combo","row":"gy","col":1},{"h":"ぎょ","k":"ギョ","r":"gyo","set":"combo","row":"gy","col":2},{"h":"じゃ","k":"ジャ","r":"ja","set":"combo","row":"j","col":0},{"h":"じゅ","k":"ジュ","r":"ju","set":"combo","row":"j","col":1},{"h":"じょ","k":"ジョ","r":"jo","set":"combo","row":"j","col":2},{"h":"びゃ","k":"ビャ","r":"bya","set":"combo","row":"by","col":0},{"h":"びゅ","k":"ビュ","r":"byu","set":"combo","row":"by","col":1},{"h":"びょ","k":"ビョ","r":"byo","set":"combo","row":"by","col":2},{"h":"ぴゃ","k":"ピャ","r":"pya","set":"combo","row":"py","col":0},{"h":"ぴゅ","k":"ピュ","r":"pyu","set":"combo","row":"py","col":1},{"h":"ぴょ","k":"ピョ","r":"pyo","set":"combo","row":"py","col":2}],"paths":{"あ":["M31.0,33c0.8,0.8,2.7,1.8,5.2,1.7c8.6-0.2,20-2.1,29.5-4.2c1.5-0.3,4.6-0.8,6.6-0.5","M49.7,17.6c0.8,1,1.8,3.2,1.3,5.2c-3.7,16.7-6.2,38.1-5.1,53.6c0.4,5.7,1.8,10.8,3.3,13.6","M65.6,44.1c0.7,1.1,1.1,4.3,0.5,6.1c-4.6,12.2-11.2,23.7-25.3,35.7c-6.8,5.8-15.8,3.7-16.2-8.3c-0.3-10.8,13.3-23.1,32.3-26.7c12.4-2.3,27,1.3,30.5,12.7c4.0,13.1-3.7,26.3-20.8,30.4"],"い":["M21.5,29.6c2.0,2.1,2.6,4.6,2.1,7.4c-3.0,19.1-1.0,32.0,7.9,41.4c6.1,6.4,6.2,3.1,7.0-5.2","M72.9,36.5c9.4,8.0,17.7,18.8,18.4,33.8"],"う":["M42,15.5c5.6,2.1,9.6,3,12.8,3c8.2,0,8,1.1-0.3,5.5","M33,42.3c2.1,1.1,4.1,2.8,8.5,1.3c4.3-1.5,12.7-7.1,18.5-7c5.7,0.1,10.2,5,10.2,18c0,15.4-8.2,30.2-24.3,41.2"],"え":["M40.5,13.2c5.6,2.1,10,3,14.1,3c8.2,0,8,1.1-0.3,5.5","M32.5,45.1c1.8,1.2,4.5,1.7,7.3,0.6c3.2-1.2,17-7.8,21.2-9.8c4.2-2,8.3,0.0,4.3,4.6c-12.2,14.2-27.2,31.5-39.5,44.4c-3.2,3.4-0.5,3.5,1.5,1.3c13.5-14.1,18.1-20.1,23.6-20.1c7.1,0,3.5,16.7,6.7,22.3c3.2,5.6,19.1,3.7,26.1,2.1"],"お":["M22.8,35.1c1.3,1,3.6,2.3,6,2.1c2.3-0.2,19.6-5.1,21.1-5.7c1.5-0.6,4-1.2,5.8-2","M41.5,16.1c2.2,1,3.5,4.3,3.1,7.3c-2.5,16.1-3.3,45.5-2.2,58.3c0.7,8.6-0.6,10.4-7.1,7.1c-5.1-2.6-13.7-8-13.7-12.3c0-7.5,24.3-23.6,44.7-23.6c17.2,0,25,8.2,25,17.2c0,8.2-9.3,18.8-26.7,21","M73,22.1c5.3,2.6,8.8,5.8,10.6,8.2c2.2,3.0,0.3,4.5-1.1,5"],"か":["M24.6,38.6c1.8,1.6,4.6,2.3,8.6,1c25.5-8.5,29.5-4.1,29.5,7.6c0,9.3-1.2,17.4-4.2,25.2c-7.6,19.7-10.8,17.3-16.1,10.8","M48.5,17.5c1,1.3,1.2,4.7,0.5,7.1c-5,15.2-18.0,40.9-19.6,43.8c-3.1,5.7-6.3,11.8-9.3,16.2","M77.3,31.6c7.5,6.8,13.2,15.7,15,24.8"],"が":["M24.6,38.6c1.8,1.6,4.6,2.3,8.6,1c25.5-8.5,29.5-4.1,29.5,7.6c0,9.3-1.2,17.4-4.2,25.2c-7.6,19.7-10.8,17.3-16.1,10.8","M48.5,17.5c1,1.3,1.2,4.7,0.5,7.1c-5,15.2-18.0,40.9-19.6,43.8c-3.1,5.7-6.3,11.8-9.3,16.2","M77.3,31.6c7.5,6.8,13.2,15.7,15,24.8","M80.5,18.2c2.7,1.7,6,5.3,7.7,8.5","M86.8,13.3c3.0,1.5,6.6,4.8,8.6,7.6"],"き":["M30.5,30.2c1.8,0.7,4.6,1.0,5.8,0.8c6.7-1,22.2-4.5,26.5-6c2.1-0.7,3.5-1.2,4.8-2.1","M36.2,48.7c2.0,0.8,4.9,1.2,6.2,0.9c7.2-1.1,23.8-5.0,28.3-6.7c2.3-0.8,3.7-1.4,5.2-2.4","M42,14.1c1.5,0.8,3.1,2.9,4,5.1c5.5,13.7,16,29.2,26.3,40.7c7.6,8.4,9.1,9.3-6,3.8","M33.7,83.2c10.6,9.7,27.2,8.6,38.1,5"],"ぎ":["M30.5,30.5c1.8,0.7,4.6,1.0,5.8,0.8c6.7-1,22.2-4.5,26.5-6c2.1-0.7,3.5-1.2,4.8-2.1","M36.2,48.9c2.0,0.8,4.9,1.2,6.2,0.9c7.2-1.1,23.8-5.0,28.3-6.7c2.3-0.8,3.7-1.4,5.2-2.4","M42,14.3c1.5,0.8,3.1,2.9,4,5.1c5.5,13.7,16,29.2,26.3,40.7c7.6,8.4,9.1,9.3-6,3.8","M33.7,83.5c10.6,9.7,27.2,8.6,38.1,5","M77.3,19c2.7,1.7,6,5.3,7.7,8.5","M83.7,14.1c3.0,1.5,6.6,4.8,8.6,7.6"],"く":["M60.6,15c0.5,1.6,0.3,5.4-1,7.3c-6.7,9.6-14.3,19.0-18.6,24.5c-4,5-3.7,7.0-0.8,11c5.5,7.5,12.7,18.7,17.6,27.2c1.4,2.5,2.7,4.7,4.5,8.6"],"ぐ":["M60.6,15c0.5,2.1,0.7,5-1,7.3c-6.9,9.4-14.2,19.0-18.6,24.5c-4,5-3.7,7.0-0.8,11c5.5,7.5,12.7,18.7,17.6,27.2c1.4,2.5,2.7,4.7,4.5,8.6","M73.5,30c2.7,1.7,6,5.3,7.7,8.5","M79.9,25.1c3.0,1.5,6.6,4.8,8.6,7.6"],"け":["M24.6,19.7c1.2,1.5,2.6,3.7,2.1,6.3c-3,15.8-6.5,29.5-4.8,44.6c2.0,18.8,2.2,4.7,6.7-3.5","M53.6,38.6c2.1,1.3,4.2,1.8,6.8,1.5c8.2-1.2,15.3-2.5,20.6-4c2.7-0.7,5.2-1.1,6.8-1.1","M71.6,14.3c2.1,1.3,2.8,3.3,2.8,5.1c0,11.6,0.1,20.3,0.1,30.1c0,20.7-0.6,30.8-12.5,42.2"],"げ":["M24.9,20.2c1.2,1.5,2.3,3.7,1.8,6.3c-3,15.8-6.5,29.5-4.8,44.6c2.0,18.8,2.2,4.7,6.7-3.5","M53.6,39.1c2.1,1.3,4.2,1.8,6.8,1.5c8.2-1.2,15.3-2.5,20.6-4c2.7-0.7,5.2-1.1,6.8-1.1","M71.6,14.6c2.1,1.3,2.8,3.6,2.8,5.3c0,11.6,0.1,20.3,0.1,30.1c0,20.7-0.6,30.8-12.5,42.2","M86.1,13c2.7,1.7,6,5.3,7.7,8.5","M92.5,8.1c3.0,1.5,6.6,4.8,8.6,7.6"],"こ":["M34.7,26.7c1.1,0.8,2.9,2.0,6,1.5c7.6-1.2,14.1-2.5,22.3-2.6c15.5-0.1,5.8,5-5.7,9","M30,68.1c2.2,14.5,15.2,17.9,31,16.7c6.5-0.5,11.8-1.2,17.6-2.8"],"ご":["M34.7,27c1.1,0.8,2.9,2.0,6,1.5c7.6-1.2,14.1-2.5,22.3-2.6c15.5-0.1,5.8,5-5.7,9","M30,68.3c2.2,14.5,15.2,17.9,31,16.7c6.5-0.5,11.8-1.2,17.6-2.8","M80.3,16.2c2.7,1.7,6,5.3,7.7,8.5","M86.7,11.3c3.0,1.5,6.6,4.8,8.6,7.6"],"さ":["M27,38.9c2.4,1.3,5.3,1.4,8.3,1.0c8.7-1.2,28.6-7.7,34.1-10.4c2.7-1.3,3.7-1.9,6.2-3.5","M41.5,13.8c1.5,0.8,3.6,2.9,4.5,5.1c5.5,13.7,15.2,27.6,26.8,39.5c7.9,8.1,6.3,10-6,3.1","M35.2,80.5c4.5,11.7,20.8,12.5,38.3,7.5"],"ざ":["M27,39.1c2.4,1.3,5.3,1.4,8.3,1.0c8.7-1.2,28.6-8.0,34.1-10.6c2.7-1.3,3.7-1.9,6.2-3.5","M41.5,14.1c1.5,0.8,3.6,2.9,4.5,5.1c5.5,13.7,15.2,27.6,26.8,39.5c7.9,8.1,6.3,10-6,3.1","M35.2,80.7c4.5,11.7,20.8,12.5,38.3,7.5","M79.8,14.2c2.7,1.7,6,5.3,7.7,8.5","M86.2,9.3c3.0,1.5,6.6,4.8,8.6,7.6"],"し":["M39.1,17.5c1.2,3.1,0.9,6.7,0.3,10.2c-2.1,13.5-3,26.5-3,39.1c0,27.3,19.8,30.1,45.5,17.2"],"じ":["M39.1,17.2c1.2,3.1,0.9,6.7,0.3,10.2c-2.1,13.5-3,26.5-3,39.1c0,27.3,19.8,30.1,45.5,17.2","M64.2,27c2.7,1.7,6,5.3,7.7,8.5","M70.6,22.1c3.0,1.5,6.6,4.8,8.6,7.6"],"す":["M15.5,37.1c2.8,2.1,6.9,1.5,12.7,0.2c16.1-3.5,36.1-5.3,46.6-6.5c7-0.7,11.8-0.6,17.7,0.1","M57.6,13.3c2,1.5,2.7,3.2,2.7,5.8c0,10.3,0,35.1,0,40.7c0,14.6-15.6,16.3-15.6,1.7c0-14.2,18-14.1,18,6.3c0,13.2-7.7,21.5-16,28.3"],"ず":["M15.5,37.1c2.8,2.1,6.9,1.5,12.7,0.2c16.1-3.5,36.1-5.3,46.6-6.5c7-0.7,11.8-0.6,17.7,0.1","M57.6,13.3c2,1.5,2.7,3.2,2.7,5.8c0,10.3,0,35.1,0,40.7c0,14.6-15.6,16.3-15.6,1.7c0-14.2,18-14.1,18,6.3c0,13.2-7.7,21.5-16,28.3","M77,13c2.7,1.7,6,5.3,7.7,8.5","M83.3,8.1c3.0,1.5,6.6,4.8,8.6,7.6"],"せ":["M16.5,49.9c2.8,2.4,6.8,1.5,12.7,0.5c19-3.3,33-5.7,47.1-7.6c6.9-0.9,11.8-1.2,17.7-0.3","M69.7,17.7c2,1.5,2.7,3.2,2.7,5.8c0,10.3,0,17.8,0,23.5c0,25.6-5.7,23.2-11.8,19","M35.6,26.2c2,1.5,2.7,3.2,2.7,5.8c0,10.3,0,28.3,0,34c0,14.5,6.3,19.5,20.1,19.5c10.2,0,13.7,0.0,22.6-1.6"],"ぜ":["M16.5,49.9c2.8,2.4,6.8,1.5,12.7,0.5c19-3.3,32.5-5.3,47.1-7.6c6.9-1.1,11.8-1.2,17.7-0.3","M69.7,17.7c2,1.5,2.7,3.2,2.7,5.8c0,10.3,0,17.8,0,23.5c0,25.6-5.7,23.2-11.8,19","M35.6,26.2c2,1.5,2.7,3.2,2.7,5.8c0,10.3,0,28.3,0,34c0,14.5,6.3,19.5,20.1,19.5c10.2,0,13.7,0.0,22.6-1.6","M84.5,17.2c2.7,1.7,6,5.3,7.7,8.5","M90.8,12.3c3.0,1.5,6.6,4.8,8.6,7.6"],"そ":["M38.4,22c1.8,1.2,4.9,1.0,7.5,0.3c6.5-1.7,13.2-3.7,19.3-5.3c4.6-1.2,7.1,2.0,3.6,5.2c-12.1,10.8-31.1,24.4-40,30.2c-6.2,4.1-5.8,5.7,1.3,3.8c17.0-4.4,35.9-8.6,50.1-10.3c9.3-1.1,9.6,0.1,0.5,1.3c-15.8,2.1-34.3,14.2-34.3,26.5c0,12.8,11.6,20.3,31.5,16.6"],"ぞ":["M38.4,22c1.8,1.2,4.9,1.0,7.5,0.3c6.5-1.7,13.2-3.7,19.3-5.3c4.6-1.2,7.1,2.0,3.6,5.2c-12.1,10.8-31.1,24.4-40,30.2c-6.2,4.1-5.8,5.7,1.3,3.8c17.0-4.4,35.9-8.6,50.1-10.3c9.3-1.1,9.6,0.1,0.5,1.3c-15.8,2.1-34.3,14.2-34.3,26.5c0,12.8,11.6,20.3,31.5,16.6","M81.7,26.7c2.7,1.7,6,5.3,7.7,8.5","M88.1,21.8c3.0,1.5,6.6,4.8,8.6,7.6"],"た":["M24.3,35.3c1.3,0.6,3.8,1.5,6.3,1.1c6.5-1,16.2-2.8,24.8-4.7c2.6-0.5,5.3-1.5,7.6-2.3","M45,16.8c0.7,1.2,0.8,3.6,0.3,5.2c-6.3,20.9-12.7,36.3-18.8,52.3c-1.3,3.5-4.7,11.7-6,14.6","M56.3,53.2c12.3-2.7,18.2-3.7,23.6-3.1c15.1,1.6-1.1,2.2-4.2,4.8","M54.1,82.2c4.3,7,14.2,8.1,34.5,5.6"],"だ":["M24.3,35.3c1.3,0.6,3.8,1.5,6.3,1.1c6.5-1,16.2-2.8,24.8-4.7c2.6-0.5,5.3-1.5,7.6-2.3","M45,16.8c0.7,1.2,0.8,3.6,0.3,5.2c-6.3,20.9-12.7,36.3-18.8,52.3c-1.3,3.5-4.7,11.7-6,14.6","M56.3,53.2c12.3-2.7,18.2-3.7,23.6-3.1c15.1,1.6-1.1,2.2-4.2,4.8","M54.1,82.2c4.3,7,14.2,8.1,34.5,5.6","M76,22.5c2.7,1.7,6,5.3,7.7,8.5","M82.3,17.6c3.0,1.5,6.6,4.8,8.6,7.6"],"ち":["M24.5,32.6c1.3,0.6,3.8,1.5,6.3,1.1c6.5-1,18.2-4.1,26.8-6c2.6-0.5,5.3-1.5,7.6-2.3","M45.6,15.6c0.7,1.2,0.7,3.5,0.3,5.2c-3,15-4.2,22.5-8.3,38.6c-3.2,12.6-5.3,11.1,3.6,4.3c8.2-6.2,19.7-9.5,28.5-9.5c8.6,0,14.5,5.8,14.5,14.5c-0.1,13.5-16.5,20.6-29.8,23.2"],"ぢ":["M24.5,32.8c1.3,0.6,3.8,1.5,6.3,1.1c6.5-1,18.2-4.1,26.8-6c2.6-0.5,5.3-1.5,7.6-2.3","M45.6,15.8c0.7,1.2,0.7,3.5,0.3,5.2c-3,15-4.2,22.5-8.3,38.6c-3.2,12.6-5.3,11.1,3.6,4.3c8.2-6.2,19.7-9.5,28.5-9.5c8.6,0,14.5,5.8,14.5,14.5c-0.1,13.5-16.5,20.6-29.8,23.2","M74.6,21.7c2.7,1.7,6,5.3,7.7,8.5","M81,16.8c3.0,1.5,6.6,4.8,8.6,7.6"],"つ":["M14,44.7c1.8,1.6,4.6,2.0,8.1,0.6c17.8-7.6,30-11.1,44.8-10.8c12.5,0.2,22.9,7.1,22.8,19.1c-0.1,18.7-24.7,28.7-45.0,32.0"],"づ":["M14,44.7c1.8,1.6,4.6,2.0,8.1,0.6c17.8-7.6,30-11.1,44.8-10.8c12.5,0.2,22.9,7.1,22.8,19.1c-0.1,18.7-24.7,28.7-45.0,32.0","M81,18c2.7,1.7,6,5.3,7.7,8.5","M87.3,13.1c3.0,1.5,6.6,4.8,8.6,7.6"],"て":["M20.5,26.3c1.8,1.6,4.4,1.9,8.1,1.3c21.7-3.5,33-5.1,50.1-8.3c12.3-2.3,13-0.8,0.3,1.3c-17.8,3.1-33.7,19.1-33.7,37.6c0,20.5,17.9,30.2,35.1,30.2"],"で":["M20.5,26.3c1.8,1.6,4.4,1.9,8.1,1.3c21.7-3.5,33-5.1,50.1-8.3c12.3-2.3,13-0.8,0.3,1.3c-17.8,3.1-33.7,19.1-33.7,37.6c0,20.5,17.9,30.2,35.1,30.2","M75,41.7c2.7,1.7,6,5.3,7.7,8.5","M81.3,36.8c3.0,1.5,6.6,4.8,8.6,7.6"],"と":["M35.5,18.3c1.7,0.7,3.6,2.6,4.1,5.3c0.5,2.7,4.7,25,5.3,28.1","M78.1,25.5c0.2,1.8,0.0,4.0-2.2,5.7c-6.3,4.6-13.2,8.4-22.7,15.2c-12.8,9.1-21.6,18.3-21.6,27.5c0,10.1,8.5,13.8,26.8,13.8c6.2,0,14.7-0.1,21.6-1.2"],"ど":["M35.5,18.3c1.7,0.7,3.6,2.6,4.1,5.3c0.5,2.7,4.7,25,5.3,28.1","M78.1,25.5c0.2,1.8,0.0,4.0-2.2,5.7c-6.3,4.6-13.2,8.4-22.7,15.2c-12.8,9.1-21.6,18.3-21.6,27.5c0,10.1,8.5,13.8,26.8,13.8c6.2,0,14.7-0.1,21.6-1.2","M84.2,14.5c2.7,1.7,6,5.3,7.7,8.5","M90.6,9.6c3.0,1.5,6.6,4.8,8.6,7.6"],"な":["M22.8,28.9c1.1,0.5,3.3,1.1,5.4,1.0c5.5-0.1,10.9-0.9,16.5-2.4c4.8-1.2,9.1-3.1,11.3-4.2","M42.9,14c0.6,0.8,0.5,2.5,0.3,3.7c-2.9,14.1-7.9,26.5-14.2,37.8c-2.0,3.6-4.2,7.2-6.5,10.6","M72.2,23.2c6.8,2.5,12.6,5.6,14.7,9.5c4.0,7.4-0.2,3.3-3.5,3.8","M68.8,44.6c-1,1.8-2.1,5.2-1.8,8.2c0.6,7,1.5,13.1,1.5,20.6c0,20-27.8,19.7-27.8,9.3c0-5.6,8.2-8.2,13.8-8.2c8.7,0,21.5,3.2,29.7,11.5"],"に":["M24.5,22.7c1.2,1.5,1.6,3.7,1.1,6.3c-3,15.8-9,32.5-7.3,47.6c2.0,18.8,4.5,5.7,8.5-3.5","M53.2,30.6c0.9,0.7,2.4,1.5,5.1,1.3c6.9-0.6,15.0-3.3,22.0-3.3c13.1-0.1,1.5,3.7-8.3,7.3","M52.5,68c1.7,12.9,11.9,16.0,24.2,14.9c5.0-0.4,8.9-0.8,14.2-2.0"],"ぬ":["M25.3,28.5c2,1.3,2.9,3.2,3.3,5.8c1.8,12.1,4.1,23.9,8.5,34.6c1.7,4.3,3.9,8.3,6.8,12.4","M57.1,19.2c0.8,2.1,1.0,3.7,0.6,5.8c-3.1,15-13.1,39.8-18.1,48.6c-11.8,21-20.6,1.2-20.6-4.5c0-22.6,43.7-44.2,62.3-29.5c7.6,6.0,9.8,14.5,9.1,23.3c-2,26.7-32.8,28.3-32.8,16.8c0-9.3,17.3-7.1,27.1-1.1c3.1,1.9,7.2,5.2,9.5,7.5"],"ね":["M33.2,14.5c1.6,1.6,2.1,3.2,1.8,5.8c-1.0,11.9-2.0,31.6-2.5,53.1c-0.1,4.6-0.1,9.3-0.2,14","M17.1,37.8c1.6,0.8,3.2,1.3,5.6,0.7c2.1-0.5,7.8-2.3,12.3-4.0c6.2-2.3,6.8-1.4,3.1,3.6c-5.5,7.5-13.0,17.3-18.4,26.7c-5.6,9.6-3.4,8.3,2,3c19.1-18.6,38.5-39.1,54.1-39.1c11.3,0,12.8,11.2,12.8,32.5c0,28.6-30.1,24.8-30.1,16.2c0-9.6,18.7-7.8,28.0-1.8c2.7,1.7,5.8,4.8,7.5,6.7"],"の":["M53.8,28.6c1,1.5,1.3,4.1,0.8,6.6c-1.7,9.5-6.8,25-10.7,33.1c-9.6,20.2-16.5,14.7-24.3-1.9c-9.1-19.5,23.5-48.8,50.6-40.3c32.3,10.1,28,54.6-4.7,60.8"],"は":["M24.5,18c1.2,1.5,2.1,4,1.6,6.6c-3.5,17.6-6.9,36.4-4,54.8c2.5,15.5,1.1,2,5.6-6.2","M49.6,37.8c2.4,1.5,4.8,2.1,7.8,1.7c9.3-1.4,17.4-2.9,23.4-4.5c3.1-0.8,5.9-1.2,7.8-1.2","M69.7,16.5c2.2,2.1,2.8,4.1,2.8,6.5c0,2.3,1.5,38.6,1.5,48c0,22.5-30.6,19.6-30.6,10.5c0-9.7,23.8-5.6,29.5-2.8c5.6,2.7,11.9,8.2,13.3,9.3"],"ば":["M24.7,17.7c1.2,1.5,1.9,4.2,1.3,6.8c-3.5,17.6-6.9,36.4-4,54.8c2.5,15.5,1.1,2,5.6-6.2","M49.8,37.8c2.4,1.5,4.8,2.4,7.8,1.9c9.3-1.4,17.2-3.1,23.1-4.8c3.1-0.8,5.9-1.2,7.8-1.2","M69.7,16.5c2.2,2.1,2.8,4.1,2.8,6.5c0,2.3,1.5,38.6,1.5,48c0,22.5-30.6,19.6-30.6,10.5c0-9.7,23.8-5.6,29.5-2.8c5.6,2.7,12,8.2,13.3,9.3","M84.7,15.2c2.7,1.7,6,5.3,7.7,8.5","M91.1,10.3c3.0,1.5,6.6,4.8,8.6,7.6"],"ぱ":["M24.5,18c1.2,1.5,2.1,4,1.6,6.6c-3.5,17.6-6.9,36.4-4,54.8c2.5,15.5,1.1,2,5.6-6.2","M49.6,37.8c2.4,1.5,4.8,2.1,7.8,1.7c9.3-1.4,17.4-2.9,23.4-4.5c3.1-0.8,5.9-1.2,7.8-1.2","M69.7,16.5c2.2,2.1,2.8,4.1,2.8,6.5c0,2.3,1.5,38.6,1.5,48c0,22.5-30.6,19.6-30.6,10.5c0-9.7,23.8-5.6,29.5-2.8c5.6,2.7,11.9,8.2,13.3,9.3","M91.0,24.3c-9.6,0-9.2-14.2,0-14.2c9.7-0.0,9.5,14.2,0,14.2"],"ひ":["M20,25.1c1.2,0.8,3.7,2.2,6.5,1.3c2.7-0.8,7.3-2.3,11.3-4.5c6-3.1,8.4-1.0,4.2,4c-27.1,32.6-23.7,58.5-1.5,62.8c18.0,3.5,37.6-16.3,35.6-56.5c-0.7-14.5-0.1-14.7,4.1-1.7c3.7,11.3,10.2,20.7,16.1,26.5"],"び":["M20,25.1c1.2,0.8,3.7,2.2,6.5,1.3c2.7-0.8,7.3-2.3,11.3-4.5c6-3.1,8.4-1.0,4.2,4c-27.1,32.6-23.7,58.5-1.5,62.8c18.0,3.5,37.6-16.3,35.6-56.5c-0.7-14.5-0.1-14.7,4.1-1.7c3.7,11.3,10.2,20.7,16.1,26.5","M86.5,13.5c2.7,1.7,6,5.3,7.7,8.5","M92.8,8.6c3.0,1.5,6.6,4.8,8.6,7.6"],"ぴ":["M20,25.1c1.2,0.8,3.7,2.2,6.5,1.3c2.7-0.8,7.3-2.3,11.3-4.5c6-3.1,8.4-1.0,4.2,4c-27.1,32.6-23.7,58.5-1.5,62.8c18.0,3.5,37.6-16.3,35.6-56.5c-0.7-14.5-0.1-14.7,4.1-1.7c3.7,11.3,10.2,20.7,16.1,26.5","M93.8,22.1c-9.6,0-9.2-14.2,0-14.2c9.7,0.0,9.5,14.2,0,14.2"],"ふ":["M42.6,15.6c3.6,3.3,7.5,5.3,12.7,6.1c9.5,1.3,3.5,3.3-1.8,6.1","M43.6,46.8c1.8,4.6,7.5,9.4,14.2,17.5c10.6,12.7,0.4,30-19.1,21.6","M16.5,73.3c0.7,4,1.8,8.1,5,10.1c1.1,0.7,0.1-3.3,13.2-9.1","M80.1,61.8c5.1,3.3,10.2,7.4,11.3,8.8c6.7,8.5-0.2,4.6-4.6,7.1"],"ぶ":["M42.1,15.6c3.6,3.3,7.5,5.3,12.7,6.1c9.5,1.3,3.5,3.3-1.8,6.1","M43.1,46.8c1.8,4.6,7.5,9.4,14.2,17.5c10.6,12.7,0.5,30-19.1,21.6","M16.5,73.8c0.7,4,1.8,8.1,5,10.1c1.1,0.7,0.1-3.3,13.2-9.1","M79.6,61.8c5.5,3.3,10.2,7.4,11.3,8.8c6.7,8.5-0.2,4.6-4.6,7.1","M73.6,16.2c2.7,1.7,6,5.3,7.7,8.5","M80,11.3c3.0,1.5,6.6,4.8,8.6,7.6"],"ぷ":["M42.1,15.6c3.6,3.3,7.5,5.3,12.7,6.1c9.5,1.3,3.5,3.3-1.8,6.1","M43.1,46.8c1.8,4.6,7.5,9.4,14.2,17.5c10.6,12.7,0.4,30-19.1,21.6","M16.5,73.8c0.7,4,1.8,8.1,5,10.1c1.1,0.7,0.1-3.3,13.2-9.1","M79.6,61.8c5.5,3.3,10.2,7.4,11.3,8.8c6.7,8.5-0.2,4.6-4.6,7.1","M80.8,26.6c-9.6,0-9.2-14.2,0-14.2c9.7,0.0,9.5,14.2,0,14.2"],"へ":["M15,48.7c2.2,1.6,4.6,1.9,7-0.3c3.6-3.6,7.4-6.5,11.2-10.5c5.5-5.7,8.4-4.7,13.1-0.8c12.1,10.1,30.3,25.1,33.3,27.3c3,2.2,12.3,10.3,13.8,11.6"],"べ":["M15,48.7c2.2,1.6,5,1.3,7.6-1c3.8-3.5,6.1-5.7,10.6-9.8c5.8-5.3,8.4-4.7,13.1-0.8c12.1,10.1,30.3,25.1,33.3,27.3c3,2.2,12.3,10.3,13.8,11.6","M66.7,26.7c2.7,1.7,6,5.3,7.7,8.5","M73.1,21.8c3.0,1.5,6.6,4.8,8.6,7.6"],"ぺ":["M15,48.7c2.2,1.6,4.6,1.9,7-0.3c3.6-3.6,7.4-6.5,11.2-10.5c5.5-5.7,8.4-4.7,13.1-0.8c12.1,10.1,30.3,25.1,33.3,27.3c3,2.2,12.3,10.3,13.8,11.6","M73.6,36.7c-9.6,0-9.2-14.2,0-14.2c9.7,0,9.5,14.2,0,14.2"],"ほ":["M24.5,18.7c1.2,1.5,2.1,4,1.6,6.6c-3.5,17.6-6.9,37.4-4,55.8c2.5,15.5,1.1,2,5.6-6.2","M53.0,21.1c1.9,1.2,3.8,1.7,6.1,1.4c7.3-1.1,13.7-2.4,18.4-3.7c2.4-0.7,4.6-1.0,6.1-1.0","M53.8,44.3c2.2,1.4,4.4,1.9,7.1,1.5c8.5-1.3,15.7-2.4,21.2-3.9c2.8-0.7,5.7-1.1,7.4-1.1","M72.5,23c1.3,1.6,1.6,4.1,1.6,6.5c0,2.3,2,35.1,2,44.5c0,17.5-29.8,17.1-29.8,8c0-9.7,21.3-7.8,29.5-2.8c5.3,3.2,12,8.2,13.3,9.3"],"ぼ":["M24.5,18.7c1.2,1.5,2.1,4,1.6,6.6c-3.5,17.6-6.9,37.4-4,55.8c2.5,15.5,1.1,2,5.6-6.2","M53.0,21.1c1.9,1.2,3.8,1.7,6.1,1.4c7.3-1.1,13.7-2.4,18.4-3.7c2.4-0.7,4.6-1.0,6.1-1.0","M53.8,44.3c2.2,1.4,4.4,1.9,7.1,1.5c8.5-1.3,15.7-2.4,21.2-3.9c2.8-0.7,5.7-1.1,7.4-1.1","M72.5,23c1.3,1.6,1.6,4.1,1.6,6.5c0,2.3,2,35.1,2,44.5c0,17.5-29.8,17.1-29.8,8c0-9.7,21.3-7.8,29.5-2.8c5.3,3.2,12,8.2,13.3,9.3","M87.5,26c2.7,1.7,6,5.3,7.7,8.5","M93.8,21.1c3.0,1.5,6.6,4.8,8.6,7.6"],"ぽ":["M24.5,19c1.2,1.5,2.1,4,1.6,6.6c-3.5,17.6-6.9,37.4-4,55.8c2.5,15.5,1.1,2,5.6-6.2","M53.0,21.3c1.9,1.2,3.8,1.7,6.1,1.4c7.3-1.1,13.7-2.4,18.4-3.7c2.4-0.7,4.6-1.0,6.1-1.0","M53.8,44.5c2.2,1.4,4.4,1.9,7.1,1.5c8.5-1.3,15.7-2.4,21.2-3.9c2.8-0.7,5.7-1.1,7.4-1.1","M72.5,23.2c1.3,1.6,1.6,4.1,1.6,6.5c0,2.3,2,35.1,2,44.5c0,17.5-29.8,17.1-29.8,8c0-9.7,21.3-7.8,29.5-2.8c5.3,3.2,12,8.2,13.3,9.3","M95.1,34.5c-9.6,0-9.2-14.2,0-14.2c9.7,0,9.5,14.2,0,14.2"],"ま":["M29.8,32.2c2.2,1.1,4.4,1.5,7.1,1.2c11.5-1.0,25.9-3.1,34.6-4.8c2.8-0.5,5.4-0.4,7.1-0.4","M33.8,51.8c2.4,1.6,4.9,1.7,7.9,1.2c9.5-1.4,17.8-3.1,27.0-5.1c3.2-0.7,6.3-1.3,8.2-1.3","M55.8,14c1.5,1.8,1.8,4.5,1.8,7.1c0,2.6,0.4,43.8,0.4,54.2c0,21.3-30.0,19.9-30.0,9.8c0-10.7,25.8-9.9,38.5-3.1c6.1,3.2,11.5,6.3,14.8,9.1"],"み":["M32.5,26c1.8,1.7,4.0,1.7,6.8,1.2c3.8-0.6,7.6-1.7,11.8-3.1c4.2-1.3,6.2-0.1,4.5,5.1c-1.7,5.2-6.6,17.3-12,30.1c-13.6,32.5-29.2,29.2-29.2,18.6c0-14.2,20.4-15.3,33-13.5c18.5,2.7,30,6.6,44.3,14.2","M79.3,54.7c0.7,2.3,0.4,4.3,0,6.2c-2.1,8.1-7.5,25-22.1,33.7"],"む":["M19.5,31.6c2.1,1.5,4.2,1.6,6.8,1.2c8.1-1.4,15.3-2.9,23.1-4.9c2.7-0.6,5.4-1.2,7.0-1.2","M37.0,15.5c1.6,1.2,2.3,2.8,2.1,5.2c-0.8,11.1-1.5,20.7-4,34.8c-3.6,20.4-19.2,16.9-18.6,7.3c0.5-7.7,6.2-12.8,12.6-13.5c5-0.5,14.2,1.9,5.8,15c-12.6,19.6-11.4,24.5,5.1,25.5c10.9,0.6,19.2,0.7,28.4-0.9c14.1-2.5,7.4-2.6,7.4-11.1","M78.5,36.2c6.8,3.1,11.7,5.9,14.8,10.1c6.2,8.2-1.3,3.6-4.5,4.5"],"め":["M27.4,31.7c1.7,1,2.4,3.0,2.5,5.2c0.5,11.6,2.7,23.5,7.2,31.3c1.3,2.4,5.3,8.5,7.2,10.3","M59.6,19.3c1,1.5,1.3,4.1,0.8,6.6c-2.7,14.6-13.6,37.7-20.1,47.2c-12.2,17.1-16.7,13.1-22.2,0.6c-5.3-15.3,26.4-42.1,53.4-35.2c29.0,8.2,23.9,46.0-7.9,50.1"],"も":["M49.1,14.7c1.8,1.8,1.8,4.5,1.1,8c-3,14.2-5,26.6-7,42.1c-2.5,19.7-0.7,29.8,17,29.8c20.2-0.0,28.6-13.1,20.0-35.7","M26.5,34.6c1.1,0.8,2.8,2.2,6,2c11.1-0.7,20-2.1,27.7-3.4c3.8-0.6,5.8-1.1,8.8-1.0","M26.4,53.3c-1.5,4,1,6.7,7.7,6.7c8.7,0,17.6-1,22.8-1.8c2.0-0.3,5.3-1,7.5-1.7"],"ゃ":["M26,61.0c1.4,1.2,4.1,1.9,6.8,0.6c14.6-7.0,28.3-15.3,40.3-15.2c7.1,0.1,12.7,3.2,12.6,9.7c0,6.6-8.6,13.1-19.4,14.1","M49.1,34.5c4.0,0.6,8.2,3.2,9.1,5.2c1.6,3.9-0.7,1.8-2.2,2.0","M35.7,40.9c1.8,1.4,2.3,2.7,2.8,4.6c2.0,8.3,8.8,32.3,11.7,41.3c0.5,1.6,1.4,4.9,2.2,7.4"],"や":["M18,49.3c1.8,1.6,5.2,2.5,8.6,0.8c18.5-8.8,35.7-19.3,50.8-19.2c9.0,0.1,16.0,4.1,15.9,12.2c0,8.3-10.8,16.5-24.5,17.8","M47.1,15.8c5.1,0.8,10.4,4.0,11.5,6.6c2.1,5-1,2.3-2.8,2.6","M30,24.3c2.3,1.8,3.2,2.8,3.8,5.2c2.6,10.5,11.1,41.1,14.7,52.5c0.6,2.0,1.8,6.2,2.8,9.3"],"ゅ":["M27.7,40.7c1.1,1.2,1.6,3.3,1.2,5c-2.3,9.4-3.2,17.7-1.7,27.9c2.2,15.0,0.9,3.1,2.6-1.2c7.1-18.1,21.7-27.5,35.4-27.5c13.5,0,17.4,9.1,17.4,16.2c0,21.8-24.6,23.6-34.3,13.4","M57.6,33.8c2.1,1.4,2.5,2.5,2.8,5.7c0.7,8.4,1.1,14.9,1.3,23.4c0.4,19.1-5,25.5-9.9,31.3"],"ゆ":["M21.0,25.3c1.3,1.5,2.0,4.1,1.5,6.2c-2.8,11.7-4,22.2-2.1,35c2.7,18.8,1.1,3.8,3.2-1.5c9-22.7,27.2-34.5,44.3-34.5c16.8,0,21.8,11.3,21.8,20.2c0,27.3-30.8,29.6-43,16.7","M58.4,16.7c2.6,1.7,3.1,3.1,3.5,7.1c0.8,10.5,1.4,18.7,1.6,29.3c0.5,24-6.2,32-12.3,39.2"],"ょ":["M57.8,50.0c5.9-1.0,10.9-2.0,14.7-3.2c1.9-0.6,3.8-0.9,4.9-0.9","M54.9,33c1.7,1.6,2.3,3.2,2.2,5.1c-0.6,13.4-0.1,27.6,1.1,42.4c1.5,18.3-27.8,16.5-27.8,9.1c0-9.5,20.9-6.3,28.6-3.2c6.4,2.5,9.1,3.8,14.7,8.2"],"よ":["M58.2,35.3c7.5-1.2,13.7-2.6,18.5-4.1c2.5-0.7,4.7-1.1,6.2-1.1","M54.6,13.8c2.2,2.1,2.9,4.1,2.8,6.5c-0.7,17-0.1,34.8,1.3,53.5c1.8,23.0-34.8,20.8-34.8,11.5c0-12,26.2-8,35.9-4.1c8.1,3.2,11.5,4.8,18.5,10.3"],"ら":["M35.3,15c3.7,3,9.2,4.4,16.5,4.2c11.1-0.2-0.2,2.3-1.2,3.5","M35.8,35.7c-2.1,4.3-2.7,8.6-3.1,13.2c-0.4,5.8-0.3,12.0-2.1,19.1c-3.1,12.2,1.4,4.7,3,3.5c11.8-10,21.7-12.6,32.6-12.4c9.2,0.1,16.8,5.1,16.7,13.8c-0.1,13.6-14.2,21.4-32.4,22.4"],"り":["M38.7,25.2c1.2,1.5,2.2,4.0,1.6,6.6c-2.8,12.1-6.2,29.6-4.2,42.3c2,12.5,1.7-0.7,5.6-6.2","M69.3,18.7c2.2,2.1,2.8,4.1,2.8,6.5c0,2.3,0,26.3,0,35.7c0,16.5-5,25.7-12.6,33.1"],"る":["M34.3,20.3c1.7,1.2,4.6,2.6,8.5,1.5c3.8-1.1,9.6-2.5,15.6-4.6c6-2.1,7.5-0.1,4.3,4.2c-3.1,4.3-18.8,24.6-27.7,34c-8.5,9-13.0,11.8,0.7,3.2c15.6-9.7,43-10.8,43,13.3c0,22.5-40.8,24.5-40.8,12.6c0-11.2,18.1-8.7,24.3-0.3"],"れ":["M34.4,13c1.5,1.3,2.8,3.7,2.5,6.3c-0.5,4-2.7,44.5-2.7,52.8c0,8.3,0.1,16.6,0.1,19.5","M16.9,40.7c2.1,1.3,3.7,1.4,7.5,0c4.5-1.7,6.5-2.6,13-5.5c4.2-1.8,4.4,0.2,2.5,3.5c-5.2,9-10.5,16.7-18.8,27.6c-7.5,9.8-6.9,12.8,3.2,3.1c14-13.3,20.3-19.7,33.8-32.5c6.3-6,19.3-12.0,18.1,0.8c-1.0,10.6-1.8,22.1-2.2,30.7c-1.0,21.7,11.5,18,20.1,8.6"],"ろ":["M36.9,21.8c1.5,2,4.6,3.6,8.5,2.5c3.8-1.1,8.1-2.2,14.1-4.3c6-2.1,6.5-0.1,3.3,4.2c-7.8,10.8-18,22.7-27.5,35.2c-7.4,9.8-10.6,11.3,2.8,2.2c17.3-11.6,46.6-14,46.6,8.1c0,15.6-16,22.5-32.1,25.1"],"わ":["M38.5,14.7c1.5,1.3,2.2,3.7,2,6.3c-1,11.8-2.7,44.4-2.7,52.8c0,8.3-0.6,16.6-0.6,19.5","M17.5,40.7c2.1,1.3,3.6,1.3,7.5,0c5.8-2,9.8-3.1,16.2-6c4.2-1.8,6.1,0,2.7,4c-6.7,7.9-13,16.5-22.1,27.8c-7.7,9.6-7.5,12.2,3,2.8c21.8-19.3,49.7-35.6,63.5-21c14.3,15.2,1.6,36.6-23.3,42.6"],"を":["M28.5,27.8c1.6,1.1,3.1,1.6,6.0,1.1c10.8-1.9,16.7-3.3,24.7-4.7c3.6-0.6,5.6-0.9,8.4-0.7","M49.9,14.3c0.7,1,1.4,3.2,0.3,5.6c-4.6,10.1-10,20.7-17.1,30.2c-9.2,12.3-9.2,11.1,2.1,2.5c9-6.8,23.7-12.1,22.8,19.8","M83.0,39.8c0.6,1.7,0,4-3,5.7c-3,1.7-49.6,24.1-44.7,38.2c3.2,9.4,17.9,9.1,29.9,7.7c4.4-0.5,9.1-1.1,12.4-1.7"],"ん":["M56.3,16.5c0.7,1.7,1.1,5.8-0.3,8.2c-7,11.2-27.2,43.4-33.8,54.3c-9,14.7-7.6,16.2,1.5,1.2c17.8-29.3,32-23.7,32-6.7c0,25,19,26.5,34.2-5"],"ア":["M23.5,26.2c2.4,1.5,3.9,1.4,8.5,0.7c11.4-1.7,37.7-5.5,48.2-6.7c5.2-0.6,7.9,2.0,2.6,6.0c-6.7,5-13.1,9.5-23.2,16","M53.1,41.1c0.7,1.5,1.0,3.2,0.5,5.2c-4.0,18.4-9.9,31.8-19.9,45.4"],"イ":["M69.7,16.7c0.1,1.7-0.3,3.8-1.6,5.5c-10.1,12.8-23.7,29.6-45.6,42.8","M56.3,43.8c1,1.1,1.2,3,1.2,4.6c0,1.6,0,32.7,0,34.6c0,1.8-0.1,9.1-0.1,11.7"],"ウ":["M53.2,14.6c1,1.1,1.2,3,1.2,4.6c0,1.6,0,10.7,0,12.6","M26.5,31.2c1,1.1,1.2,3,1.2,4.6c0.0,4.4,0.2,10.9,0.4,16.3c0.0,2.5,0.1,4.7,0.1,6.5","M29.1,35.8c19.3-2.2,40.2-4.2,49-5.5c8.7-1.2,8.2,0.8,6.2,6.8c-5,14.8-20.1,43.5-41,56.6"],"エ":["M31.8,35.6c2.3,0.7,5.1,0.6,7.4,0.2c8.5-1.3,22.4-2.8,33.6-3.8c2.2-0.2,4.5-0.1,6.7,0.2","M53.3,38.1c1,1.1,1.3,3,1.2,4.6c-0.1,4.7-0.5,12.8-0.8,22.2c-0.0,2.3-0.1,4.7-0.2,7.1","M19,75.4c3.4,0.9,7.5,0.8,11.0,0.3c17.7-2.4,34.5-3.8,50.5-3.9c3.3-0.0,7.2,0.4,10.4,1.8"],"オ":["M19.5,37.8c3.9,1.7,7.5,1.5,11.0,1.0c18.0-2.7,34.4-4.5,50.5-5.4c3.3-0.1,6.3,0.1,10.4,1.3","M60.3,16.3c1.3,1.4,1.6,3.9,1.6,6.1c0,8-0.2,46.2-0.2,58.6c0,20.3-5.8,7.5-9.2,5.5","M60.2,36.3c0,1.6-1.6,3.6-3.6,6c-7.8,9.5-21.1,22.7-34.6,33"],"カ":["M25.5,40.6c1.8,1.2,4.5,1.8,7.1,1.5c17.8-2.5,32.7-4.5,42.5-5.8c7.1-1,10.5,0.2,8.6,7.8c-2.1,8.2-4.4,17.8-9.2,29.1c-10.4,24.8-14.1,14.5-19.2,11.8","M55.8,17.1c0.8,1.6,1.2,3.8,0.7,6.7c-4.2,22.8-15.8,45.2-30.2,58.8"],"ガ":["M25.5,40.6c1.8,1.2,4.5,1.8,7.1,1.5c17.8-2.5,32.7-4.5,42.5-5.8c7.1-1,10.5,0.2,8.6,7.8c-2.1,8.2-4.4,17.8-9.2,29.1c-10.4,24.8-14.1,14.5-19.2,11.8","M55.8,17.1c0.8,1.6,1.2,3.8,0.7,6.7c-4.2,22.8-15.8,45.2-30.2,58.8","M83,19.7c2.7,1.7,6,5.3,7.7,8.5","M89.3,14.8c3.0,1.5,6.6,4.8,8.6,7.6"],"キ":["M27,40.5c1.7,0.6,4.7,1.0,7.2,0.3c11.7-3.3,30.6-8.1,37.5-9.8c2.6-0.6,6.7-1.1,9-1","M19.5,65.8c2.2,0.8,6.2,1.1,9.4,0.1c17.7-5.5,32.6-9.0,49.1-12.9c3.4-0.8,8.8-1.5,11.7-1.3","M48.8,16.7c2.5,1.7,3.4,3.2,3.8,6.1c2.1,13.6,6.3,45.3,8.2,59.2c0.4,3,1,8.3,1.3,11.1"],"ギ":["M27,40.5c1.7,0.6,4.7,1.0,7.2,0.3c11.7-3.3,30.6-8.1,37.5-9.8c2.6-0.6,6.7-1.1,9-1","M19.5,65.8c2.2,0.8,6.2,1.1,9.4,0.1c17.7-5.5,32.6-9.0,49.1-12.9c3.4-0.8,8.8-1.5,11.7-1.3","M48.8,16.7c2.5,1.7,3.4,3.2,3.8,6.1c2.1,13.6,6.3,45.3,8.2,59.2c0.4,3,1,8.3,1.3,11.1","M81.8,15.1c2.7,1.9,6,5.9,7.7,9.3","M88.2,10c2.7,1.7,5.9,5.3,7.6,8.4"],"ク":["M50,19.6c0.3,1.5,0.3,3.4-0.5,5.1c-4.1,8.1-7.8,15.5-16.1,24.1","M51.2,28.6c2.6,0.2,5.6-0.3,7.6-0.8c6-1.5,9.7-2.3,15.1-3.8c5.7-1.6,7.5-0.4,5.1,4.8c-10.3,22.8-26.2,44.1-48.6,60.5"],"グ":["M50,19.6c0.3,1.5,0.3,3.4-0.5,5.1c-4.1,8.1-7.8,15.5-16.1,24.1","M51.2,28.6c2.6,0.2,5.6-0.3,7.6-0.8c6-1.5,9.7-2.3,15.1-3.8c5.7-1.6,7.5-0.4,5.1,4.8c-10.3,22.8-26.2,44.1-48.6,60.5","M83.7,13.5c2.7,1.7,6,5.3,7.7,8.5","M90.1,8.6c3.0,1.5,6.6,4.8,8.6,7.6"],"ケ":["M40.9,17.8c0.4,1.9,0.3,4.4-0.5,6.5c-4.8,10.3-9.2,19.6-18.8,30.6","M37.8,37.6c2.1,0.8,4.1,1.0,6.6,0.5c12.6-2.7,25.5-4.8,35.7-6.5c3.6-0.5,6.2-0.7,9.2-0.5","M64.4,38.8c0.4,1.9,0.5,4.2-0.0,6.5c-3.6,13.7-9.2,31.2-24.6,43.8"],"ゲ":["M40.9,17.8c0.4,1.9,0.3,4.4-0.5,6.5c-4.8,10.3-9.2,19.6-18.8,30.6","M37.8,37.6c2.1,0.8,4.1,1.0,6.6,0.5c12.6-2.7,25.5-4.8,35.7-6.5c3.6-0.5,6.2-0.7,9.2-0.5","M64.4,38.8c0.4,1.9,0.5,4.2-0.0,6.5c-3.6,13.7-9.2,31.2-24.6,43.8","M83.6,13.9c2.9,1.8,6.4,5.5,8.3,8.8","M90.1,9.1c3.0,1.6,6.5,5,8.5,7.9"],"コ":["M30.1,35c1.7,1,3.0,2.1,6.5,1.6c14.2-2.2,29.6-4.2,37.3-5.5c9.3-1.5,9.8,0.2,8,7.5c-2.7,10.7-5.2,22.1-7,34.8","M27.5,77.3c2.6,1.1,4.3,1.5,8.2,1c11.3-1.5,22.6-3,33.7-3.3c4-0.1,5.8,0,9.6,0.5"],"ゴ":["M30.1,35c1.7,1,3.0,2.1,6.5,1.6c14.2-2.2,29.6-4.2,37.3-5.5c9.3-1.5,9.8,0.2,8,7.5c-2.7,10.7-5.2,22.1-7,34.8","M27.5,77.3c2.6,1.1,4.3,1.5,8.2,1c11.3-1.5,22.6-3,33.7-3.3c4-0.1,5.8,0,9.6,0.5","M84.7,15.5c2.7,1.7,6,5.3,7.7,8.5","M90.8,10.3c3.0,1.5,6.6,4.8,8.6,7.6"],"サ":["M16.5,44.3c2.8,1.2,4.7,1.9,8.9,1.1c17.2-3.2,40.4-5.3,58.5-5.3c4.3,0,6.9,0.3,10.4,0.8","M36.6,23.3c1.1,1.3,1.1,2.5,1.2,4.7c0.2,9,0.3,20.2,0.7,28.8c0.1,3.2,0.3,7.1,0.3,9.2","M69.6,16.6c1.5,2,1.6,2.8,1.6,6.2c0,8.2-0.1,9-0.1,15.8c0,23.2-9.3,42.5-23.2,53"],"ザ":["M16.5,44.3c2.8,1.2,4.7,1.9,8.9,1.1c17.2-3.2,40.4-5.3,58.5-5.3c4.3,0,6.9,0.3,10.4,0.8","M36.6,23.3c1.1,1.3,1.1,2.5,1.2,4.7c0.2,9,0.3,20.2,0.7,28.8c0.1,3.2,0.3,7.1,0.3,9.2","M69.6,16.6c1.5,2,1.6,2.8,1.6,6.2c0,8.2-0.1,9-0.1,15.8c0,23.2-9.3,42.5-23.2,53","M82.7,18.7c2.8,1.7,6.2,5.4,8.0,8.6","M89.5,14.1c2.9,1.5,6.3,4.8,8.2,7.6"],"シ":["M39.8,19.7c5.1,1.5,9.7,6.0,11.5,8.6","M26,42.6c3.2,0.8,10.2,5.5,12.2,8.1","M33,85c3.7,0.8,7.1,0.4,10.3-1.3c17.8-10.2,32.3-23.8,46.1-42.8"],"ジ":["M39.8,19.7c5.1,1.5,9.7,6.0,11.5,8.6","M26,42.6c3.2,0.8,10.2,5.5,12.2,8.1","M33,85c3.6,1.6,6.5,0.8,10.3-1.3c17.8-10.3,32.3-23.8,46.1-42.8","M78.5,18.9c2.8,1.7,6.2,5.4,8.0,8.6","M85.2,14.3c2.9,1.5,6.3,4.8,8.2,7.6"],"ス":["M30.1,29.3c1.7,1.5,4.1,1.9,6.6,1.3c13.2-3.2,24.2-5.6,31.2-7.3c7-1.7,8.6,1.1,6.5,5.7c-11.2,24.1-28.3,45.8-53.5,57.2","M61,57.2c11,7.3,21,17,28,28.6"],"ズ":["M30.1,29.3c1.7,1.5,4.1,1.9,6.6,1.3c13.2-3.2,24.2-5.6,31.2-7.3c7-1.7,8.6,1.1,6.5,5.7c-11.2,24.1-28.3,45.8-53.5,57.2","M61,57.2c11,7.3,21,17,28,28.6","M85.3,16.5c2.7,1.7,6,5.3,7.7,8.5","M91.7,11.6c3.0,1.5,6.6,4.8,8.6,7.6"],"セ":["M17,49.3c3.1,1.5,5.0,2.1,8.6,1.3c23.5-5.2,31.2-7.4,50.6-11.6c23.1-5,6.5,7.7-3.2,18.1","M42.3,19.5c2,2.2,2.1,3.5,2.1,6.6c-0.1,17.5-0.8,31.7-0.8,41.1c0,14,3.1,16.9,12.3,17.1c8.3,0.1,14.1,0.1,18,0.1c3.8,0,7.5-0.5,10.5-1.1"],"ゼ":["M17,49.3c3.1,1.5,5.0,2.1,8.6,1.3c23.5-5.2,31.2-7.4,50.6-11.6c23.1-5,6.5,7.7-3.2,18.1","M42.3,19.5c2,2.2,2.1,3.5,2.1,6.6c-0.1,17.5-0.8,31.7-0.8,41.1c0,14,3.1,16.9,12.3,17.1c8.3,0.1,14.1,0.1,18,0.1c3.8,0,7.5-0.5,10.5-1.1","M83.3,20.2c2.7,1.7,6,5.3,7.7,8.5","M89.7,15.3c3.0,1.5,6.6,4.8,8.6,7.6"],"ソ":["M23.5,25.5c3.9,4.1,7.7,9.9,10.7,17.8","M83.5,21c1.2,2.5,1.3,4.4,0.1,8.5c-5.8,20.3-26.2,49.5-45.6,61.2"],"ゾ":["M23.5,26.6c3.8,4.0,7.5,9.7,10.5,17.5","M83,21.9c1.2,2.5,1.3,4.4,0.1,8.5c-5.8,20.3-26.2,49-45.6,60.7","M86.2,10.6c2.7,1.7,6,5.3,7.7,8.5","M92.6,5.7c3.0,1.5,6.6,4.8,8.6,7.6"],"タ":["M48.8,19.7c0.4,1.7,0.3,4-0.5,5.8c-4.7,9.3-9.1,17.8-18.6,27.7","M49.7,30.3c2.7,0.5,5,0,7.6-0.6c6.0-1.4,10.5-2.6,15.8-4.1c5.7-1.6,8.2,0.3,5.8,5.6c-10.8,24.6-22.1,43.9-50.1,59.9","M43.3,45.6c6.7,3.5,10.6,7.8,14.7,15.2"],"ダ":["M48.8,19.7c0.4,1.7,0.3,4-0.5,5.8c-4.7,9.3-9.1,17.8-18.6,27.7","M49.7,30.3c2.5,0.6,5.6-0.1,7.6-0.6c6-1.5,10.5-2.6,15.8-4.1c5.7-1.6,8.2,0.3,5.8,5.6c-10.8,24.6-22.1,43.9-50.1,59.9","M43.3,45.6c6.7,3.5,10.6,7.8,14.7,15.2","M83.6,14.1c2.9,1.8,6.4,5.5,8.3,8.8","M90.1,9.3c3.0,1.6,6.5,5,8.5,7.9"],"チ":["M69.7,15.2c-0.3,2.6-2.0,4.3-3.8,5.3c-7.8,4.2-18.6,9.7-35.5,13.2","M18.5,51.5c2.8,0.8,4.3,1.6,7.8,1.2c22-2.5,36.3-4.2,56.1-4.8c4.8-0.1,7.8,0.5,10.8,1.5","M54.8,30.7c0.8,0.7,1.7,2.4,1.7,4.7c0,6.0,0.0,11.2,0.0,18.2c0,14.9-5.0,29.4-16.5,39.2"],"ヂ":["M70,15.2c-0.3,2.6-2.2,4.3-4.1,5.3c-7.8,4.2-18.6,9.7-35.5,13.2","M18.5,51.5c2.8,0.8,4.3,1.6,7.8,1.2c22-2.5,36.3-4.2,56.1-4.8c4.8-0.1,7.8,0.5,10.8,1.5","M54.8,30.7c0.8,0.7,1.7,2.4,1.7,4.7c0,6.0,0.0,11.2,0.0,18.2c0,14.9-5.0,29.4-16.5,39.2","M79.8,25.7c2.8,1.7,6.2,5.4,8.0,8.6","M86.6,21.1c2.9,1.5,6.3,4.8,8.2,7.6"],"ツ":["M21.5,31.3c2.3,3,4.5,9.3,4.8,13.8","M45.6,23.7c3.3,3.5,6.6,9.5,7,14.8","M84.6,27.8c0.7,2.2,0.3,5.2-0.7,8c-7.6,18.3-21.2,41.1-46,52.5"],"ヅ":["M21.5,30.6c2.3,3,5,9.3,5.3,13.8","M45.8,23c3.3,3.5,6.6,9.5,7,14.8","M84.6,27.6c0.7,2.2,0.3,5.2-0.7,8c-7.6,18.3-21.2,41.3-46,52.7","M86.5,14.5c2.6,1.9,5.7,5.8,7.3,9.3","M92.6,9.6c2.7,1.8,5.9,5.5,7.6,8.7"],"テ":["M36.5,21.5c2.1,1.2,4.3,1.5,7.2,1.2c10.6-1.2,16.8-2.2,24.6-3.2c3.7-0.4,5.6-0.5,8.1-0.2","M20,44.1c2.8,1,5.2,1.0,7.5,0.7c22.3-3,37-5.6,54.1-6.1c5.6-0.1,7.7,0,10.3,0.6","M58,43.2c0.8,1,1.3,2.6,1.1,4.3c-1.7,15.3-11.6,34.9-24.6,41.8"],"デ":["M36.5,21.5c2.1,1.2,4.3,1.5,7.2,1.2c10.6-1.2,16.8-2.2,24.6-3.2c3.7-0.4,5.6-0.5,8.1-0.2","M20,44.1c2.8,1,5.2,1.0,7.5,0.7c22.3-3,37-5.6,54.1-6.1c5.6-0.1,7.7,0,10.3,0.6","M58,43.2c0.8,1,1.3,2.6,1.1,4.3c-1.7,15.3-11.6,34.9-24.6,41.8","M84.2,16.9c2.8,1.7,6.2,5.4,8.0,8.6","M91,12.3c2.9,1.5,6.3,4.8,8.2,7.6"],"ト":["M44,16.3c1.2,1.1,2.1,3.2,2.1,5.5c0,26.1,0,53.5,0,57.6c0,4.1,0,10.5,0,13.3","M49.2,43.1c11.7,4.1,18.2,10.6,24.5,18.7"],"ド":["M44,16.3c1.2,1.1,2.1,3.2,2.1,5.5c0,26.1,0,53.5,0,57.6c0,4.1,0,10.5,0,13.3","M49.2,43.1c11.7,4.1,18.2,10.6,24.5,18.7","M66.8,26.7c2.7,1.7,6,5.3,7.7,8.5","M73.2,21.8c3.0,1.5,6.6,4.8,8.6,7.6"],"ナ":["M18.5,44.1c2.6,1,4.7,1.1,9.1,0.5c19.3-3,37.7-4.7,52.3-5.6c3.7-0.2,8.8-0.2,11.8,0.1","M53.2,14.5c1.7,1.2,2.7,3,2.7,6c0,3,0.1,21.5,0.1,24.2c0,20-6,37.6-18.3,49.1"],"ニ":["M32.6,34.6c2.5,1.1,4.3,1.6,7.4,1.3c11.5-0.9,18.3-2.4,27.0-3.1c2.6-0.2,6.2-0.1,8.3,0.0","M20,74.8c2.6,1,4.7,1.4,9.1,0.7c20.2-3.2,36.5-3.8,52.3-3.8c3.7,0,8,1,11.1,2.3"],"ヌ":["M33.3,27.6c2.7,1.2,5.3,1.1,8.5,0.6c10.1-1.7,19-3.1,28.6-5c6.6-1.3,7.7-0.1,5.3,5.6c-6.7,16.2-20.6,40.5-48.8,57.8","M44.8,46.3c12,6.7,22.3,15.3,30.6,28.1"],"ネ":["M51.3,12.3c3.3,2.1,8,5.8,11,10.8","M26.8,36.1c2.6,1.4,5.4,1.9,8.5,1.1c10.7-2.6,20.7-4.9,30.8-7.5c6.5-1.6,7.8,1.2,4.6,4.6c-11.6,12.4-22.7,23.3-48.8,37.9","M54.3,54.1c1.3,1.7,1.6,3.5,1.6,6c0,2.5,0,27.5,0,29.3c0,1.8,0,4,0,6.8","M65.3,53.6c12.5,6,19.8,11.7,24.8,18.8"],"ノ":["M72.3,25.2c0.7,2,0.9,4.8,0.2,7.2c-7.1,25-25.3,44.7-43.6,56.8"],"ハ":["M39.3,36.8c0.3,1.1,0.4,2.8-0.1,4.1c-6.3,13.7-13.3,23.8-22.2,32.2","M65.5,36.3c13,9.1,23.1,22.6,28,33.3"],"バ":["M39.0,36.6c0.3,1.1,0.3,2.8-0.1,4.1c-5.4,13.9-13.0,24.1-21.9,32.4","M65.5,36.3c13,9.1,23.1,22.6,28,33.3","M81.1,21c2.7,1.7,6,5.3,7.7,8.5","M87.5,16.1c3.0,1.5,6.6,4.8,8.6,7.6"],"パ":["M39.0,36.6c0.3,1.1,0.3,2.8-0.1,4.1c-5.4,13.9-13.0,24.1-21.9,32.4","M65.5,36.3c13,9.1,23.1,22.6,28,33.3","M86,30.1c-9.6,0-9.2-14.2,0-14.2c9.7,0.0,9.5,14.2,0,14.2"],"ヒ":["M35.3,44.5c1.7,1.3,4.5,2.1,6.8,1.8c10.2-1.3,17.2-2.8,24.2-4.2c3.0-0.5,7.1-1,9.3-0.8","M31,17.6c1.3,1.2,1.8,3.3,1.8,6.1c0,2.7-0.8,44-0.8,47.2c0,9.7,4,14.6,13.7,14.6c6,0,16.3,0.1,21.3,0c5-0.1,9.5-0.6,13.5-1.5"],"ビ":["M35.3,44.5c1.7,1.3,4.5,2.1,6.8,1.8c10.2-1.3,17.2-2.8,24.2-4.2c3.0-0.5,7.1-1,9.3-0.8","M31,17.6c1.3,1.2,1.8,3.3,1.8,6.1c0,2.7-0.8,44-0.8,47.2c0,9.7,4,14.6,13.7,14.6c6,0,16.3,0.1,21.3,0c5-0.1,9.5-0.6,13.5-1.5","M78.1,26.2c2.7,1.7,6,5.3,7.7,8.5","M84.5,21.3c3.0,1.5,6.6,4.8,8.6,7.6"],"ピ":["M35.3,44.5c1.7,1.3,4.5,2.1,6.8,1.8c10.2-1.3,17.2-2.8,24.2-4.2c3.0-0.5,7.1-1,9.3-0.8","M31,17.6c1.3,1.2,1.8,3.3,1.8,6.1c0,2.7-0.8,44-0.8,47.2c0,9.7,4,14.6,13.7,14.6c6,0,16.3,0.1,21.3,0c5-0.1,9.5-0.6,13.5-1.5","M83,32.8c-9.6,0-9.2-14.2,0-14.2c9.7-0.0,9.5,14.2,0,14.2"],"フ":["M24.5,30c1.8,1.8,3.5,2.0,6.5,1.6c14.5-2,29-4.3,43.7-6.8c6.8-1.1,10.5,2.2,6.8,9.1c-10.3,19.1-21.2,39.5-50.0,53.6"],"ブ":["M24.5,30c1.8,1.8,3.5,2.0,6.5,1.6c14.5-2,29-4.3,43.7-6.8c6.8-1.1,10.5,2.2,6.8,9.1c-10.3,19.1-21.2,39.5-50.0,53.6","M86,15.6c2.6,1.9,5.7,5.9,7.3,9.3","M92.0,10.5c2.8,1.7,6.1,5.4,7.9,8.6"],"プ":["M24.5,30c1.8,1.8,3.5,2.0,6.5,1.6c14.5-2,29-4.3,43.7-6.8c6.8-1.1,10.5,2.2,6.8,9.1c-10.3,19.1-21.2,39.5-50.0,53.6","M92.6,23.8c-9.6,0-9.2-14.2,0-14.2c9.7-0.0,9.5,14.2,0,14.2"],"ヘ":["M15.5,49.0c2.7,1.5,5.3,0.6,6.9-0.9c4.0-4.0,9.4-8.3,12-10.8c3.1-3.2,7.3-5.2,12.0-1.1c11.2,9.8,25.0,21.4,35.7,30.3c4.2,3.5,7.7,6.8,11.2,9.5"],"ベ":["M15.5,49c2.7,1.5,5.3,0.6,6.8-0.8c4-3.8,9.3-8.5,11.8-11c3.1-3.1,7.2-5.0,11.8-1.1c11.1,9.5,26.2,22.5,36.8,31.1c4.2,3.4,7.6,6.6,11.1,9.2","M66.8,27c2.7,1.7,6,5.3,7.7,8.5","M73.2,22.1c3.0,1.5,6.6,4.8,8.6,7.6"],"ペ":["M15.5,49.2c2.7,1.5,5.3,0.6,6.8-0.8c4-3.8,9.1-8.7,11.6-11.2c3.1-3.1,7.2-5.0,11.8-1.1c11.1,9.5,26.2,22,36.8,30.6c4.2,3.4,7.6,6.6,11.1,9.2","M72.7,36.1c-9.6,0-9.2-14.2,0-14.2c9.7,0.0,9.5,14.2,0,14.2"],"ホ":["M22.6,40.3c2.6,1,4.7,1.7,9.1,1.2c17.7-1.8,29.2-2.7,45.3-3.8c3.7-0.2,7.3-0.1,11.1,0.6","M53.7,17.1c1.3,1.8,1.3,4.5,1.3,7.3c0,2.8-0.1,46.6-0.1,51.8c0,23.1-6.2,11.2-9.7,9.6","M27.3,59.3c0.5,9.2-1.3,16.6-6.3,21.8","M73.2,52.7c10.8,9.6,15.5,17.6,16.6,24.8"],"ボ":["M22.6,40.3c2.6,1,4.7,1.7,9.1,1.2c17.7-1.8,29.2-2.7,45.3-3.8c3.7-0.2,7.3-0.1,11.1,0.6","M53.7,17.1c1.3,1.8,1.3,4.5,1.3,7.3c0,2.8-0.1,46.6-0.1,51.8c0,23.1-6.2,11.2-9.7,9.6","M27.3,59.3c0.5,9.2-1.3,16.6-6.3,21.8","M73.5,53c10.8,9.6,15.5,17.6,16.6,24.8","M72.6,17.5c2.7,1.7,6,5.3,7.7,8.5","M79.0,12.6c3.0,1.5,6.6,4.8,8.6,7.6"],"ポ":["M22.6,40.3c2.6,1,4.7,1.7,9.1,1.2c17.7-1.8,29.2-2.7,45.3-3.8c3.7-0.2,7.3-0.1,11.1,0.6","M53.7,17.1c1.3,1.8,1.3,4.5,1.3,7.3c0,2.8-0.1,46.6-0.1,51.8c0,23.1-6.2,11.2-9.7,9.6","M27.3,59.3c0.5,9.2-1.3,16.6-6.3,21.8","M73.5,53c10.8,9.6,15.5,17.6,16.6,24.8","M79.7,25.6c-9.6,0-9.2-14.2,0-14.2c9.7,0.0,9.5,14.2,0,14.2"],"マ":["M21.5,33.7c1.8,1.8,3.5,1.9,6.5,1.6c19.6-2.3,33.5-4,51.2-6.3c6.8-0.9,9.3,1.6,4.3,7.6c-7.1,8.5-17.8,20-28.7,31.6","M43.3,58.8c8.4,6.5,16.6,15.9,20.2,26.2"],"ミ":["M41.8,20c10.4,2.5,20.5,6.3,25,10.3","M42,46.8c10.7,2.6,21.1,6.6,25.7,10.8","M36.5,75c15.7,4.4,30.9,11,37.7,18.1"],"ム":["M53.8,22.5c0.8,1.7,0.7,4.5-0.3,6.8c-9.2,18.3-16.1,30.9-25.2,45.7c-3.7,6.1-3,8.3,4.3,7.1c7.3-1.2,46.6-8.1,49.6-8.8","M72.2,60.1c6.8,6.3,13.6,14.8,16,25.3"],"メ":["M73.3,19.1c0.8,1.7,0.4,4.4-0.3,6.8c-7.7,22.1-21.7,47.6-45,62.8","M39.5,39.5c16.5,7.7,32.1,18,38.5,30.8"],"モ":["M27.8,26.1c2.5,1.1,4.3,1.6,7.4,1.3c11.5-0.9,21.9-2.1,32.7-3.9c2.6-0.4,6.2-0.4,8.3-0.1","M17.5,54.3c2.6,1,4.7,1.4,9.1,0.7c20.2-3.2,33.8-5.3,51.6-6.1c3.7-0.1,7.3,0.2,11.1,0.8","M48.7,29.8c1.1,1.6,1.4,3.6,1.4,6.1c0,6.5-0.6,33.5-0.6,35.8c0,7.6,3.0,11.0,10.5,11.7c5.3,0.4,12.3,0.2,16.3,0c4.4-0.2,6.5-0.7,9.5-1.4"],"ャ":["M25,56.2c1.6,1.2,4.8,1.8,7.9,1.0c14.8-3.6,26.2-6.1,38.4-9.3c17.3-4.5,1.1,11.2-2.1,15.7","M41.1,35.5c1.3,1.1,2,2.1,2.5,4.1c0.5,2,9.4,41.6,9.9,43.7c0.5,2.1,1.7,7.2,2.4,9.8"],"ヤ":["M18,45.7c2.1,1.6,6.1,2.3,10.1,1.3c18.8-4.6,33.3-7.8,48.8-11.8c22-5.7,1.5,14.2-2.7,20","M38.4,19.3c1.6,1.4,2.5,2.6,3.1,5.2c0.6,2.5,11.9,52.9,12.5,55.5c0.6,2.6,2.1,9.1,3.0,12.4"],"ュ":["M34.8,52.8c1.9,1.2,4.1,1.6,7.4,1.2c10.6-1.5,13.9-1.6,21.7-2.9c5.4-0.9,6.2,0.1,5.2,5.1c-1.9,9.2-3.9,19.4-5.2,27.4","M24.5,86.2c2.2,1.2,3.8,1.7,7.3,1.2c18.5-2.7,28.9-3.1,43.5-3.1c3.0,0,5.9,0.4,8.9,0.9"],"ユ":["M29.5,35.3c2.3,1.5,5.1,2.0,9.2,1.5c13.2-1.8,18.0-2.4,27.6-4c6.7-1.1,7.7,0.1,6.5,6.3c-2.3,11.5-4.8,24.5-6.5,34.5","M17,76.8c2.7,1.5,4.7,2.0,9.1,1.5c22.6-2.8,36-3.8,54.1-3.8c3.7,0,7.3,0.5,11.1,1.1"],"ョ":["M33.5,50.6c1.9,1.2,4.0,1.6,7.3,1.2c11.1-1.3,21.3-2.4,29.0-3.4c4.7-0.6,5.4,0.4,5.2,5.1c-0.7,12.5-1.5,24.7-2.4,34.2","M33.6,69.0c1.9,1.2,4.0,1.6,7.3,1.2c8.3-0.9,18.2-1.8,24.8-2.4c2.2-0.2,4.2,0.0,6.2,0.4","M29,90.0c2.2,1.0,3.7,1.3,7.2,1.0c9.9-0.8,23.4-2.3,33.0-2.3c2.7,0,4.4,0,7.4,0.4"],"ヨ":["M29.1,30.1c2.3,1.5,5.1,1.9,9.2,1.5c14-1.6,26.7-3.0,36.3-4.2c6-0.7,6.8,0.5,6.5,6.3c-1,15.5-1.8,30.6-3.0,42.2","M29.2,52.8c2.3,1.5,5.1,1.9,9.2,1.5c10.5-1.2,22.8-2.2,31.1-3.0c2.7-0.2,5.2,0.0,7.7,0.5","M23.5,78.8c2.7,1.3,4.7,1.6,9.1,1.3c12.5-1.0,29.3-2.9,41.3-2.9c3.3,0,5.6,0,9.3,0.5"],"ラ":["M38.6,21.0c2.0,1.8,4.4,2.5,8.0,2.1c9.2-0.9,14.3-2.0,21.5-2.9c2.4-0.3,4.1-0.5,6.5-0.1","M26,41.8c2.3,1.7,5.1,2.2,9.2,1.7c14-1.8,31.2-4.9,40.8-6.3c6-0.8,8.1,0.6,6.2,5.7c-6.8,18.6-22,38.2-45.2,48.6"],"リ":["M35,18.3c1.1,1.5,1.6,3,1.6,4.8c0,1.8,0,25,0,27c0,2,0,6.1,0,7.7","M71,15.3c1.5,1.2,2.3,3.1,2.3,5.3c0,2.2-0.1,28.8-0.1,32.8c0,19.6-9.5,32.2-21.7,40.3"],"ル":["M34.3,31.8c1.1,1.5,1.7,3,1.6,4.8c-1.1,22.8-8.8,40.6-17.5,49.5","M56.5,19.6c1.5,1.2,2.3,3.1,2.3,5.3c0,2.2-0.1,47.6-0.1,51.6c0,10.5,0.5,10.2,9.3,2.7c9.5-8,16.5-14.6,26.3-25.6"],"レ":["M34.5,19.7c1.5,1.2,2.3,3.1,2.3,5.3c0,2.2-0.1,50.1-0.1,54.1c-0.0,8.7-0.1,8.6,9.3,3.7c13.2-6.7,33.3-22.5,43.2-33.5"],"ロ":["M25,33.2c1.5,1.2,2.1,3.1,2.3,5.3c0.9,10.0,2.1,23.6,3.1,34.8c0.3,3.4,0.5,6.5,0.8,9.3","M28.1,36.1c9.2-1,37.6-3.1,45.6-4.2c8-1.1,9.5,0.5,8.3,6.6c-2.1,10.8-4.1,21.8-6.7,34.8","M32,78.1c5.3-0.5,33.6-3,36.5-3c2.8,0,7.8-0.2,11.5,0.2"],"ワ":["M25,23.6c1.5,1.2,2.1,3.1,2.3,5.3c0.9,10.0,0.8,8.1,1.8,19.3c0.3,3.4,0.5,6.5,0.8,9.3","M27.7,26.3c3.1,0.3,5.1,0.2,8.2-0.0c13.7-1.2,27.1-2.3,41.6-3.7c8.0-0.7,9.4,0.5,8.3,6.6c-4.7,27.2-20.6,47.6-43.8,61.5"],"ヲ":["M30.2,25.1c2.3,1.7,5.1,2.1,9.2,1.7c12.3-1.2,21.9-2.6,30.4-3.6c2.8-0.3,5.5-0.6,8.1-0.9","M29,46.6c2.2,1.4,4.4,1.9,8.0,1.4c8.1-1.1,19.9-2.6,28.5-3.7c2.3-0.3,4.6-0.6,6.7-0.9","M78,22.8c0.8,2,0.6,4.6,0.1,7c-4.8,22.5-23.5,47.1-44.1,60.7"],"ン":["M26.5,24.8c5.7,2.1,12.6,8.4,15.7,14.2","M28.6,83.7c2.5,1.6,5.1,0.9,7.7-0.6c20.1-12.1,35-24.6,49.6-41.1"]}};
+/* ================= DATA ================= */
+const $ = id => document.getElementById(id);
+const ITEMS = KANA.items;            // {h, k, r, set, row, col}
+const PATHS = KANA.paths;            // char -> [svg path d, ...] in stroke order (KanjiVG)
+const ROW_LABEL = {a:'あ',k:'か',s:'さ',t:'た',n:'な',h:'は',m:'ま',y:'や',r:'ら',w:'わ',nn:'ん',g:'が',z:'ざ',d:'だ',b:'ば',p:'ぱ',
+  ky:'きゃ',sh:'しゃ',ch:'ちゃ',ny:'にゃ',hy:'ひゃ',my:'みゃ',ry:'りゃ',gy:'ぎゃ',j:'じゃ',by:'びゃ',py:'ぴゃ'};
+const BASIC_ROWS = ['a','k','s','t','n','h','m','y','r','w','nn'];
+const SET_LABEL = {basic:'Basic sounds', dakuten:'Dakuten ゛ (が, ざ, だ, ば)', handakuten:'Handakuten ゜ (ぱ)', combo:'Combinations (きゃ, しゅ…)'};
+const kataOf = s => s.replace(/[ぁ-ゖ]/g, c=>String.fromCharCode(c.charCodeAt(0)+0x60));
+const hiraOf = s => s.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+// readings that trip people up
+const SPECIAL = {shi:'Written <b>shi</b>, not "si".', chi:'Written <b>chi</b>, not "ti".', tsu:'Written <b>tsu</b>: a "ts" sound, as in "cats".',
+  fu:'Written <b>fu</b>: a soft sound between "h" and "f", made without touching your lip to your teeth.', n:'The only kana that is just a consonant. It never starts a word.',
+  wo:'Pronounced like お (o). It is only used as the particle that marks an object: 本<b>を</b>読む.'};
+const TIPS = {
+  'シツ':'シ (shi) vs ツ (tsu): in シ the two short strokes stack down the left side and the long stroke sweeps <b>up</b> from the bottom. In ツ they sit along the top and the long stroke sweeps <b>down</b>.',
+  'ソン':'ソ (so) vs ン (n): in ソ the long stroke starts at the top and falls <b>down</b>. In ン it starts at the bottom and sweeps <b>up</b>.',
+  'ぬめ':'ぬ (nu) vs め (me): ぬ ends with a little <b>loop</b>; め doesn\'t.',
+  'ねれわ':'ね (ne), れ (re) and わ (wa) share the same left side. ね ends in a <b>loop</b>, れ ends with a <b>kick</b> out to the right, わ ends in a smooth <b>curve</b>.',
+  'るろ':'る (ru) has a <b>loop</b> at the bottom; ろ (ro) doesn\'t.',
+  'はほ':'は (ha) vs ほ (ho): ほ has an <b>extra line</b> across the top.',
+  'さち':'さ (sa) and ち (chi) are mirror images. ち bulges to the <b>right</b>, like the number 5.',
+  'きさ':'き (ki) is さ (sa) with <b>one more</b> line across.',
+  'あお':'あ (a) vs お (o): お has a separate <b>dot</b> at the top right.',
+  'クケタ':'ク (ku), ケ (ke), タ (ta): ケ\'s long stroke goes straight <b>through</b>; タ is ク with a small extra stroke <b>inside</b>.',
+  'コユ':'コ (ko) vs ユ (yu): in ユ the bottom line <b>sticks out</b> past the side.',
+  'ノメ':'メ (me) is ノ (no) with a short stroke <b>crossing</b> it.',
+  'チテ':'チ (chi) vs テ (te): in チ the middle stroke <b>crosses down</b> through the line; テ is just lines and a tail.',
+  'ウワフ':'ワ (wa) is ウ (u) without the <b>top dot</b>; フ (fu) is a single hooked stroke.',
+  'スヌ':'ヌ (nu) is ス (su) with an extra short stroke <b>crossing</b> it.',
+  'マム':'マ (ma) points <b>down</b>; ム (mu) is a triangle with a <b>tail</b> on the right.',
+  'いり':'い (i) vs り (ri): り\'s right stroke is much <b>longer</b>, and in many fonts the two strokes join.',
+  'こい':'こ (ko) is two <b>flat</b> strokes; い (i) is two <b>upright</b> ones.',
+};
+const LOOKALIKE = {};   // char -> set of chars that look similar
+for (const g of Object.keys(TIPS)) for (const c of g) for (const d of g) if (c!==d) (LOOKALIKE[c]=LOOKALIKE[c]||new Set()).add(d);
+for (const g of ['あおめぬ','うらつ','くへ','けはほに','しもつ','すむお','せさや','そろる','まもほよ','みる','ゆよぬ','をちと','てそと','たなに',
+                 'シツンソリノ','クケタワウフヌスラ','コユヨロエ','チテナメ','ハルソヘト','マムアヤフ','サセキヒモ','オホ','ニミ','ルレ'])
+  for (const c of g) for (const d of g) if (c!==d) (LOOKALIKE[c]=LOOKALIKE[c]||new Set()).add(d);
+const tipFor = ch => Object.entries(TIPS).filter(([g])=>g.includes(ch)).map(([,t])=>t);
+
+/* ================= STORAGE ================= */
+const P='jkana_';
+const store = (() => { const mem={}; let ok=false;
+  try { localStorage.setItem('__jkana','1'); localStorage.removeItem('__jkana'); ok=true; } catch(e){}
+  return { persistent:ok, get(k){ try { return ok?localStorage.getItem(k):(k in mem?mem[k]:null); } catch(e){ return null; } },
+           set(k,v){ try { if(ok) localStorage.setItem(k,v); else mem[k]=v; } catch(e){ mem[k]=v; } } }; })();
+const loadJSON = k => { try { return JSON.parse(store.get(k)||'null'); } catch(e){ return null; } };
+const LS={stats:P+'stats_v1',filters:P+'filters_v1',srs:P+'srs_v1',srsT:P+'srs_time_v1',peers:P+'peers_v1',device:P+'device_v1',dark:P+'dark_v1',auto:P+'autoplay_v1',dir:P+'dir_v1',drawn:P+'drawn_v1'};
+const blankStats = () => ({c:0,t:0,chars:{},sets:{},pairs:{}});
+let lifetime = loadJSON(LS.stats)||blankStats(), session=blankStats(), streak=0;
+let filters = Object.assign({script:'h', rows:[...BASIC_ROWS], sets:['basic'], srs:true, auto:true}, loadJSON(LS.filters)||{});
+const saveFilters = () => store.set(LS.filters, JSON.stringify(filters));
+let srs=loadJSON(LS.srs)||{}, srsT=loadJSON(LS.srsT)||{}, peers=loadJSON(LS.peers)||{}, drawn=loadJSON(LS.drawn)||{};
+let deviceId=store.get(LS.device); if (!deviceId){ deviceId=Math.random().toString(36).slice(2,10); store.set(LS.device,deviceId); }
+function addStats(a,b){ const o={c:a.c+b.c,t:a.t+b.t,chars:{},sets:{},pairs:{}};
+  for (const k of ['chars','sets','pairs']) for (const s of [a[k],b[k]]) for (const key in (s||{})){ const x=o[k][key]||(o[k][key]={c:0,t:0}); x.c+=s[key].c; x.t+=s[key].t; }
+  return o; }
+let combined; const recombine=()=>{ combined=Object.values(peers).reduce((acc,p)=>addStats(acc,p.stats), addStats(blankStats(),lifetime)); }; recombine();
+
+/* ================= QUIZ ================= */
+let dir = store.get(LS.dir)||'k2r';          // k2r: see kana, pick romaji · r2k: see romaji, pick kana · mix
+let current=null, answered=false, recent=[], autoTimer=null;
+const glyph = (it, s) => s==='k' ? it.k : it.h;
+function activeItems(){
+  return ITEMS.filter(it => filters.sets.includes(it.set) && (it.set!=='basic' || filters.rows.includes(it.row)));
+}
+function buildPool(){
+  const scripts = filters.script==='both' ? ['h','k'] : [filters.script];
+  const pool=[];
+  for (const it of activeItems()) for (const s of scripts) pool.push({it, s});
+  return pool;
+}
+const pairKey = (ch, d) => ch+'|'+d;
+const SRS_W=[5,2,1,0.5,0.25];
+function weight(q, d){ if (!filters.srs) return 1; const l=srs[pairKey(glyph(q.it,q.s),d)]; return l===undefined ? 1 : SRS_W[Math.min(l,4)]; }
+function nextQuestion(){
+  clearTimeout(autoTimer); TTS.stop();
+  const pool=buildPool();
+  $('quizBody').classList.toggle('hidden', !pool.length); $('emptyPool').classList.toggle('hidden', !!pool.length);
+  if (!pool.length) return;
+  const d = dir==='mix' ? (Math.random()<.5?'k2r':'r2k') : dir;
+  let cand=pool.filter(q=>!recent.includes(glyph(q.it,q.s))); if (!cand.length) cand=pool;
+  const ws=cand.map(q=>weight(q,d)); let r=Math.random()*ws.reduce((a,b)=>a+b,0), i=0;
+  while (i<cand.length-1 && (r-=ws[i])>0) i++;
+  const q=cand[i]; recent=[glyph(q.it,q.s),...recent].slice(0, Math.min(6, Math.floor(pool.length/2)));
+  current={...q, d, ch:glyph(q.it,q.s)}; answered=false;
+  renderQuestion();
+}
+const scriptName = s => s==='k' ? 'Katakana' : 'Hiragana';
+const sameSound = (a,b) => a.r===b.r || (a.r==='wo'&&b.r==='o') || (a.r==='o'&&b.r==='wo');
+function renderQuestion(){
+  const {it,s,d,ch}=current;
+  const dup = ITEMS.find(o=>o!==it && o.r===it.r);            // じ/ぢ and ず/づ share a reading
+  if (d==='k2r'){
+    $('qPrompt').className='qprompt kana'; $('qPrompt').textContent=ch;
+    $('qSub').textContent=`${scriptName(s)} · what sound is this?`;
+  } else {
+    $('qPrompt').className='qprompt roma'; $('qPrompt').textContent=it.r;
+    $('qSub').textContent=`Pick the ${scriptName(s).toLowerCase()}`+(dup ? ` · the ${ROW_LABEL[it.row]}-row one` : '');
+  }
+  // options
+  const same = ITEMS.filter(o=>o!==it && o.set===it.set);
+  const look = [...(LOOKALIKE[ch]||[])].map(c=>ITEMS.find(o=>glyph(o,s)===c)).filter(Boolean);
+  const near = same.filter(o=>o.row===it.row || o.col===it.col);
+  // trap for combinations: the same pair written with a full-size や/ゆ/よ (きや = ki-ya, not kya)
+  const extra = it.set==='combo' ? [{h:it.h[0]+String.fromCharCode(it.h.charCodeAt(1)+1), r:'fake:'+it.r, fake:true}] : [];
+  const pick=[]; const seen=new Set([d==='k2r'?it.r:ch]);
+  const tryAdd = o => { if (!o || pick.length>=3) return; const key = d==='k2r' ? o.r : (o.fake ? (s==='k'?kataOf(o.h):o.h) : glyph(o,s));
+    if (seen.has(key) || sameSound(o,it)) return; seen.add(key); pick.push(o); };
+  shuffle(look).slice(0,2).forEach(tryAdd);
+  if (d==='r2k') shuffle(extra).forEach(tryAdd);
+  shuffle(near).forEach(tryAdd); shuffle(same).forEach(tryAdd);
+  shuffle(ITEMS.filter(o=>o!==it)).forEach(tryAdd);
+  const opts = shuffle([{o:it,right:true}, ...pick.map(o=>({o}))]);
+  $('choices').className='choices '+(d==='k2r'?'roma':'kana');
+  $('choices').innerHTML = opts.map(({o,right},i)=>{
+    const label = d==='k2r' ? o.r : (o.fake ? (s==='k'?kataOf(o.h):o.h) : glyph(o,s));
+    return `<button type="button" class="choice" data-right="${right?1:0}" data-label="${label}"><span class="k">${i+1}</span><span class="cv">${label}</span></button>`;
+  }).join('');
+  $('feedback').innerHTML='';
+  $('nextBtn').classList.add('hidden');
+}
+function shuffle(a){ a=[...a]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function record(st, ch, set, ok, d){
+  const b=(o,k)=>{ o[k]=o[k]||{c:0,t:0}; o[k].t++; if (ok) o[k].c++; };
+  st.t++; if (ok) st.c++; b(st.chars,ch); b(st.sets,set); b(st.pairs,pairKey(ch,d));
+}
+function choose(btn){
+  if (!current || answered) return;
+  answered=true;
+  const ok = btn.dataset.right==='1', {it,s,d,ch}=current;
+  record(session,ch,it.set,ok,d); record(lifetime,ch,it.set,ok,d);
+  const k=pairKey(ch,d), prev=srs[k]; srs[k] = !ok ? 0 : prev===undefined ? 2 : Math.min(prev+1,4); srsT[k]=Date.now();
+  store.set(LS.stats,JSON.stringify(lifetime)); store.set(LS.srs,JSON.stringify(srs)); store.set(LS.srsT,JSON.stringify(srsT)); recombine();
+  streak = ok ? streak+1 : 0; updateScore();
+  document.querySelectorAll('.choice').forEach(b=>{ b.disabled=true; if (b.dataset.right==='1') b.classList.add('right'); else if (b===btn) b.classList.add('wrong'); });
+  const notes=[];
+  if (SPECIAL[it.r]) notes.push(SPECIAL[it.r]);
+  if (it.r==='ji'||it.r==='zu') notes.push('じ and ぢ are both read <b>ji</b>, and ず and づ are both <b>zu</b>. ぢ and づ are rare: they mostly appear in words like 鼻血 (はなぢ) and 続く (つづく).');
+  if (it.set==='combo') notes.push(`A small ${s==='k'?kataOf(it.h[1]):it.h[1]} joins the sound before it into one beat: ${glyph(it,s)} is <b>${it.r}</b>, not "${it.r.replace(/^(.)y?/,'$1i-y')}".`);
+  const wrongLabel = !ok ? btn.dataset.label : null;
+  let tips=[];
+  if (!ok){ const wrongCh = d==='r2k' ? wrongLabel : glyph(ITEMS.find(o=>o.r===wrongLabel)||it, s); tips=[...new Set([...tipFor(ch), ...tipFor(wrongCh)])].filter(t=>t.includes(ch)||t.includes(wrongCh)); }
+  $('feedback').innerHTML = `<div class="feedback ${ok?'ok':'bad'}">
+    <div class="head">${ok?'Correct!':`Not quite — you picked ${wrongLabel}`}</div>
+    <div class="ans"><span class="big">${ch}</span><span class="rom">${it.r}</span>${speakBtn(ch)}
+      ${it.set!=='combo' ? `<button type="button" class="drawlink" data-ch="${ch}">✏️ Practice writing</button>` : ''}</div>
+    ${notes.map(n=>`<div class="note">${n}</div>`).join('')}
+    ${tips.map(t=>`<div class="tip">👀 ${t}</div>`).join('')}
+    <div class="reportline"><a href="${reportHref(it,s,d,wrongLabel)}">⚑ Report a mistake in this question</a></div></div>`;
+  $('nextBtn').classList.remove('hidden');
+  if (autoT.checked) TTS.say(ch);
+  if (ok && filters.auto && !notes.length) autoTimer=setTimeout(nextQuestion, 900);
+}
+function updateScore(){ $('sScore').textContent=`${session.c} / ${session.t}`; $('sStreak').textContent=streak; }
+const REPORT_TO='support.kohikori@gmail.com';
+function reportHref(it,s,d,given){
+  const subj=`Mistake report: Kana Quiz – ${glyph(it,s)} (${it.r})`;
+  const body=['App: Kana Quiz',`Character: ${glyph(it,s)} (${scriptName(s)}) – ${it.r}`,`Direction: ${d==='k2r'?'kana → romaji':'romaji → kana'}`,`My answer: ${given||'(correct)'}`,'','What looks wrong:',''].join('\n');
+  return 'mailto:'+REPORT_TO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
+function setDir(d){
+  dir=d; store.set(LS.dir,d);
+  document.querySelectorAll('.dirbtn').forEach(b=>b.classList.toggle('on', b.dataset.dir===d));
+}
+document.querySelectorAll('.dirbtn').forEach(b=>b.addEventListener('click',()=>{ setDir(b.dataset.dir); nextQuestion(); }));
+$('choices').addEventListener('click',e=>{ const b=e.target.closest('.choice'); if (b) choose(b); });
+$('nextBtn').addEventListener('click',nextQuestion);
+$('feedback').addEventListener('click',e=>{
+  const s=e.target.closest('.speak'); if (s){ TTS.say(s.dataset.say); return; }
+  const d=e.target.closest('.drawlink'); if (d){ clearTimeout(autoTimer); openDraw(d.dataset.ch); }
+});
+document.addEventListener('keydown',e=>{
+  if ($('tab-quiz').classList.contains('hidden')) return;
+  if (!answered && /^[1-4]$/.test(e.key)){ const b=document.querySelectorAll('.choice')[+e.key-1]; if (b) choose(b); }
+  else if (answered && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); nextQuestion(); }
+});
+
+/* ================= LEARN ================= */
+let learnScript='h';
+function cell(it, s){
+  if (!it) return '<div class="kc empty"></div>';
+  const ch=glyph(it,s), odd=['shi','chi','tsu','fu','ji','zu','wo','n'].includes(it.r);
+  return `<button type="button" class="kc${odd?' odd':''}" data-say="${ch}"><span class="kg">${ch}</span><span class="kr">${it.r}</span>${it.set!=='combo'?`<span class="pen" data-ch="${ch}" title="Practice writing">✏️</span>`:''}</button>`;
+}
+function table(set, rows, cols, colLabels){
+  let h=`<div class="ktable" style="--cols:${cols}"><div class="kh"></div>${colLabels.map(c=>`<div class="kh">${c}</div>`).join('')}`;
+  for (const row of rows){
+    h+=`<div class="kh rowl">${row==='a'?'—':row==='nn'?'n':row}</div>`;
+    for (let c=0;c<cols;c++) h+=cell(ITEMS.find(o=>o.set===set && o.row===row && o.col===c), learnScript);
+  }
+  return h+'</div>';
+}
+function renderLearn(){
+  const s=learnScript, K=x=>s==='k'?kataOf(x):x;
+  let h=`<div class="seg">${[['h','ひらがな Hiragana'],['k','カタカナ Katakana']].map(([v,l])=>`<button type="button" class="segbtn${s===v?' on':''}" data-s="${v}">${l}</button>`).join('')}</div>`;
+  h+=`<p class="lead">${s==='h'
+    ? 'Hiragana is the first script to learn. It writes native Japanese words and all the grammar endings (食べ<b>ます</b>, 高<b>い</b>).'
+    : 'Katakana writes the same sounds as hiragana. It\'s used mostly for words from other languages (コーヒー, coffee) and for names and emphasis.'}
+    Each row shares a consonant and each column a vowel, so <b>${K('か')}</b> is k + a. Tap a character to hear it, or ✏️ to practice writing it.</p>`;
+  h+=`<h3>Basic sounds</h3>`+table('basic', BASIC_ROWS, 5, ['a','i','u','e','o']);
+  h+=`<p class="note2">Highlighted readings don't follow the pattern: <b>${K('し')}</b> shi, <b>${K('ち')}</b> chi, <b>${K('つ')}</b> tsu, <b>${K('ふ')}</b> fu, <b>${K('を')}</b> wo (said "o"), and <b>${K('ん')}</b> n.</p>`;
+  h+=`<h3>Dakuten ゛ (two small marks)</h3><p class="note2">The marks make the consonant "voiced": k → g, s → z, t → d, h → b. ${K('か')} ka → ${K('が')} ga.</p>`+table('dakuten',['g','z','d','b'],5,['a','i','u','e','o']);
+  h+=`<p class="note2">${K('ぢ')} and ${K('づ')} sound the same as ${K('じ')} and ${K('ず')} and are rarely used.</p>`;
+  h+=`<h3>Handakuten ゜ (small circle)</h3><p class="note2">Only the h-row takes the circle, which turns h into p: ${K('は')} ha → ${K('ぱ')} pa.</p>`+table('handakuten',['p'],5,['a','i','u','e','o']);
+  h+=`<h3>Combinations (small ${K('ゃ')} ${K('ゅ')} ${K('ょ')})</h3><p class="note2">An i-column character plus a <b>small</b> ${K('や')}, ${K('ゆ')} or ${K('よ')} makes one blended sound: ${K('き')} + ${K('ゃ')} = ${K('きゃ')} kya. Written full-size (${K('きや')}), it would be two sounds, ki-ya.</p>`
+    +table('combo',['ky','sh','ch','ny','hy','my','ry','gy','j','by','py'],3,['ya','yu','yo']);
+  $('learnBody').innerHTML=h;
+}
+$('learnBody').addEventListener('click',e=>{
+  const sb=e.target.closest('.segbtn'); if (sb){ learnScript=sb.dataset.s; renderLearn(); return; }
+  const pen=e.target.closest('.pen'); if (pen){ e.stopPropagation(); openDraw(pen.dataset.ch); return; }
+  const c=e.target.closest('.kc'); if (c && c.dataset.say) TTS.say(c.dataset.say);
+});
+
+/* ================= DRAW ================= */
+const NS='http://www.w3.org/2000/svg';
+let drawCh='あ', drawScript='h', strokeIdx=0, tries=0, samples=[], inking=null, inkPts=[], memory=false, watching=false;
+const drawList = () => ITEMS.filter(o=>o.set!=='combo').map(o=>glyph(o,drawScript));
+function openDraw(ch){
+  drawScript = /[ァ-ヶ]/.test(ch) ? 'k' : 'h';
+  switchTab('draw'); setDrawChar(ch);
+}
+function setDrawChar(ch){
+  drawCh=ch; strokeIdx=0; tries=0; watching=false;
+  const it=ITEMS.find(o=>o.h===ch||o.k===ch);
+  $('drawRom').innerHTML=`<span class="dch">${ch}</span> <span class="drom">${it?it.r:''}</span> ${speakBtn(ch)}`;
+  document.querySelectorAll('#drawStrip .sc').forEach(b=>b.classList.toggle('on', b.dataset.ch===ch));
+  const on=document.querySelector('#drawStrip .sc.on'); if (on) on.scrollIntoView({block:'nearest',inline:'center'});
+  buildCanvas();
+}
+function renderDrawStrip(){
+  $('drawSeg').innerHTML=[['h','ひらがな'],['k','カタカナ']].map(([v,l])=>`<button type="button" class="segbtn${drawScript===v?' on':''}" data-s="${v}">${l}</button>`).join('');
+  $('drawStrip').innerHTML=drawList().map(c=>`<button type="button" class="sc${c===drawCh?' on':''}${drawn[c]?' done':''}" data-ch="${c}">${c}</button>`).join('');
+}
+function buildCanvas(){
+  const svg=$('pad'); svg.innerHTML='';
+  const g=(tag,attrs,parent=svg)=>{ const e=document.createElementNS(NS,tag); for (const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; };
+  g('line',{x1:54.5,y1:4,x2:54.5,y2:105,class:'gridl'}); g('line',{x1:4,y1:54.5,x2:105,y2:54.5,class:'gridl'});
+  const guide=g('g',{class:'guide'+(memory?' hide':'')});
+  const done=g('g',{class:'done'}); g('g',{class:'hint',id:'hintLayer'}); g('polyline',{class:'ink',id:'ink',points:''});
+  samples=[];
+  (PATHS[drawCh]||[]).forEach((d,i)=>{
+    const p=g('path',{d},guide); const L=p.getTotalLength(), N=28, pts=[];
+    for (let j=0;j<N;j++){ const q=p.getPointAtLength(L*j/(N-1)); pts.push([q.x,q.y]); }
+    samples.push({d, L, pts});
+  });
+  showNextDot(); setDrawStatus();
+}
+function showNextDot(){
+  const hl=$('hintLayer'); if (!hl) return; hl.innerHTML='';
+  const s=samples[strokeIdx]; if (!s || (memory && tries<1)) return;
+  const [x,y]=s.pts[0], [x2,y2]=s.pts[3];
+  const c=document.createElementNS(NS,'circle'); c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',4.2); c.setAttribute('class','startdot'); hl.appendChild(c);
+  const t=document.createElementNS(NS,'text'); t.setAttribute('x',x); t.setAttribute('y',y+1.6); t.setAttribute('class','startnum'); t.textContent=strokeIdx+1; hl.appendChild(t);
+  if (tries>=2){ const p=document.createElementNS(NS,'path'); p.setAttribute('d',s.d); p.setAttribute('class','hintpath'); hl.appendChild(p); }
+}
+function setDrawStatus(msg, cls){
+  const n=samples.length;
+  $('drawStatus').className='drawstatus '+(cls||'');
+  $('drawStatus').innerHTML = msg || (strokeIdx<n ? `Stroke <b>${strokeIdx+1}</b> of ${n}` + (strokeIdx===0?' · start at the green dot':'') : '');
+}
+function svgPoint(e){ const svg=$('pad'), pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; const r=pt.matrixTransform(svg.getScreenCTM().inverse()); return [r.x,r.y]; }
+function resample(pts,N){
+  const out=[], segs=[0]; for (let i=1;i<pts.length;i++) segs.push(segs[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+  const L=segs[segs.length-1]; if (!L) return null;
+  let k=0; for (let j=0;j<N;j++){ const t=L*j/(N-1); while (k<segs.length-2 && segs[k+1]<t) k++;
+    const f=(t-segs[k])/((segs[k+1]-segs[k])||1); out.push([pts[k][0]+(pts[k+1][0]-pts[k][0])*f, pts[k][1]+(pts[k+1][1]-pts[k][1])*f]); }
+  return {pts:out, L};
+}
+function smooth(pts){   // a finger wobbles; average neighbouring points so short strokes aren't judged on jitter
+  if (pts.length<5) return pts;
+  return pts.map((p,i)=>{ const a=pts[Math.max(0,i-2)], b=pts[Math.max(0,i-1)], c=pts[Math.min(pts.length-1,i+1)], d=pts[Math.min(pts.length-1,i+2)];
+    return i===0||i===pts.length-1 ? p : [(a[0]+b[0]+p[0]+c[0]+d[0])/5,(a[1]+b[1]+p[1]+c[1]+d[1])/5]; });
+}
+function judge(user){
+  const s=samples[strokeIdx], N=s.pts.length, u=resample(smooth(user),N); if (!u || u.L<2) return null;   // a tap, not a stroke
+  const mean=(a,b)=>a.reduce((acc,p,i)=>acc+Math.hypot(p[0]-b[i][0],p[1]-b[i][1]),0)/a.length;
+  const m=mean(u.pts,s.pts), mRev=mean([...u.pts].reverse(),s.pts);
+  const d0=Math.hypot(u.pts[0][0]-s.pts[0][0],u.pts[0][1]-s.pts[0][1]), d1=Math.hypot(u.pts[N-1][0]-s.pts[N-1][0],u.pts[N-1][1]-s.pts[N-1][1]);
+  const tolM=Math.max(9,Math.min(12,s.L*.3)), tolE=Math.max(13,Math.min(22,s.L*.45)), tolX=Math.max(13,Math.min(22,s.L*.3));
+  const far=Math.max(...u.pts.map((p,i)=>Math.hypot(p[0]-s.pts[i][0],p[1]-s.pts[i][1])));   // where a missing loop or curve shows up
+  if (mRev+2<m && mRev<tolM) return 'reverse';
+  if (m<tolM && far<tolX && d0<tolE && d1<tolE*1.15 && u.L>s.L*.35 && u.L<s.L*2.5+12) return 'ok';
+  return d0>=tolE ? 'start' : 'shape';
+}
+const pad=$('pad');
+pad.addEventListener('pointerdown',e=>{
+  if (watching || strokeIdx>=samples.length) return;
+  e.preventDefault(); pad.setPointerCapture(e.pointerId); inking=e.pointerId; inkPts=[svgPoint(e)]; $('ink').setAttribute('points','');
+});
+pad.addEventListener('pointermove',e=>{
+  if (inking!==e.pointerId) return; e.preventDefault();
+  const co = e.getCoalescedEvents ? e.getCoalescedEvents() : [], evs = co.length ? co : [e];
+  for (const ev of evs) inkPts.push(svgPoint(ev));
+  $('ink').setAttribute('points', inkPts.map(p=>p.join(',')).join(' '));
+});
+const endInk = e=>{
+  if (inking!==e.pointerId) return; inking=null;
+  const res=judge(inkPts); $('ink').setAttribute('points','');
+  if (!res) return;
+  if (res==='ok'){
+    const p=document.createElementNS(NS,'path'); p.setAttribute('d',samples[strokeIdx].d); document.querySelector('#pad .done').appendChild(p);
+    strokeIdx++; tries=0;
+    if (strokeIdx>=samples.length){
+      drawn[drawCh]=(drawn[drawCh]||0)+1; store.set(LS.drawn,JSON.stringify(drawn));
+      const b=document.querySelector(`#drawStrip .sc[data-ch="${drawCh}"]`); if (b) b.classList.add('done');
+      $('hintLayer').innerHTML=''; setDrawStatus('✓ Well done! <button type="button" class="btn small" id="drawNext">Next ›</button>','good');
+      TTS.say(drawCh); return;
+    }
+    showNextDot(); setDrawStatus();
+  } else {
+    tries++;
+    const msg = res==='reverse' ? 'Right shape, wrong direction. Start at the green dot.' : res==='start' ? 'Start at the green dot and follow the gray stroke.' : 'Close! Follow the gray stroke a little more closely.';
+    showNextDot(); setDrawStatus(`${msg}${tries>=2?' The stroke is shown in green.':''}`,'warn');
+    pad.classList.remove('shake'); void pad.offsetWidth; pad.classList.add('shake');
+  }
+};
+pad.addEventListener('pointerup',endInk); pad.addEventListener('pointercancel',endInk);
+async function watch(){
+  if (watching) return; watching=true; strokeIdx=0; tries=0;
+  document.querySelector('#pad .done').innerHTML=''; $('hintLayer').innerHTML=''; setDrawStatus('Watch the stroke order…');
+  for (const s of samples){
+    const p=document.createElementNS(NS,'path'); p.setAttribute('d',s.d); p.setAttribute('class','anim');
+    p.style.strokeDasharray=s.L; p.style.strokeDashoffset=s.L; document.querySelector('#pad .done').appendChild(p);
+    await new Promise(r=>requestAnimationFrame(r));
+    p.style.transition=`stroke-dashoffset ${Math.max(.35,s.L/90)}s ease-in-out`; p.style.strokeDashoffset=0;
+    await new Promise(r=>setTimeout(r, Math.max(350,s.L/90*1000)+180));
+    if (!watching) return;
+  }
+  await new Promise(r=>setTimeout(r,500));
+  if (!watching) return;
+  watching=false; document.querySelector('#pad .done').innerHTML=''; showNextDot(); setDrawStatus('Now you try. '+`Stroke <b>1</b> of ${samples.length}`);
+}
+$('drawWatch').addEventListener('click',watch);
+$('drawReset').addEventListener('click',()=>setDrawChar(drawCh));
+$('drawMemory').addEventListener('click',()=>{ memory=!memory; $('drawMemory').classList.toggle('on',memory); $('drawMemory').textContent=memory?'🙈 From memory: on':'🙈 From memory'; setDrawChar(drawCh); });
+const stepChar = k => { const L=drawList(), i=L.indexOf(drawCh); setDrawChar(L[(i+k+L.length)%L.length]); };
+$('drawPrev').addEventListener('click',()=>stepChar(-1));
+$('drawNextBtn').addEventListener('click',()=>stepChar(1));
+$('drawStatus').addEventListener('click',e=>{ if (e.target.id==='drawNext') stepChar(1); });
+$('drawRom').addEventListener('click',e=>{ const s=e.target.closest('.speak'); if (s) TTS.say(s.dataset.say); });
+$('drawSeg').addEventListener('click',e=>{ const b=e.target.closest('.segbtn'); if (!b) return; const ch=drawCh;
+  drawScript=b.dataset.s; renderDrawStrip(); setDrawChar(drawScript==='k'?kataOf(ch):hiraOf(ch)); });
+$('drawStrip').addEventListener('click',e=>{ const b=e.target.closest('.sc'); if (b) setDrawChar(b.dataset.ch); });
+
+/* ================= FILTERS ================= */
+function renderFilters(){
+  let h=`<h3>Script</h3><div class="checks">${[['h','Hiragana ひらがな'],['k','Katakana カタカナ'],['both','Both']].map(([v,l])=>
+    `<label><input type="radio" name="script" value="${v}" ${filters.script===v?'checked':''}> ${l}</label>`).join('')}</div>`;
+  h+=`<h3>Basic rows<span class="small-links"><a data-rows="all">all</a><a data-rows="none">none</a></span></h3><div class="rows">${BASIC_ROWS.map(r=>
+    `<label class="rowchip${filters.rows.includes(r)?' on':''}"><input type="checkbox" data-k="rows" value="${r}" ${filters.rows.includes(r)?'checked':''}> ${ROW_LABEL[r]}${r==='w'?'・を':''}</label>`).join('')}</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px">New to kana? Start with just the あ and か rows, then add a row at a time.</div>`;
+  h+=`<h3>More sets</h3><div class="checks">${['basic','dakuten','handakuten','combo'].map(k=>
+    `<label><input type="checkbox" data-k="sets" value="${k}" ${filters.sets.includes(k)?'checked':''}> ${SET_LABEL[k]}</label>`).join('')}</div>`;
+  h+=`<h3>Practice</h3><div class="checks">
+    <label style="grid-column:1/-1"><input type="checkbox" id="fSrs" ${filters.srs?'checked':''}> Focus on weak spots <span style="color:var(--muted)">— characters you miss come up more often</span></label>
+    <label style="grid-column:1/-1"><input type="checkbox" id="fAuto" ${filters.auto?'checked':''}> Move on automatically after a correct answer</label></div>`;
+  $('filterBody').innerHTML=h; $('poolInfo').textContent=`${buildPool().length} characters with current filters.`;
+}
+$('filterBody').addEventListener('change',e=>{
+  const t=e.target;
+  if (t.name==='script') filters.script=t.value;
+  else if (t.dataset.k) filters[t.dataset.k]=[...document.querySelectorAll(`input[data-k="${t.dataset.k}"]:checked`)].map(x=>x.value);
+  else if (t.id==='fSrs') filters.srs=t.checked; else if (t.id==='fAuto') filters.auto=t.checked;
+  saveFilters(); renderFilters();
+});
+$('filterBody').addEventListener('click',e=>{ const r=e.target.dataset.rows; if (!r) return; filters.rows = r==='all'?[...BASIC_ROWS]:[]; saveFilters(); renderFilters(); });
+
+/* ================= STATS ================= */
+const pct = o => o&&o.t ? Math.round(100*o.c/o.t) : null;
+function heat(s){
+  const cells=ITEMS.filter(o=>o.set==='basic'||o.set==='dakuten'||o.set==='handakuten');
+  return `<div class="heat">${cells.map(o=>{ const ch=glyph(o,s), p=pct(combined.chars[ch]);
+    const bg = p===null ? 'var(--pill)' : p>=85 ? 'var(--okbg)' : p>=60 ? '#fff3bf' : 'var(--badbg)';
+    const bd = p===null ? 'var(--line)' : p>=85 ? 'var(--ok)' : p>=60 ? '#e8a300' : 'var(--bad)';
+    return `<div class="hc" style="background:${bg};border-color:${bd}" title="${o.r}${p!==null?' · '+p+'%':''}">${ch}</div>`; }).join('')}</div>`;
+}
+function renderStats(){
+  const L=combined; renderSyncInfo();
+  let h=`<div class="totals"><div>Session<b>${session.c} / ${session.t}</b>${pct(session)!==null?pct(session)+'%':''}</div>
+    <div>Lifetime<b>${L.c} / ${L.t}</b>${pct(L)!==null?pct(L)+'%':''}</div></div>`;
+  h+=`<h3>Hiragana</h3>${heat('h')}<h3>Katakana</h3>${heat('k')}
+    <div class="legend2"><span class="sw" style="background:var(--okbg);border-color:var(--ok)"></span>85%+ <span class="sw" style="background:#fff3bf;border-color:#e8a300"></span>60–84% <span class="sw" style="background:var(--badbg);border-color:var(--bad)"></span>under 60% <span class="sw" style="background:var(--pill)"></span>not seen yet</div>`;
+  const missed=Object.entries(L.chars).map(([c,o])=>[c,o,o.t-o.c]).filter(x=>x[2]>0).sort((a,b)=>b[2]-a[2]).slice(0,10);
+  h+=`<h3>Most missed</h3>`+(missed.length?`<table><tr><th>Character</th><th>Reading</th><th class="num">Missed</th><th class="num">Accuracy</th></tr>`+
+    missed.map(([c,o,m])=>{ const it=ITEMS.find(x=>x.h===c||x.k===c); return `<tr><td style="font-size:22px">${c}</td><td>${it?it.r:''} ${speakBtn(c)}</td><td class="num">${m}</td><td class="num">${pct(o)}%</td></tr>`; }).join('')+'</table>'
+    : '<div style="color:var(--muted);font-size:14px">None yet.</div>');
+  const nd=Object.keys(drawn).length; if (nd) h+=`<h3>Writing practice</h3><div style="font-size:14px">${nd} character${nd===1?'':'s'} traced so far.</div>`;
+  $('statsBody').innerHTML=h;
+}
+$('statsBody').addEventListener('click',e=>{ const b=e.target.closest('.speak'); if (b) TTS.say(b.dataset.say); });
+$('resetBtn').addEventListener('click',()=>{
+  if (!confirm('Reset all lifetime stats? This cannot be undone.')) return;
+  lifetime=blankStats(); srs={}; srsT={}; peers={}; drawn={};
+  for (const [k,v] of [[LS.stats,lifetime],[LS.srs,{}],[LS.srsT,{}],[LS.peers,{}],[LS.drawn,{}]]) store.set(k,JSON.stringify(v));
+  recombine(); renderStats(); updateScore();
+});
+const fmtDate = ms => new Date(ms).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+function renderSyncInfo(){ const ids=Object.keys(peers);
+  $('syncInfo').innerHTML=`This device: ${lifetime.t} answers`+(ids.length?` · Imported from ${ids.length} other device${ids.length>1?'s':''}: `+ids.map(id=>`${peers[id].stats.t} answers (as of ${fmtDate(peers[id].at)})`).join(', '):' · No other devices imported yet'); }
+$('exportBtn').addEventListener('click',()=>{
+  const data={app:'jkana-quiz',version:1,exportedAt:Date.now(),device:deviceId,own:lifetime,peers,srs,srsT};
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
+  a.download=`kana-quiz-progress-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  $('syncMsg').innerHTML='<span style="color:var(--ok)">Exported. Import this file on your other device.</span>';
+});
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async e=>{
+  const f=e.target.files[0]; e.target.value=''; if (!f) return;
+  let d; try { d=JSON.parse(await f.text()); } catch(err){ d=null; }
+  if (d && d.app==='kohikori-backup') d=(d.apps||{})['kana'];   // all-in-one backup from the home page
+  if (!d || d.app!=='jkana-quiz' || !d.own){ $('syncMsg').innerHTML='<span style="color:var(--bad)">That file isn\'t a kana quiz export.</span>'; return; }
+  if (d.device===deviceId){ $('syncMsg').innerHTML='<span style="color:var(--bad)">That file came from this device, so there\'s nothing new to add.</span>'; return; }
+  const incoming={...(d.peers||{}), [d.device]:{at:d.exportedAt, stats:d.own}};
+  if (!(d.own && d.own.t)) delete incoming[d.device];
+  let devs=0, pairs=0;
+  for (const id in incoming){ if (id===deviceId||!incoming[id]||!incoming[id].stats) continue; if (!peers[id]||incoming[id].at>peers[id].at){ peers[id]=incoming[id]; devs++; } }
+  for (const k in (d.srs||{})){ const t=(d.srsT||{})[k]||0; if (srs[k]===undefined||t>(srsT[k]||0)){ srs[k]=d.srs[k]; srsT[k]=t; pairs++; } }
+  store.set(LS.peers,JSON.stringify(peers)); store.set(LS.srs,JSON.stringify(srs)); store.set(LS.srsT,JSON.stringify(srsT)); recombine(); renderStats();
+  $('syncMsg').innerHTML = devs||pairs ? `<span style="color:var(--ok)">Imported: updated results from ${devs} device${devs===1?'':'s'} and ${pairs} weak-spot entr${pairs===1?'y':'ies'}.</span>`
+    : '<span style="color:var(--muted)">Already up to date. Nothing new in that file.</span>';
+});
+
+/* ================= WIRING ================= */
+function switchTab(t){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  for (const x of ['quiz','learn','draw','filters','stats']) $('tab-'+x).classList.toggle('hidden', x!==t);
+  if (t!=='quiz') clearTimeout(autoTimer);
+  if (t!=='draw') watching=false;
+  if (t==='learn') renderLearn();
+  if (t==='draw'){ renderDrawStrip(); if (!samples.length || $('pad').childElementCount===0) setDrawChar(drawCh); }
+  if (t==='filters') renderFilters();
+  if (t==='stats') renderStats();
+  if (t==='quiz' && (!current || answered || !buildPool().some(q=>q.it===current.it && q.s===current.s))) nextQuestion();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+const darkT=$('darkToggle');
+darkT.checked=document.documentElement.classList.contains('dark');
+darkT.addEventListener('change',()=>{ document.documentElement.classList.toggle('dark',darkT.checked); store.set(LS.dark,darkT.checked?'on':'off'); });
+let TTS_LAST=null;
+function ttsNote(err){
+  let n=$('ttsNote'); if (!n){ n=document.createElement('div'); n.id='ttsNote';
+    n.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);max-width:92vw;z-index:99;background:var(--card);color:var(--text);border:1px solid var(--bad);border-radius:10px;padding:10px 14px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.18)';
+    document.body.appendChild(n); }
+  const hint = err==='not-allowed' ? 'Your browser blocked it. Tap a 🔊 button again.' : (err==='language-unavailable'||err==='voice-unavailable') ? 'No Japanese voice is installed on this device.' : 'Your browser\'s speech engine reported a problem.';
+  n.textContent='🔇 Audio couldn\'t play ('+err+'). '+hint; clearTimeout(n._t); n._t=setTimeout(()=>n.remove(),6000);
+}
+const TTS=(()=>{
+  const ok = typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined';
+  let voice=null;
+  const pick=()=>{ const ja=speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang)); voice = ja.find(v=>/natural|online|google|nanami|kyoko|o-ren|haruka/i.test(v.name)) || ja[0] || null; };
+  if (ok){ pick(); speechSynthesis.onvoiceschanged=pick; }
+  return { ok,
+    say(text){ if(!ok||!text) return; const ss=speechSynthesis; if (!voice) pick();
+      const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; if(voice) u.voice=voice; u.rate=0.8;
+      u.onerror=e=>{ if (e.error!=='interrupted' && e.error!=='canceled') ttsNote(e.error); };
+      TTS_LAST=u; if (ss.speaking||ss.pending) ss.cancel(); if (ss.paused) ss.resume(); ss.speak(u); },
+    stop(){ if(ok) try{ speechSynthesis.cancel(); }catch(e){} } };
+})();
+const escH = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const speakBtn = t => TTS.ok&&t ? `<button type="button" class="speak" data-say="${escH(t)}" title="Play audio">🔊</button>` : '';
+const autoT=$('autoToggle');
+autoT.checked = store.get(LS.auto)!=='off';
+if (!TTS.ok){ autoT.disabled=true; autoT.parentElement.title='This browser has no speech support'; }
+autoT.addEventListener('change',()=>store.set(LS.auto, autoT.checked?'on':'off'));
+if (!store.persistent) $('storeWarn').classList.remove('hidden');
+setDir(dir); updateScore(); nextQuestion();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+<script src="ja.js"></script>
+</body>
+</html>

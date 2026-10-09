@@ -1,7 +1,7 @@
 {
   "name": "Kohikori · Japanese Practice",
   "short_name": "Kohikori",
-  "description": "Verb and adjective conjugation, counters and JLPT vocabulary quizzes.",
+  "description": "Kana, verb and adjective conjugation, counters and JLPT vocabulary quizzes.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -26,6 +26,17 @@
     }
   ],
   "shortcuts": [
+    {
+      "name": "Kana Quiz",
+      "short_name": "Kana",
+      "url": "kana.html",
+      "icons": [
+        {
+          "src": "icon-kana-180.png",
+          "sizes": "180x180"
+        }
+      ]
+    },
     {
       "name": "Verb Conjugation Quiz",
       "short_name": "Verbs",
