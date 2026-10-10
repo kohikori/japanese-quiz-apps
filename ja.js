@@ -294,6 +294,7 @@ const P = [
   [/^The ending looks right, but the start doesn't match (.*)\. Fix it and press Enter\.$/, m=>`語尾は合っていますが、最初の部分が${m[1]==='the word you heard'?'聞こえた単語':'「'+m[1]+'」'}と一致しません。直してEnterを押してください。`],
   [/^Last (\d+): (\d+)%$/, m=>`直近${m[1]}問：${m[2]}%`],
   [/^Overall: (\d+)%$/, m=>`全体：${m[1]}%`],
+  [/^Recent: (\d+)%$/, m=>`最近：${m[1]}%`],
   [/^Accuracy over your last (\d+) answers?$/, m=>`直近${m[1]}問の正答率`],
   [/^Played (\d+)×$/, m=>`${m[1]}回再生`],
   [/^Not quite\. You picked “(.+)”\.$/, m=>`おしい！ あなたの答え：「${m[1]}」`],

@@ -217,7 +217,7 @@ function showProgress(el, {c,t,p}){
   if (Array.isArray(log) && log.length){
     const n=log.length, ok=log.filter(x=>x[1]).length, pct=Math.round(100*ok/n);
     el.classList.remove('none'); el.title=`Accuracy over your last ${n} answer${n===1?'':'s'}`;
-    el.innerHTML=`<span class="ptxt">Last ${n}: ${pct}%</span><span class="bar"><i style="width:${pct}%"></i></span>`;
+    el.innerHTML=`<span class="ptxt">${n>=25?'Recent':'Last '+n}: ${pct}%</span><span class="bar"><i style="width:${pct}%"></i></span>`;
     return;
   }
   if (!t) return;
