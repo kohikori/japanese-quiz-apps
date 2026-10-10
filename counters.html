@@ -60,14 +60,14 @@
   body.roma .rw .rr{display:block}
   header h1{display:flex;align-items:center;gap:10px}
   .homelink{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--muted);text-decoration:none;flex:none}
-  .homelink:hover{color:var(--accent);border-color:var(--accent)}
+  @media (hover:hover){.homelink:hover{color:var(--accent);border-color:var(--accent)}}
   .listenq{display:inline-flex;align-items:center;gap:10px;font-size:20px;padding:14px 26px;border-radius:999px;border:2px solid var(--accent);
     background:var(--accentbg);color:var(--accent);cursor:pointer;font-family:inherit;margin:14px 0 6px}
-  .listenq:hover{filter:brightness(1.05)} .listenq:active{transform:scale(.98)}
+  @media (hover:hover){.listenq:hover{filter:brightness(1.05)}} .listenq:active{transform:scale(.98)}
   .listenq .ico{font-size:26px;line-height:1}
   .reportline{margin-top:12px;font-size:12px;text-align:right}
   .reportline a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
-  .reportline a:hover{color:var(--accent);border-color:var(--accent)}
+  @media (hover:hover){.reportline a:hover{color:var(--accent);border-color:var(--accent)}}
   .homo{margin-top:6px;font-size:13px;color:var(--muted)}
   .feedback .also{font-size:13px;color:var(--muted);margin:2px 0 8px}
 
@@ -113,7 +113,7 @@
   .modeinfo{text-align:center;font-size:12px;color:var(--accent);margin:-6px 0 14px}
   .modeinfo.warn{color:var(--warn)}
   .speak{background:none;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:13px;padding:1px 7px;color:var(--text);vertical-align:middle;font-family:inherit;line-height:1.5}
-  .speak:hover{border-color:var(--accent)}
+  @media (hover:hover){.speak:hover{border-color:var(--accent)}}
   #summary h2{text-align:center;font-size:20px;margin:0 0 14px}
   #summary .totals{justify-content:center;text-align:center}
 
@@ -124,7 +124,7 @@
   .sitefoot .links{display:flex;gap:8px;flex-wrap:wrap}
   .sitefoot a{display:inline-block;padding:7px 14px;border-radius:8px;border:1px solid var(--line);
     background:var(--card);color:var(--text);text-decoration:none;font-size:13px}
-  .sitefoot a:hover{border-color:var(--accent);color:var(--accent)}
+  @media (hover:hover){.sitefoot a:hover{border-color:var(--accent);color:var(--accent)}}
   .sitefoot a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .sitefoot a.donate{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
   @media (max-width:520px){.sitefoot{justify-content:center;text-align:center}}
@@ -143,7 +143,7 @@
   .qhint .cw{color:var(--muted);font-size:13px}
   .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
   .choice{display:flex;align-items:center;gap:10px;padding:12px 14px;font-size:22px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;text-align:left}
-  .choice:hover:not(:disabled){border-color:var(--accent)}
+  @media (hover:hover){.choice:hover:not(:disabled){border-color:var(--accent)}}
   .choice .k{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 6px;flex:none}
   .choice .rw{align-items:flex-start}
   .choice.right{border-color:var(--ok);background:var(--okbg)}
@@ -164,7 +164,7 @@
   .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
   .grid.one{grid-template-columns:repeat(2,1fr);margin-top:6px}
   .cell{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;min-width:0}
-  .cell:hover{border-color:var(--accent)}
+  @media (hover:hover){.cell:hover{border-color:var(--accent)}}
   .cell .num{font-size:12px;color:var(--muted)}
   .cell .rd{font-size:15px;white-space:nowrap}
   .cell .alt{font-size:10.5px;color:var(--muted);white-space:nowrap}
@@ -176,6 +176,27 @@
   .lrule{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
   @media (max-width:420px){ .lcard{padding:12px 8px} .cell{padding:6px 0} .cell .rd{font-size:11.5px;letter-spacing:-.02em} .cell .alt{font-size:9.5px} .grid{gap:3px} .pic{font-size:28px} .choice{font-size:19px;padding:10px} }
   @media (max-width:360px){ .grid{grid-template-columns:repeat(4,1fr)} .grid.one{grid-template-columns:repeat(2,1fr)} }
+
+  /* phones: no lingering tap highlight or 'hover' outline after tapping */
+  button,a,label{-webkit-tap-highlight-color:transparent}
+
+  /* ---- settings tucked behind the gear button; compact header on phones ---- */
+  .gearbtn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;flex:none;margin-left:auto;padding:0}
+  .gearbtn[aria-expanded="true"]{color:var(--accent);border-color:var(--accent);background:var(--accentbg)}
+  .settings{flex-basis:100%;padding:10px 2px 2px;border-top:1px solid var(--line)}
+  .settings.closed{display:none}
+  @media (max-width:640px){
+    header{display:grid;grid-template-columns:1fr auto;align-items:center;padding:10px 14px;gap:6px 8px}
+    header h1{grid-column:1;font-size:16px;min-width:0}
+    .gearbtn{grid-column:2;grid-row:1}
+    header nav{grid-column:1/-1;display:flex;overflow-x:auto;margin:0 -6px}
+    nav button{padding:7px 10px}
+    .settings{grid-column:1/-1}
+    main{margin-top:16px}
+  }
+  /* ---- typing on a phone: hide the mode buttons so the score, question and answer box fit above the keyboard ---- */
+  body.kbd .modebar, body.kbd .modeinfo, body.kbd .dirbar, body.kbd #storeWarn{display:none!important}
+  body.kbd{padding-bottom:70vh}
 </style>
 </head>
 <body>
@@ -187,7 +208,8 @@
     <button data-tab="filters">Filters</button>
     <button data-tab="stats">Stats</button>
   </nav>
-  <div class="toggles">
+  <button type="button" class="gearbtn" id="gearBtn" aria-label="Settings" aria-expanded="false" aria-controls="settingsPanel" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  <div class="toggles settings closed" id="settingsPanel">
     <label class="toggle"><input type="checkbox" id="furiToggle" checked> Furigana</label>
     <label class="toggle" title="Show romaji above Japanese words"><input type="checkbox" id="romaToggle"> Romaji</label>
     <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
@@ -231,7 +253,7 @@
     <button class="btn reset" id="resetBtn">Reset lifetime stats</button></section>
 </main>
 <footer class="sitefoot">
-  <p>Built by one learner, for others. Found a wrong answer or have an idea? I'd love to hear it.</p>
+  <p>Have an idea for an improvement or addition? I'd love to hear it.</p>
   <div class="links">
     <a href="mailto:support.kohikori@gmail.com?subject=Feedback:%20Counters%20Quiz">Send feedback</a>
     <a class="donate" href="https://paypal.me/kohikori" target="_blank" rel="noopener">☕ Donate via PayPal</a>
@@ -871,6 +893,49 @@ setMode(store.get(LS.mc)==='on');
 updateScore();
 nextQuestion();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+<script>
+/* Recent accuracy: keeps the last 25 answers on this device (shown on the home page) */
+(function(){
+  const SK='jcnt_stats_v1', RK='jcnt_recent_v1', N=25;
+  if (typeof store==='undefined' || !store.set) return;
+  const orig=store.set.bind(store), parse=v=>{ try { return JSON.parse(v); } catch(e){ return null; } };
+  let prev=parse(store.get(SK));
+  store.set=function(k,v){
+    orig(k,v);
+    if (k!==SK) return;
+    const cur=parse(v); if (!cur) return;
+    let log=parse(store.get(RK)); if (!Array.isArray(log)) log=[];
+    const pt=prev?prev.t||0:0, pc=prev?prev.c||0:0;
+    if (cur.t===pt+1) log.push([Date.now(), cur.c>pc?1:0]);
+    else if (cur.t===pt && cur.c===pc+1 && log.length) log[log.length-1][1]=1;   // answer later marked correct
+    else if (cur.t<pt) log=[];                                                     // stats were reset
+    orig(RK, JSON.stringify(log.slice(-N))); prev=cur;
+  };
+})();
+</script>
+<script>
+/* Settings panel behind the gear button */
+(function(){
+  const b=document.getElementById('gearBtn'), p=document.getElementById('settingsPanel'); if (!b||!p) return;
+  b.addEventListener('click',()=>{ const open=p.classList.toggle('closed')===false; b.setAttribute('aria-expanded', open); });
+})();
+/* Phones: while typing an answer, keep the score, question and answer box in view above the keyboard */
+(function(){
+  if (!window.matchMedia || !matchMedia('(hover:none)').matches) return;
+  let t=null;
+  function fit(){
+    if (!document.body.classList.contains('kbd')) return;
+    const inp=document.getElementById('answer'), sb=document.querySelector('section:not(.hidden) .scorebar'); if (!inp||!sb) return;
+    const vh=window.visualViewport ? visualViewport.height : innerHeight;
+    const top=sb.getBoundingClientRect().top+scrollY-8, btns=inp.parentElement.querySelector('.buttons');
+    const want=[btns,inp].filter(Boolean).map(e=>e.getBoundingClientRect().bottom+scrollY+6);
+    for (const bottom of want) if (bottom-top<=vh){ window.scrollTo({top, behavior:'smooth'}); return; }
+  }
+  document.addEventListener('focusin',e=>{ if (e.target && e.target.id==='answer'){ clearTimeout(t); document.body.classList.add('kbd'); setTimeout(fit,350); } });
+  document.addEventListener('focusout',e=>{ if (e.target && e.target.id==='answer'){ clearTimeout(t); t=setTimeout(()=>{ const a=document.activeElement; if (!a || a.id!=='answer') document.body.classList.remove('kbd'); },250); } });
+  if (window.visualViewport) visualViewport.addEventListener('resize',()=>setTimeout(fit,60));
+})();
 </script>
 <script src="ja.js"></script>
 </body>

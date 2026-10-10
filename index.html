@@ -27,7 +27,7 @@
   .brand{display:flex;align-items:center;gap:14px;margin-bottom:6px}
   .syncbtn{margin-left:auto;align-self:flex-start;flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--muted);
     display:grid;place-items:center;cursor:pointer;transition:color .15s,border-color .15s}
-  .syncbtn:hover,.syncbtn[aria-expanded="true"]{color:var(--accent);border-color:var(--accent)}
+  @media (hover:hover){.syncbtn:hover,.syncbtn[aria-expanded="true"]{color:var(--accent);border-color:var(--accent)}}
   .syncbtn svg{transition:transform .35s}
   .syncbtn[aria-expanded="true"] svg{transform:rotate(180deg)}
   .syncbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -40,7 +40,7 @@
   .apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;margin-top:28px}
   a.app{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px;border:1px solid var(--line);
     border-radius:14px;background:var(--card);color:inherit;text-decoration:none;transition:border-color .15s,transform .15s;min-width:0}
-  a.app:hover{border-color:var(--accent)}
+  @media (hover:hover){a.app:hover{border-color:var(--accent)}}
   a.app:active{transform:scale(.98)}
   a.app:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .tile{width:52px;height:52px;border-radius:13px;display:grid;place-items:center;color:#fff;font-size:28px;font-weight:700;margin-bottom:6px;
@@ -70,7 +70,7 @@
   .step{display:flex;flex-direction:column;gap:8px}
   .step .lbl{font-size:12px;color:var(--muted)}
   .sbtn{font-size:14px;padding:10px 14px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;text-align:left}
-  .sbtn:hover{border-color:var(--accent)}
+  @media (hover:hover){.sbtn:hover{border-color:var(--accent)}}
   .sbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   :root.dark .sbtn.primary{background:#4c6ef5;border-color:#4c6ef5}
   .codebox{display:flex;gap:8px;margin-top:12px;align-items:stretch}
@@ -85,7 +85,7 @@
   .sitefoot p{margin:0;line-height:1.6;max-width:46ch}
   .sitefoot .links{display:flex;gap:8px;flex-wrap:wrap}
   .sitefoot a{display:inline-block;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-size:13px}
-  .sitefoot a:hover{border-color:var(--accent);color:var(--accent)}
+  @media (hover:hover){.sitefoot a:hover{border-color:var(--accent);color:var(--accent)}}
   .sitefoot a.donate{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
 
   @media (max-width:520px){
@@ -93,6 +93,9 @@
     .apps{gap:8px}
     .sitefoot{justify-content:center;text-align:center}
   }
+
+  /* phones: no lingering tap highlight or 'hover' outline after tapping */
+  button,a,label{-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
@@ -160,7 +163,7 @@
     <a class="app" href="listen.html">
       <div class="tile" style="background:#2f9e44">聴</div>
       <h2>Listening</h2>
-      <p class="jp">聞き取り</p><p>Listen</p>
+      <p class="jp">聞き取り</p><p>Transcribe</p>
       <div class="progress none" id="pListen"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
     </a>
   </div>
@@ -205,13 +208,22 @@ function total(statsKey, peersKey){
   let c=0, t=0;
   try { const s=JSON.parse(get(statsKey)||'null'); if (s){ c+=s.c||0; t+=s.t||0; } } catch(e){}
   try { const p=JSON.parse(get(peersKey)||'null')||{}; for (const id in p){ const s=p[id]&&p[id].stats; if (s){ c+=s.c||0; t+=s.t||0; } } } catch(e){}
-  return {c,t};
+  return {c,t,p:statsKey.replace('stats_v1','')};
 }
-function showProgress(el, {c,t}){
+/* Accuracy over the last 25 answers, so old mistakes stop counting once you've moved past them.
+   Until a quiz has recorded recent answers, its all-time accuracy is shown instead. */
+function showProgress(el, {c,t,p}){
+  let log=null; try { log=JSON.parse(get(p+'recent_v1')||'null'); } catch(e){}
+  if (Array.isArray(log) && log.length){
+    const n=log.length, ok=log.filter(x=>x[1]).length, pct=Math.round(100*ok/n);
+    el.classList.remove('none'); el.title=`Accuracy over your last ${n} answer${n===1?'':'s'}`;
+    el.innerHTML=`<span class="ptxt">Last ${n}: ${pct}%</span><span class="bar"><i style="width:${pct}%"></i></span>`;
+    return;
+  }
   if (!t) return;
   const pct=Math.round(100*c/t);
-  el.classList.remove('none');
-  el.innerHTML=`<span class="ptxt">${t.toLocaleString()} · ${pct}%</span><span class="bar"><i style="width:${pct}%"></i></span>`;
+  el.classList.remove('none'); el.title='Accuracy over all your answers so far';
+  el.innerHTML=`<span class="ptxt">Overall: ${pct}%</span><span class="bar"><i style="width:${pct}%"></i></span>`;
 }
 showProgress($('pKana'),  total('jkana_stats_v1','jkana_peers_v1'));
 showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
@@ -262,6 +274,7 @@ function exportApp(a){
   const d={app:a.app, version:1, exportedAt:Date.now(), device:deviceOf(a),
     own: jget(a.p+'stats_v1') || {c:0,t:0}, peers: jget(a.p+'peers_v1')||{}, srs: jget(a.p+'srs_v1')||{}, srsT: jget(a.p+'srs_time_v1')||{}};
   if (a.syn) d.synLog = jget(a.p+'synonym_log_v1')||{};
+  d.recent = jget(a.p+'recent_v1')||[];
   return d;
 }
 const buildBackup = () => ({app:'kohikori-backup', version:1, exportedAt:Date.now(),
@@ -285,6 +298,10 @@ function mergeApp(a, d){
   }
   for (const k in (d.srs||{})){ const t=(d.srsT||{})[k]||0; if (srs[k]===undefined || t>(srsT[k]||0)){ srs[k]=d.srs[k]; srsT[k]=t; spots++; } }
   jset(a.p+'peers_v1',peers); jset(a.p+'srs_v1',srs); jset(a.p+'srs_time_v1',srsT);
+  if (Array.isArray(d.recent) && d.recent.length){          // recent answers from both devices, newest 25
+    const seen=new Set(), all=[...(jget(a.p+'recent_v1')||[]), ...d.recent].filter(x=>Array.isArray(x) && !seen.has(x.join()) && seen.add(x.join()));
+    jset(a.p+'recent_v1', all.sort((x,y)=>x[0]-y[0]).slice(-25));
+  }
   if (a.syn && d.synLog){
     const log=jget(a.p+'synonym_log_v1')||{}, us=jget(a.p+'user_synonyms_v1')||{};
     for (const key in d.synLog){
