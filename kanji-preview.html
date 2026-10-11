@@ -164,18 +164,30 @@ const KANJI = [
 ];
 /* sentence markup: {漢字|かな} = shows furigana while that kanji is still new to you, ⟦…⟧ = the word being practiced */
 const WORDS = [
-  {w:'日', r:'ひ', m:'day; sun', s:'{冬|ふゆ}が{近|ちか}づくと、⟦日⟧が{短|みじか}くなる。', a:'ひ', e:'As winter approaches, the days get shorter.', parts:[['日','ひ']]},
-  {w:'一日', r:'いちにち', m:'one day; all day', s:'⟦一日⟧で{五百|ごひゃく}ドル{使|つか}ってしまった。', a:'いちにち', e:'I spent $500 in one day.', parts:[['一','いち'],['日','にち']]},
-  {w:'一つ', r:'ひとつ', m:'one (thing)', s:'りんごを⟦一つ⟧ください。', a:'ひとつ', e:'One apple, please.', parts:[['一','ひと']]},
-  {w:'大きい', r:'おおきい', m:'big', s:'⟦大きい⟧{犬|いぬ}がいます。', a:'おおきい', e:'There’s a big dog.', parts:[['大','おお']]},
-  {w:'大きな', r:'おおきな', m:'big', s:'⟦大きな⟧{声|こえ}で{話|はな}してください。', a:'おおきな', e:'Please speak in a loud voice.', parts:[['大','おお']]},
-  {w:'出る', r:'でる', m:'to leave; to go out', s:'{七時|しちじ}に{家|いえ}を⟦出⟧ます。', a:'で', e:'I leave home at seven.', parts:[['出','で']]},
-  {w:'出かける', r:'でかける', m:'to go out (somewhere)', s:'{日曜日|にちようび}に{家族|かぞく}と⟦出かけ⟧ました。', a:'でかけ', e:'I went out with my family on Sunday.', parts:[['出','で']]},
-  {w:'出す', r:'だす', m:'to take out; to hand in', s:'{宿題|しゅくだい}を⟦出し⟧てください。', a:'だし', e:'Please hand in your homework.', parts:[['出','だ']]},
-  {w:'今', r:'いま', m:'now', s:'⟦今⟧、{何時|なんじ}ですか。', a:'いま', e:'What time is it now?', parts:[['今','いま']]},
-  {w:'今日', r:'きょう', m:'today', s:'⟦今日⟧は{何|なに}をしたいですか。', a:'きょう', e:'What would you like to do today?', parts:[['今','き'],['日','ょう']], special:'Special reading: 今日 is read きょう as a whole word, not from the kanji’s usual readings.'},
+  {w:'日', r:'ひ', m:'day; sun', cm:'day(s)', pos:'n', s:'{冬|ふゆ}が{近|ちか}づくと、⟦日⟧が{短|みじか}くなる。', a:'ひ', e:'As winter approaches, the days get shorter.', parts:[['日','ひ']]},
+  {w:'一日', r:'いちにち', m:'one day; all day', cm:'one day', pos:'n', s:'⟦一日⟧で{五百|ごひゃく}ドル{使|つか}ってしまった。', a:'いちにち', e:'I spent $500 in one day.', parts:[['一','いち'],['日','にち']]},
+  {w:'一つ', r:'ひとつ', m:'one (thing)', cm:'one', pos:'n', s:'りんごを⟦一つ⟧ください。', a:'ひとつ', e:'One apple, please.', parts:[['一','ひと']]},
+  {w:'大きい', r:'おおきい', m:'big', cm:'big', pos:'adj', s:'⟦大きい⟧{犬|いぬ}がいます。', a:'おおきい', e:'There’s a big dog.', parts:[['大','おお']]},
+  {w:'大きな', r:'おおきな', m:'big', cm:'loud', note:'Literally “big”: a big voice (大きな声) is a loud voice.', pos:'adj', s:'⟦大きな⟧{声|こえ}で{話|はな}してください。', a:'おおきな', e:'Please speak in a loud voice.', parts:[['大','おお']]},
+  {w:'出る', r:'でる', m:'to leave; to go out', cm:'to leave', pos:'v', s:'{七時|しちじ}に{家|いえ}を⟦出⟧ます。', a:'で', e:'I leave home at seven.', parts:[['出','で']]},
+  {w:'出かける', r:'でかける', m:'to go out (somewhere)', cm:'to go out', pos:'v', s:'{日曜日|にちようび}に{家族|かぞく}と⟦出かけ⟧ました。', a:'でかけ', e:'I went out with my family on Sunday.', parts:[['出','で']]},
+  {w:'出す', r:'だす', m:'to take out; to hand in', cm:'to hand in', pos:'v', s:'{宿題|しゅくだい}を⟦出し⟧てください。', a:'だし', e:'Please hand in your homework.', parts:[['出','だ']]},
+  {w:'今', r:'いま', m:'now', cm:'now', pos:'n', s:'⟦今⟧、{何時|なんじ}ですか。', a:'いま', e:'What time is it now?', parts:[['今','いま']]},
+  {w:'今日', r:'きょう', m:'today', cm:'today', pos:'n', s:'⟦今日⟧は{何|なに}をしたいですか。', a:'きょう', e:'What would you like to do today?', parts:[['今','き'],['日','ょう']], special:'Special reading: 今日 is read きょう as a whole word, not from the kanji’s usual readings.'},
 ];
 const LEARNED = new Set(KANJI.map(k=>k.k));
+/* extra wrong answers for the meaning question (other common words, by part of speech) */
+const DECOYS = {n:['tomorrow','water','money','station','yesterday','school','friend','morning','two'], adj:['small','quiet','cheap','new','cold','early','quick'], v:['to eat','to buy','to sleep','to come back','to wait','to forget','to sell','to open']};
+/* A wrong answer must not be close in meaning to the right one: it can't come from a word sharing a kanji with the answer,
+   and it can't share a key English word with it. */
+const KEY = s => new Set(s.toLowerCase().replace(/\(.*?\)/g,'').split(/[^a-z]+/).filter(x=>x && !['to','a','the','of','in','on','one','be'].includes(x)));
+function decoys(q){
+  const right=q.cm||q.m, rk=KEY(q.m+' '+right), shareKanji=w=>[...w.w].some(c=>/[一-龯]/.test(c) && q.w.includes(c));
+  const pool=[...WORDS.filter(w=>w!==q && w.pos===q.pos && !shareKanji(w)).map(w=>w.cm||w.m), ...shuffle(DECOYS[q.pos]||[])];
+  const out=[]; for (const m of shuffle(pool)){ const k=KEY(m); if ([...k].some(x=>rk.has(x)) || out.includes(m) || m===right) continue; out.push(m); if (out.length===3) break; }
+  return out;
+}
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 
 /* ---------- helpers ---------- */
 const $=id=>document.getElementById(id);
@@ -251,8 +263,8 @@ function renderQ(){
       <div class="buttons"><button class="btn primary" id="checkBtn">Check</button><button class="btn" id="showBtn">Show answer</button></div>
       <div class="hint">Romaji turns into kana as you type · Enter = check / next</div>`;
   } else {
-    const opts=[q, ...WORDS.filter(w=>w.m!==q.m && w!==q).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);
-    h+=`<div class="qask">What does the highlighted word mean?</div><div class="choices">${opts.map((o,i)=>`<button class="choice" data-right="${o===q?1:0}"><span class="k">${i+1}</span>${esc(o.m)}</button>`).join('')}</div>`;
+    const opts=shuffle([{m:q.cm||q.m, right:true}, ...decoys(q).map(m=>({m}))]);
+    h+=`<div class="qask">What does the highlighted word mean in this sentence?</div><div class="choices">${opts.map((o,i)=>`<button class="choice" data-right="${o.right?1:0}"><span class="k">${i+1}</span>${esc(o.m)}</button>`).join('')}</div>`;
   }
   h+=`<div id="fb"></div><div class="buttons"><button class="btn primary hidden" id="nextBtn">Next →</button></div>`;
   $('tab-quiz').innerHTML=h;
@@ -264,7 +276,7 @@ function feedback(ok, head){
   const parts=q.parts.map(([k,r])=>{ const K=KANJI.find(x=>x.k===k);
     return `<div class="part"><span class="pk jpf">${k}</span><div><b>${K.mean}</b>${q.special?'':` · read <b class="jpf">${r}</b> here`}<div style="margin-top:4px">${mnemHTML(K,false)}</div></div></div>`; }).join('');
   $('fb').innerHTML=`<div class="feedback ${ok?'ok':'bad'}"><div class="head">${head}</div>
-    <div class="ans jpf">${q.w} · ${q.r} ${spk(plain(q.s))}</div><div>${esc(q.m)}</div><div style="color:var(--muted);font-size:14px">${q.e}</div>
+    <div class="ans jpf">${q.w} · ${q.r} ${spk(plain(q.s))}</div><div>${esc(q.cm && q.cm!==q.m ? q.cm+' here' : q.m)}${q.cm && q.cm!==q.m ? ` <span style="color:var(--muted);font-size:13.5px">(dictionary: ${esc(q.m)})</span>`:''}</div>${q.note?`<div style="font-size:13.5px">${esc(q.note)}</div>`:''}<div style="color:var(--muted);font-size:14px">${q.e}</div>
     ${q.special?`<div style="margin-top:6px;font-size:13.5px"><span class="tag">special reading</span> ${q.special.replace(/^Special reading: /,'')}</div>`:''}
     <div class="parts">${parts}</div></div>`;
   $('nextBtn').classList.remove('hidden'); $('scorebar');
