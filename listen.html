@@ -137,8 +137,7 @@
     .settings{grid-column:1/-1}
     main{margin-top:16px}
   }
-  /* ---- typing on a phone: hide the mode buttons so the score, question and answer box fit above the keyboard ---- */
-  body.kbd .modebar, body.kbd .modeinfo, body.kbd .dirbar, body.kbd #storeWarn{display:none!important}
+  /* ---- typing on a phone: leave room to scroll the question to the top of the screen ---- */
   body.kbd{padding-bottom:70vh}
 </style>
 </head>
@@ -676,17 +675,22 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) naviga
 (function(){
   if (!window.matchMedia || !matchMedia('(hover:none)').matches) return;
   let t=null;
+  // keep the question (with its furigana / romaji) just under the top of the screen
   function fit(){
     if (!document.body.classList.contains('kbd')) return;
-    const inp=document.getElementById('answer'), sb=document.querySelector('section:not(.hidden) .scorebar'); if (!inp||!sb) return;
-    const vh=window.visualViewport ? visualViewport.height : innerHeight;
-    const top=sb.getBoundingClientRect().top+scrollY-8, btns=inp.parentElement.querySelector('.buttons');
-    const want=[btns,inp].filter(Boolean).map(e=>e.getBoundingClientRect().bottom+scrollY+6);
-    for (const bottom of want) if (bottom-top<=vh){ window.scrollTo({top, behavior:'smooth'}); return; }
+    const q=document.querySelector('section:not(.hidden) #qVerb, section:not(.hidden) #qWord, section:not(.hidden) #qPic, section:not(.hidden) #quizBody');
+    if (!q) return;
+    window.scrollTo({top: Math.max(0, q.getBoundingClientRect().top+scrollY-8), behavior:'smooth'});
   }
-  document.addEventListener('focusin',e=>{ if (e.target && e.target.id==='answer'){ clearTimeout(t); document.body.classList.add('kbd'); setTimeout(fit,350); } });
+  let mt=null; const qb=document.getElementById('quizBody');
+  if (qb && window.MutationObserver) new MutationObserver(()=>{ clearTimeout(mt); mt=setTimeout(fit,120); }).observe(qb,{childList:true,subtree:true,characterData:true});
+  const on=()=>{ clearTimeout(t); document.body.classList.add('kbd'); setTimeout(fit,350); };
+  // the answer box is often focused already, so a tap on it (which opens the keyboard) counts too
+  document.addEventListener('focusin',e=>{ if (e.target && e.target.id==='answer') on(); });
+  document.addEventListener('click',e=>{ if (e.target && e.target.id==='answer') on(); });
   document.addEventListener('focusout',e=>{ if (e.target && e.target.id==='answer'){ clearTimeout(t); t=setTimeout(()=>{ const a=document.activeElement; if (!a || a.id!=='answer') document.body.classList.remove('kbd'); },250); } });
-  if (window.visualViewport) visualViewport.addEventListener('resize',()=>setTimeout(fit,60));
+  if (window.visualViewport) visualViewport.addEventListener('resize',()=>{ const a=document.activeElement;
+    if (a && a.id==='answer' && visualViewport.height<innerHeight*0.8) on(); else setTimeout(fit,60); });
 })();
 </script>
 <script src="ja.js"></script>
