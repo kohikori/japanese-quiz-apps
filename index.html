@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kohikori · Japanese Practice</title>
-<meta name="description" content="Free Japanese practice apps: kana, verb and adjective conjugation, counters, JLPT vocabulary and listening quizzes, made by a learner for learners.">
+<meta name="description" content="Free Japanese practice apps: kana, kanji, verb and adjective conjugation, counters, JLPT vocabulary and listening quizzes, made by a learner for learners.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-favicon-64.png">
 <link rel="apple-touch-icon" href="icon-home-180.png">
@@ -136,6 +136,12 @@
       <p class="jp">かな</p><p>Read &amp; Write</p>
       <div class="progress none" id="pKana"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
     </a>
+    <a class="app" href="kanji.html">
+      <div class="tile" style="background:#343a40">漢</div>
+      <h2>Kanji</h2>
+      <p class="jp">漢字</p><p>Read</p>
+      <div class="progress none" id="pKanji"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
+    </a>
     <a class="app" href="verb.html">
       <div class="tile" style="background:#3b5bdb">活</div>
       <h2>Verbs</h2>
@@ -226,6 +232,7 @@ function showProgress(el, {c,t,p}){
   el.innerHTML=`<span class="ptxt">Overall: ${pct}%</span><span class="bar"><i style="width:${pct}%"></i></span>`;
 }
 showProgress($('pKana'),  total('jkana_stats_v1','jkana_peers_v1'));
+showProgress($('pKanji'), total('jkanji_stats_v1','jkanji_peers_v1'));
 showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
 showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
 showProgress($('pListen'), total('jlisten_stats_v1','jlisten_peers_v1'));
@@ -257,6 +264,7 @@ for (const [btn,box] of [['dismissIOS','installIOS'],['dismissOther','installOth
    MERGES them in (it never overwrites), exactly like each quiz's own Import button. */
 const SYNC_APPS = [
   {key:'kana',  name:'Kana',       p:'jkana_',  app:'jkana-quiz'},
+  {key:'kanji', name:'Kanji',      p:'jkanji_', app:'jkanji-quiz', kanji:true},
   {key:'verb',  name:'Verbs',      p:'jvq_',    app:'jvq-verb-quiz'},
   {key:'adj',   name:'Adjectives', p:'jadj_',   app:'jadj-adjective-quiz'},
   {key:'cnt',   name:'Counters',   p:'jcnt_',   app:'jcnt-counters-quiz'},
@@ -275,6 +283,7 @@ function exportApp(a){
     own: jget(a.p+'stats_v1') || {c:0,t:0}, peers: jget(a.p+'peers_v1')||{}, srs: jget(a.p+'srs_v1')||{}, srsT: jget(a.p+'srs_time_v1')||{}};
   if (a.syn) d.synLog = jget(a.p+'synonym_log_v1')||{};
   d.recent = jget(a.p+'recent_v1')||[];
+  if (a.kanji){ d.lessons = jget(a.p+'lessons_v1')||{n:0,at:0}; d.notes = jget(a.p+'notes_v1')||{}; }
   return d;
 }
 const buildBackup = () => ({app:'kohikori-backup', version:1, exportedAt:Date.now(),
@@ -298,6 +307,11 @@ function mergeApp(a, d){
   }
   for (const k in (d.srs||{})){ const t=(d.srsT||{})[k]||0; if (srs[k]===undefined || t>(srsT[k]||0)){ srs[k]=d.srs[k]; srsT[k]=t; spots++; } }
   jset(a.p+'peers_v1',peers); jset(a.p+'srs_v1',srs); jset(a.p+'srs_time_v1',srsT);
+  if (a.kanji){                                          // finished lessons (furthest wins) and your own notes (newest wins)
+    const L=jget(a.p+'lessons_v1')||{n:0,at:0}; if (d.lessons && d.lessons.n>L.n){ jset(a.p+'lessons_v1',{n:d.lessons.n,at:Date.now()}); spots++; }
+    const N=jget(a.p+'notes_v1')||{}; let nn=0; for (const k in (d.notes||{})){ const x=d.notes[k]; if (x && (!N[k] || x.at>N[k].at)){ N[k]=x; nn++; } }
+    if (nn){ jset(a.p+'notes_v1',N); spots+=nn; }
+  }
   if (Array.isArray(d.recent) && d.recent.length){          // recent answers from both devices, newest 25
     const seen=new Set(), all=[...(jget(a.p+'recent_v1')||[]), ...d.recent].filter(x=>Array.isArray(x) && !seen.has(x.join()) && seen.add(x.join()));
     jset(a.p+'recent_v1', all.sort((x,y)=>x[0]-y[0]).slice(-25));
@@ -397,6 +411,7 @@ $('codeGo').addEventListener('click', async ()=>{
 });
 function refreshProgress(){
   showProgress($('pKana'),  total('jkana_stats_v1','jkana_peers_v1'));
+  showProgress($('pKanji'), total('jkanji_stats_v1','jkanji_peers_v1'));
   showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
   showProgress($('pAdj'),   total('jadj_stats_v1','jadj_peers_v1'));
   showProgress($('pCnt'),   total('jcnt_stats_v1','jcnt_peers_v1'));

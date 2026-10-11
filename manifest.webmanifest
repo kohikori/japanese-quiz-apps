@@ -1,7 +1,7 @@
 {
   "name": "Kohikori · Japanese Practice",
   "short_name": "Kohikori",
-  "description": "Kana, verb and adjective conjugation, counters, JLPT vocabulary and listening quizzes.",
+  "description": "Kana, kanji, verb and adjective conjugation, counters, JLPT vocabulary and listening quizzes.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -33,6 +33,17 @@
       "icons": [
         {
           "src": "icon-kana-180.png",
+          "sizes": "180x180"
+        }
+      ]
+    },
+    {
+      "name": "Kanji Quiz",
+      "short_name": "Kanji",
+      "url": "kanji.html",
+      "icons": [
+        {
+          "src": "icon-kanji-180.png",
           "sizes": "180x180"
         }
       ]
