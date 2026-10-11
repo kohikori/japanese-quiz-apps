@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon-favicon-64.png">
+<meta name="theme-color" content="#c92a2a">
+<script>(function(){var d;try{d=localStorage.getItem('jkanji_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+<title>Kanji Quiz (preview)</title>
+<style>
+  :root{--bg:#fafafa;--card:#fff;--text:#222;--muted:#777;--line:#e3e3e3;--accent:#3b5bdb;--ok:#2b8a3e;--okbg:#ebfbee;--bad:#c92a2a;--badbg:#fff5f5;
+    --accentbg:#edf2ff;--okline:#b2f2bb;--badline:#ffc9c9;--pill:#f1f3f5;--warn:#8a5a00;--sub:#333;--hl:#fff3bf}
+  :root.dark{--bg:#15171c;--card:#1e2128;--text:#e4e6ea;--muted:#9aa0aa;--line:#353a45;--accent:#7b93f7;--ok:#69db7c;--okbg:#17301f;
+    --bad:#ff8787;--badbg:#3a1d21;--accentbg:#262d48;--okline:#2b6a3a;--badline:#7a2e35;--pill:#2a2e37;--warn:#f0c14b;--sub:#cfd3da;--hl:#4a3f12;color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans",sans-serif;background:var(--bg);color:var(--text)}
+  .jpf{font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+  .banner{background:var(--hl);color:var(--text);font-size:13px;text-align:center;padding:8px 14px;border-bottom:1px solid var(--line)}
+  header{display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap}
+  header h1{font-size:18px;margin:0;font-weight:600;display:flex;align-items:center;gap:10px}
+  .homelink{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--muted);text-decoration:none;flex:none}
+  nav button{background:none;border:none;padding:8px 14px;font-size:14px;color:var(--muted);cursor:pointer;border-radius:6px;font-family:inherit}
+  nav button.active{color:var(--accent);background:var(--accentbg);font-weight:600}
+  .gearbtn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;margin-left:auto;padding:0}
+  .gearbtn[aria-expanded="true"]{color:var(--accent);border-color:var(--accent);background:var(--accentbg)}
+  .settings{flex-basis:100%;display:flex;gap:14px;flex-wrap:wrap;padding:10px 2px 2px;border-top:1px solid var(--line)}
+  .settings.closed{display:none}
+  .toggle{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer}
+  @media (max-width:640px){
+    header{display:grid;grid-template-columns:1fr auto;padding:10px 14px;gap:6px 8px}
+    header h1{font-size:16px} .gearbtn{grid-column:2;grid-row:1} header nav{grid-column:1/-1;display:flex;margin:0 -6px} nav button{padding:7px 10px}
+    .settings{grid-column:1/-1}
+  }
+  main{max-width:760px;margin:22px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:26px}
+  @media (max-width:420px){main{padding:0 10px}.card{padding:20px 14px}}
+  .hidden{display:none!important}
+  h2{font-size:16px;margin:0 0 4px}
+  h3{font-size:12.5px;margin:20px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  .sub{font-size:13px;color:var(--muted)}
+  button.btn{font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-family:inherit}
+  button.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  :root.dark button.btn.primary{background:#4c6ef5;border-color:#4c6ef5}
+  button.btn.small{font-size:12.5px;padding:5px 12px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .between{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  ruby rt{font-size:.5em;color:var(--muted)}
+  /* lesson */
+  .dots{display:flex;gap:6px}
+  .dot{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-size:16px;cursor:pointer;background:var(--card);color:var(--text)}
+  .dot.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent)}
+  .dot.words{width:auto;padding:0 10px;font-size:12.5px}
+  .khead{display:flex;gap:18px;align-items:center;margin:18px 0 6px}
+  .kbig{font-size:96px;line-height:1;width:132px;height:132px;display:grid;place-items:center;border-radius:18px;background:var(--accentbg);color:var(--text);flex:none}
+  .kmean{font-size:24px;font-weight:600}
+  .kalso{font-size:13px;color:var(--muted);margin-top:4px}
+  .rchips{display:grid;gap:8px}
+  .rchip{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .rchip .rd{font-size:22px;min-width:64px;font-weight:600;color:var(--accent)}
+  .rchip .ex{font-size:14px}
+  .rchip .ex .jpf{font-size:17px}
+  .later{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .mnem{border-left:3px solid var(--accent);background:var(--pill);padding:12px 14px;border-radius:0 10px 10px 0;font-size:14.5px;line-height:1.6}
+  .mnem.mine{border-left-color:var(--ok)}
+  .mnem .who{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between;gap:8px}
+  .mnem .who a{color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0;font-size:12.5px}
+  textarea{width:100%;min-height:90px;font:inherit;font-size:14.5px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+  .wlist{display:grid;gap:10px}
+  .witem{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .witem .top{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+  .witem .w{font-size:24px}
+  .witem .r{font-size:15px;color:var(--accent)}
+  .witem .m{font-size:14px;color:var(--sub)}
+  .witem .sent{font-size:17px;line-height:2;margin-top:4px}
+  .witem .en{font-size:13px;color:var(--muted)}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:10px;background:var(--hl);color:var(--text);margin-left:4px;vertical-align:middle;font-family:system-ui,sans-serif}
+  .tgt{background:var(--hl);border-radius:4px;padding:0 3px;font-weight:600}
+  .speak{background:none;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:13px;padding:1px 7px;color:var(--text);vertical-align:middle;font-family:inherit}
+  /* quiz */
+  .dirbar{display:flex;justify-content:center;margin:0 auto 16px;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content;max-width:100%}
+  .dirbtn{border:none;background:var(--card);color:var(--muted);padding:8px 14px;font-size:14px;cursor:pointer;font-family:inherit;border-right:1px solid var(--line)}
+  .dirbtn:last-child{border-right:none}
+  .dirbtn.on{background:var(--accentbg);color:var(--accent);font-weight:600}
+  .scorebar{display:flex;gap:18px;justify-content:center;font-size:13px;color:var(--muted);margin-bottom:14px}
+  .scorebar b{color:var(--text)}
+  .qsent{text-align:center;font-size:26px;line-height:2.1;margin:6px 0 4px}
+  .qsent .tgt{font-size:1.15em}
+  .qask{text-align:center;color:var(--muted);font-size:14px;margin-bottom:14px}
+  #answer{width:100%;font-size:24px;padding:12px 14px;border:2px solid var(--line);border-radius:10px;outline:none;font-family:inherit;text-align:center;background:var(--card);color:var(--text)}
+  #answer:focus{border-color:var(--accent)}
+  #answer.ok{border-color:var(--ok);background:var(--okbg)} #answer.bad{border-color:var(--bad);background:var(--badbg)}
+  .buttons{display:flex;gap:10px;justify-content:center;margin-top:12px}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .choice{position:relative;padding:12px 14px 12px 38px;font-size:15.5px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;text-align:left;min-height:54px}
+  .choice .k{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 6px}
+  .choice.right{border-color:var(--ok);background:var(--okbg)} .choice.wrong{border-color:var(--bad);background:var(--badbg)}
+  @media (hover:hover){.choice:hover:not(:disabled){border-color:var(--accent)}}
+  .feedback{margin-top:16px;padding:14px 16px;border-radius:10px;font-size:15px;line-height:1.6;border:1px solid}
+  .feedback.ok{background:var(--okbg);border-color:var(--okline)} .feedback.bad{background:var(--badbg);border-color:var(--badline)}
+  .feedback .head{font-weight:600;margin-bottom:4px}
+  .feedback.ok .head{color:var(--ok)} .feedback.bad .head{color:var(--bad)}
+  .feedback .ans{font-size:22px}
+  .parts{display:grid;gap:6px;margin-top:10px}
+  .part{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;border-top:1px solid var(--line);padding-top:8px}
+  .part .pk{font-size:26px;line-height:1;min-width:34px}
+  .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:12px}
+  /* stats */
+  .lchart{display:grid;gap:8px;margin:4px 0 8px}
+  .lrow{display:grid;grid-template-columns:92px 1fr auto;align-items:center;gap:10px;font-size:13px}
+  .lbar{display:flex;height:12px;border-radius:6px;background:var(--pill);overflow:hidden}
+  .lbar i{display:block;height:100%} .lbar .la{background:var(--ok)} .lbar .lb{background:var(--okline)}
+  .lnum{font-variant-numeric:tabular-nums;color:var(--muted);text-align:right;min-width:70px}
+  .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:4px}
+  .kc{height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:7px;font-size:18px;background:var(--pill)}
+  .kc.m{background:var(--okbg);border-color:var(--ok)} .kc.p{background:#fff3bf;border-color:#e8a300} :root.dark .kc.p{background:#4a3f12}
+  .legend2{font-size:12px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .legend2 .sw{display:inline-block;width:14px;height:12px;border:1px solid var(--line);border-radius:3px;margin-left:6px}
+  .legend2 .sw:first-child{margin-left:0}
+  .note{font-size:12.5px;color:var(--muted);line-height:1.55}
+</style>
+</head>
+<body>
+<div class="banner">Design preview: lesson 1 only, and nothing is saved except your notes. Tell Claude what to change.</div>
+<header>
+  <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>漢字 Kanji Quiz</h1>
+  <nav>
+    <button data-tab="learn" class="active">Learn</button>
+    <button data-tab="quiz">Review</button>
+    <button data-tab="stats">Stats</button>
+  </nav>
+  <button type="button" class="gearbtn" id="gearBtn" aria-label="Settings" aria-expanded="false" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  <div class="settings closed" id="settingsPanel">
+    <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
+  </div>
+</header>
+<main>
+  <section id="tab-learn" class="card"></section>
+  <section id="tab-quiz" class="card hidden"></section>
+  <section id="tab-stats" class="card hidden"></section>
+</main>
+<script>
+/* ---------- preview data: lesson 1 ---------- */
+const KANJI = [
+  {k:'日', mean:'sun, day', also:'Also means "Japan" in 日本 (later lesson).',
+   readings:[{r:'ひ', w:'日', wr:'ひ', m:'day, sun'}, {r:'にち', w:'一日', wr:'いちにち', m:'one day'}],
+   later:'Later: か in dates (二日 ふつか, 十日 とおか), び in 日曜日 (Sunday).',
+   mn:'Picture a window with a bar across it, and the <b>sun</b> shining through. Every morning you wave at it: “<b>Hi!</b>” (<b>ひ</b>). It does this every single day, like a <b>neat cheat</b> code (<b>にち</b>) for counting days.'},
+  {k:'一', mean:'one', also:'',
+   readings:[{r:'いち', w:'一日', wr:'いちにち', m:'one day'}, {r:'ひと', w:'一つ', wr:'ひとつ', m:'one (thing)'}],
+   later:'',
+   mn:'One line means <b>one</b>. It’s an <b>itchy</b> (<b>いち</b>) scratch across the page. When you count objects, you <b>hit</b> (<b>ひと</b>) the first one: <b>ひと</b>つ.'},
+  {k:'大', mean:'big', also:'',
+   readings:[{r:'おお', w:'大きい', wr:'おおきい', m:'big'}],
+   later:'Later: だい in 大学 (university), たい in 大切 (important).',
+   mn:'A person 人 stretching their arms out as wide as they can: “It was <b>this big</b>!” Everyone gasps “<b>Ooh!</b>” (<b>おお</b>).'},
+  {k:'出', mean:'go out, take out', also:'',
+   readings:[{r:'で', w:'出る', wr:'でる', m:'to leave, go out'}, {r:'だ', w:'出す', wr:'だす', m:'to take out, hand in'}],
+   later:'Later: しゅつ / で in 出口 (exit).',
+   mn:'Two mountains 山 stacked up. You climb up and over them to <b>get out</b>. It’s your <b>day</b> out (<b>で</b>る). On the way, <b>Dad</b> (<b>だ</b>す) <b>takes out</b> the snacks.'},
+  {k:'今', mean:'now', also:'',
+   readings:[{r:'いま', w:'今', wr:'いま', m:'now'}],
+   later:'Later: こん in 今晩 (tonight) and 今週 (this week). 今日 is read きょう, a special reading.',
+   mn:'A roof with someone ducking under it: “<b>I’m a</b>(<b>いま</b>)-coming, right <b>now</b>!”'},
+];
+/* sentence markup: {漢字|かな} = shows furigana while that kanji is still new to you, ⟦…⟧ = the word being practiced */
+const WORDS = [
+  {w:'日', r:'ひ', m:'day; sun', s:'{冬|ふゆ}が{近|ちか}づくと、⟦日⟧が{短|みじか}くなる。', a:'ひ', e:'As winter approaches, the days get shorter.', parts:[['日','ひ']]},
+  {w:'一日', r:'いちにち', m:'one day; all day', s:'⟦一日⟧で{五百|ごひゃく}ドル{使|つか}ってしまった。', a:'いちにち', e:'I spent $500 in one day.', parts:[['一','いち'],['日','にち']]},
+  {w:'一つ', r:'ひとつ', m:'one (thing)', s:'りんごを⟦一つ⟧ください。', a:'ひとつ', e:'One apple, please.', parts:[['一','ひと']]},
+  {w:'大きい', r:'おおきい', m:'big', s:'⟦大きい⟧{犬|いぬ}がいます。', a:'おおきい', e:'There’s a big dog.', parts:[['大','おお']]},
+  {w:'大きな', r:'おおきな', m:'big', s:'⟦大きな⟧{声|こえ}で{話|はな}してください。', a:'おおきな', e:'Please speak in a loud voice.', parts:[['大','おお']]},
+  {w:'出る', r:'でる', m:'to leave; to go out', s:'{七時|しちじ}に{家|いえ}を⟦出⟧ます。', a:'で', e:'I leave home at seven.', parts:[['出','で']]},
+  {w:'出かける', r:'でかける', m:'to go out (somewhere)', s:'{日曜日|にちようび}に{家族|かぞく}と⟦出かけ⟧ました。', a:'でかけ', e:'I went out with my family on Sunday.', parts:[['出','で']]},
+  {w:'出す', r:'だす', m:'to take out; to hand in', s:'{宿題|しゅくだい}を⟦出し⟧てください。', a:'だし', e:'Please hand in your homework.', parts:[['出','だ']]},
+  {w:'今', r:'いま', m:'now', s:'⟦今⟧、{何時|なんじ}ですか。', a:'いま', e:'What time is it now?', parts:[['今','いま']]},
+  {w:'今日', r:'きょう', m:'today', s:'⟦今日⟧は{何|なに}をしたいですか。', a:'きょう', e:'What would you like to do today?', parts:[['今','き'],['日','ょう']], special:'Special reading: 今日 is read きょう as a whole word, not from the kanji’s usual readings.'},
+];
+const LEARNED = new Set(KANJI.map(k=>k.k));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toHira=s=>s.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}}, set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+let notes={}; try{ notes=JSON.parse(store.get('jkanji_notes_v1')||'{}')||{}; }catch(e){}
+const saveNotes=()=>store.set('jkanji_notes_v1',JSON.stringify(notes));
+function sentHTML(s, showTarget){
+  return s.replace(/\{([^|}]+)\|([^}]+)\}/g,(m,t,r)=>[...t].some(c=>/[一-龯]/.test(c)&&!LEARNED.has(c)) ? `<ruby>${t}<rt>${r}</rt></ruby>` : t)
+          .replace(/⟦([^⟧]+)⟧/g,(m,t)=>`<span class="tgt">${t}</span>`);
+}
+function say(t){ try{ const u=new SpeechSynthesisUtterance(t); u.lang='ja-JP'; u.rate=.9; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
+const plain=s=>s.replace(/\{([^|}]+)\|[^}]+\}/g,'$1').replace(/[⟦⟧]/g,'');
+const spk=t=>`<button type="button" class="speak" data-say="${esc(t)}">🔊</button>`;
+document.addEventListener('click',e=>{ const b=e.target.closest('.speak'); if (b) say(b.dataset.say); });
+function mnemHTML(K, editable){
+  const mine=notes[K.k];
+  if (editing===K.k && editable) return `<div class="mnem mine"><div class="who">Your note for ${K.k}</div>
+    <textarea id="noteBox" placeholder="Write your own mnemonic or note…">${esc(mine||'')}</textarea>
+    <div class="row" style="margin-top:8px"><button class="btn small primary" data-act="save">Save</button><button class="btn small" data-act="cancel">Cancel</button></div></div>`;
+  return mine
+    ? `<div class="mnem mine"><div class="who"><span>Your note</span>${editable?`<span><a data-act="edit">Edit</a> · <a data-act="restore">Show suggestion instead</a></span>`:''}</div>${esc(mine).replace(/\n/g,'<br>')}</div>`
+    : `<div class="mnem"><div class="who"><span>Suggested mnemonic</span>${editable?`<a data-act="edit">✎ Write your own</a>`:''}</div>${K.mn}</div>`;
+}
+
+/* ---------- LEARN ---------- */
+let step=0, editing=null;
+function renderLearn(){
+  const dots=KANJI.map((K,i)=>`<button class="dot jpf${i===step?' on':''}" data-step="${i}">${K.k}</button>`).join('')+`<button class="dot words${step===KANJI.length?' on':''}" data-step="${KANJI.length}">Words</button>`;
+  let h=`<div class="between"><div><h2>Lesson 1 of 80</h2><div class="sub">5 new kanji, then the 10 words they unlock</div></div><div class="dots">${dots}</div></div>`;
+  if (step<KANJI.length){
+    const K=KANJI[step];
+    h+=`<div class="khead"><div class="kbig jpf">${K.k}</div><div><div class="kmean">${K.mean}</div>${K.also?`<div class="kalso">${K.also}</div>`:''}</div></div>
+      <h3>Readings you’ll use now</h3><div class="rchips">${K.readings.map(r=>`<div class="rchip"><span class="rd jpf">${r.r}</span><span class="ex"><span class="jpf">${r.w}</span> (${r.wr}) · ${r.m} ${spk(r.wr)}</span></div>`).join('')}</div>
+      ${K.later?`<div class="later">${K.later}</div>`:''}
+      <h3>Remember it</h3><div id="mnemBox">${mnemHTML(K,true)}</div>
+      <div class="between" style="margin-top:20px"><button class="btn" data-nav="-1" ${step===0?'disabled':''}>‹ Back</button><button class="btn primary" data-nav="1">${step===KANJI.length-1?'See the words ›':'Next kanji ›'}</button></div>`;
+  } else {
+    h+=`<h3>Words you can now read</h3><div class="note" style="margin-bottom:10px">Each word comes with a real sentence. Kanji you haven’t learned yet keep their furigana; the ones you know don’t.</div>
+      <div class="wlist">${WORDS.map(W=>`<div class="witem"><div class="top"><span class="w jpf">${W.w}</span><span class="r jpf">${W.r}</span><span class="m">${W.m}</span>${W.special?'<span class="tag">special reading</span>':''} ${spk(W.r)}</div>
+        <div class="sent jpf">${sentHTML(W.s)}</div><div class="en">${W.e}</div></div>`).join('')}</div>
+      <div class="between" style="margin-top:20px"><button class="btn" data-nav="-1">‹ Back</button><button class="btn primary" id="startQuiz">Practice these words ›</button></div>`;
+  }
+  $('tab-learn').innerHTML=h;
+}
+$('tab-learn').addEventListener('click',e=>{
+  const d=e.target.closest('[data-step]'); if (d){ step=+d.dataset.step; editing=null; renderLearn(); return; }
+  const n=e.target.closest('[data-nav]'); if (n){ step=Math.max(0,Math.min(KANJI.length,step+ +n.dataset.nav)); editing=null; renderLearn(); scrollTo(0,0); return; }
+  if (e.target.id==='startQuiz'){ switchTab('quiz'); return; }
+  const a=e.target.closest('[data-act]'); if (!a) return; const K=KANJI[step];
+  if (a.dataset.act==='edit'){ editing=K.k; renderLearn(); $('noteBox').focus(); }
+  else if (a.dataset.act==='cancel'){ editing=null; renderLearn(); }
+  else if (a.dataset.act==='save'){ const v=$('noteBox').value.trim(); if (v) notes[K.k]=v; else delete notes[K.k]; saveNotes(); editing=null; renderLearn(); }
+  else if (a.dataset.act==='restore'){ if (confirm('Delete your note and show the suggested mnemonic again?')){ delete notes[K.k]; saveNotes(); renderLearn(); } }
+});
+
+/* ---------- REVIEW (quiz) ---------- */
+let mode='read', q=null, answered=false, session={c:0,t:0}, order=[], level={};   // level: 0–4 per word, like the other quizzes
+function nextQ(){
+  if (!order.length) order=[...WORDS].sort(()=>Math.random()-.5);
+  q=order.pop(); answered=false;
+  const qt = mode==='mix' ? (Math.random()<.6?'read':'mean') : mode;
+  q={...q, qt}; renderQ();
+}
+function renderQ(){
+  let h=`<div class="scorebar"><span>Session: <b>${session.c} / ${session.t}</b></span></div>
+    <div class="dirbar">${[['read','Reading'],['mean','Meaning'],['mix','Mixed']].map(([v,l])=>`<button class="dirbtn${mode===v?' on':''}" data-mode="${v}">${l}</button>`).join('')}</div>
+    <div class="qsent jpf">${sentHTML(q.s)}</div>`;
+  if (q.qt==='read'){
+    h+=`<div class="qask">How is the highlighted part read?</div>
+      <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type in romaji or kana…">
+      <div class="buttons"><button class="btn primary" id="checkBtn">Check</button><button class="btn" id="showBtn">Show answer</button></div>
+      <div class="hint">Romaji turns into kana as you type · Enter = check / next</div>`;
+  } else {
+    const opts=[q, ...WORDS.filter(w=>w.m!==q.m && w!==q).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);
+    h+=`<div class="qask">What does the highlighted word mean?</div><div class="choices">${opts.map((o,i)=>`<button class="choice" data-right="${o===q?1:0}"><span class="k">${i+1}</span>${esc(o.m)}</button>`).join('')}</div>`;
+  }
+  h+=`<div id="fb"></div><div class="buttons"><button class="btn primary hidden" id="nextBtn">Next →</button></div>`;
+  $('tab-quiz').innerHTML=h;
+  const inp=$('answer'); if (inp){ inp.addEventListener('input',onType); setTimeout(()=>inp.focus({preventScroll:true}),0); }
+}
+function feedback(ok, head){
+  answered=true; session.t++; if (ok) session.c++;
+  const prev=level[q.w]; level[q.w] = ok ? Math.min(4, prev===undefined?1:prev+1) : 0;
+  const parts=q.parts.map(([k,r])=>{ const K=KANJI.find(x=>x.k===k);
+    return `<div class="part"><span class="pk jpf">${k}</span><div><b>${K.mean}</b>${q.special?'':` · read <b class="jpf">${r}</b> here`}<div style="margin-top:4px">${mnemHTML(K,false)}</div></div></div>`; }).join('');
+  $('fb').innerHTML=`<div class="feedback ${ok?'ok':'bad'}"><div class="head">${head}</div>
+    <div class="ans jpf">${q.w} · ${q.r} ${spk(plain(q.s))}</div><div>${esc(q.m)}</div><div style="color:var(--muted);font-size:14px">${q.e}</div>
+    ${q.special?`<div style="margin-top:6px;font-size:13.5px"><span class="tag">special reading</span> ${q.special.replace(/^Special reading: /,'')}</div>`:''}
+    <div class="parts">${parts}</div></div>`;
+  $('nextBtn').classList.remove('hidden'); $('scorebar');
+  document.querySelector('.scorebar b').textContent=`${session.c} / ${session.t}`;
+}
+function check(show){
+  if (answered){ nextQ(); return; }
+  const inp=$('answer'); const v=toHira(romajiToKana(inp.value.trim(),true));
+  if (!show && !v) return;
+  const ok=!show && v===q.a; inp.value=v; inp.readOnly=true; inp.className=ok?'ok':'bad';
+  feedback(ok, ok?'Correct!':show?`The highlighted part is read ${q.a}`:`Not quite. It’s read ${q.a}`);
+}
+$('tab-quiz').addEventListener('click',e=>{
+  const m=e.target.closest('[data-mode]'); if (m){ mode=m.dataset.mode; nextQ(); return; }
+  if (e.target.id==='checkBtn') check(false); else if (e.target.id==='showBtn') check(true); else if (e.target.id==='nextBtn') nextQ();
+  const c=e.target.closest('.choice'); if (c && !answered){ const ok=c.dataset.right==='1';
+    document.querySelectorAll('.choice').forEach(b=>{ b.disabled=true; if (b.dataset.right==='1') b.classList.add('right'); else if (b===c) b.classList.add('wrong'); });
+    feedback(ok, ok?'Correct!':'Not quite'); }
+});
+document.addEventListener('keydown',e=>{ if ($('tab-quiz').classList.contains('hidden')) return;
+  if (e.key==='Enter'){ e.preventDefault(); if (q && q.qt==='read') check(false); else if (answered) nextQ(); }
+  else if (!answered && q && q.qt==='mean' && /^[1-4]$/.test(e.key)){ const b=document.querySelectorAll('.choice')[+e.key-1]; if (b) b.click(); } });
+/* romaji → kana */
+const ROMA=(()=>{ const t={a:'あ',i:'い',u:'う',e:'え',o:'お'}, rows={k:'かきくけこ',g:'がぎぐげご',s:'さしすせそ',z:'ざじずぜぞ',t:'たちつてと',d:'だぢづでど',n:'なにぬねの',h:'はひふへほ',b:'ばびぶべぼ',p:'ぱぴぷぺぽ',m:'まみむめも',r:'らりるれろ'};
+  for (const c in rows) for (let i=0;i<5;i++) t[c+'aiueo'[i]]=rows[c][i];
+  Object.assign(t,{ya:'や',yu:'ゆ',yo:'よ',wa:'わ',wo:'を',shi:'し',chi:'ち',tsu:'つ',fu:'ふ',ji:'じ',ja:'じゃ',ju:'じゅ',jo:'じょ',sha:'しゃ',shu:'しゅ',sho:'しょ',cha:'ちゃ',chu:'ちゅ',cho:'ちょ',nn:'ん',"n'":'ん','-':'ー'});
+  for (const c of 'kgnhbpmr') for (const [v,s] of [['a','ゃ'],['u','ゅ'],['o','ょ']]) t[c+'y'+v]=rows[c][1]+s; return t; })();
+function romajiToKana(str, final){ let out='', i=0; const s=str.toLowerCase();
+  while (i<s.length){ const ch=s[i];
+    if (!/[a-z'\-]/.test(ch)){ out+=str[i]; i++; continue; }
+    if (ch==='n'){ const nx=s[i+1]; if (nx===undefined){ out+=final?'ん':'n'; i++; continue; } if (nx==='n'){ out+='ん'; i+=2; continue; } if (!'aiueoy'.includes(nx)){ out+='ん'; i++; continue; } }
+    if (/[bcdfghjkmprstvwz]/.test(ch) && s[i+1]===ch){ out+='っ'; i++; continue; }
+    let hit=false; for (let L=3;L>=1;L--){ const sub=s.substr(i,L); if (sub.length===L && ROMA[sub]){ out+=ROMA[sub]; i+=L; hit=true; break; } }
+    if (!hit){ out+=str.slice(i); break; } }
+  return out; }
+function onType(e){ const inp=e.target; if (answered || e.isComposing) return; const c=romajiToKana(inp.value,false); if (c!==inp.value) inp.value=c; }
+
+/* ---------- STATS (design sketch) ---------- */
+function renderStats(){
+  const seen=Object.keys(level).length, got=Object.values(level).filter(x=>x>=2).length;
+  const rows=[['N5 kanji',0,0,296],['N4 kanji',0,0,93]], wrows=[['N5 words',got,seen-got,400],['N4 words',0,0,289]];
+  const bars=rs=>`<div class="lchart">${rs.map(([l,a,b,n])=>`<div class="lrow"><span><b>${l.split(' ')[0]}</b> ${l.split(' ')[1]}</span><span class="lbar"><i class="la" style="width:${100*a/n}%"></i><i class="lb" style="width:${100*b/n}%"></i></span><span class="lnum">${a} / ${n}</span></div>`).join('')}</div>`;
+  const kstate=k=>{ const ws=WORDS.filter(w=>w.parts.some(p=>p[0]===k) && !w.special); const lv=ws.map(w=>level[w.w]).filter(x=>x!==undefined); return !lv.length?'':lv.length===ws.length&&lv.every(x=>x>=2)?'m':'p'; };
+  $('tab-stats').innerHTML=`<h2>Stats</h2>
+    <h3>Kanji mastered</h3>${bars(rows)}
+    <div class="kgrid">${KANJI.map(K=>`<div class="kc jpf ${kstate(K.k)}">${K.k}</div>`).join('')}${'<div class="kc"></div>'.repeat(13)}</div>
+    <div class="legend2"><span class="sw" style="background:var(--okbg);border-color:var(--ok)"></span>Mastered <span class="sw" style="background:#fff3bf;border-color:#e8a300"></span>Practicing <span class="sw" style="background:var(--pill)"></span>Not yet learned</div>
+    <div class="note" style="margin-top:4px">A kanji counts as mastered once every word you’ve learned with it has been read correctly twice in a row.</div>
+    <h3>Words learned</h3>${bars(wrows)}
+    <div class="note">Same rule as the vocab quiz: right twice in a row = learned; a miss sends it back to practicing. (Kanji bars stay at 0 in this preview.)</div>`;
+}
+
+/* ---------- wiring ---------- */
+function switchTab(t){ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  for (const x of ['learn','quiz','stats']) $('tab-'+x).classList.toggle('hidden',x!==t);
+  if (t==='quiz' && !q) nextQ(); if (t==='stats') renderStats(); if (t==='learn') renderLearn(); }
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+$('gearBtn').addEventListener('click',()=>{ const p=$('settingsPanel'); const open=p.classList.toggle('closed')===false; $('gearBtn').setAttribute('aria-expanded',open); });
+const dk=$('darkToggle'); dk.checked=document.documentElement.classList.contains('dark');
+dk.addEventListener('change',()=>{ document.documentElement.classList.toggle('dark',dk.checked); store.set('jkanji_dark_v1',dk.checked?'on':'off'); });
+renderLearn();
+</script>
+</body>
+</html>
