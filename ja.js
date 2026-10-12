@@ -77,6 +77,8 @@ const D = {
   "This viewer blocks saving, so lifetime stats won't persist.":'この表示環境では保存できないため、累計成績は残りません。',
   "This viewer blocks saving, so lifetime stats won't persist. Download the file and open it directly in Chrome to save progress.":'この表示環境では保存できないため、累計成績は残りません。ファイルをダウンロードしてChromeで直接開くと保存できます。',
   // kanji quiz
+  "Focusing on new words":"新しい単語を重点的に",
+  "Focus on new words":"新しい単語を重点的に",
   "漢字 Kanji Quiz":"漢字クイズ",
   "Kanji Quiz":"漢字クイズ",
   "Kanji":"漢字",
@@ -330,6 +332,7 @@ const P = [
   [/^Overall: (\d+)%$/, m=>`全体：${m[1]}%`],
   [/^Recent: (\d+)%$/, m=>`最近：${m[1]}%`],
   [/^Accuracy over your last (\d+) answers?$/, m=>`直近${m[1]}問の正答率`],
+  [/^— words you haven’t answered yet come up much more often \(([\d,]+) left with these filters\)$/, m=>`― まだ答えていない単語がよく出題されます（現在の条件で残り${m[1]}語）`],
   [/^Lesson (\d+) of (\d+)$/, m=>`レッスン ${m[1]}／${m[2]}`],
   [/^Lesson (\d+)$/, m=>`レッスン ${m[1]}`],
   [/^Start lesson (\d+) ›$/, m=>`レッスン${m[1]}を始める ›`],
