@@ -234,6 +234,7 @@
       </div>
       <div class="choices hidden" id="choices"></div>
       <div id="feedback"></div>
+      <div class="buttons hidden" id="mcNext"><button class="btn primary" id="mcNextBtn">Next →</button></div>
     </div>
     <div id="emptyPool" class="hidden" style="text-align:center;color:var(--muted)">No counters selected. Pick at least one on the Filters tab.</div>
   </section>
@@ -586,7 +587,7 @@ function nextQuestion(){
   answered=false;
   renderQuestion();
   $('feedback').innerHTML='';
-  $('submitBtn').textContent='Check';
+  $('submitBtn').textContent='Check'; $('mcNext').classList.add('hidden');
   const inp=$('answer'); inp.value=''; inp.className=''; inp.readOnly=false;
   if (mcOn()) renderChoices(); else inp.focus();
 }
@@ -635,7 +636,7 @@ function check(reveal, chosen){
     if (okList.includes(b.dataset.v)) b.classList.add('right');
     else if (b.dataset.v===given) b.classList.add('wrong');
   });
-  $('submitBtn').textContent='Next →';
+  $('submitBtn').textContent='Next →'; $('mcNext').classList.toggle('hidden', !mcOn());
   $('qHint').classList.remove('hidden');
   const main=accepted(c,n)[0], say=main;
   const others=it.c.filter(id=>id!==c.id).map(id=>C_BY_ID[id]);
@@ -823,6 +824,7 @@ document.addEventListener('keydown',e=>{
 });
 $('submitBtn').addEventListener('click',()=>check(false));
 $('revealBtn').addEventListener('click',()=>{ if(!answered) check(true); });
+$('mcNextBtn').addEventListener('click',()=>nextQuestion());
 $('choices').addEventListener('click',e=>{ const b=e.target.closest('.choice'); if (b && !answered) check(false, b.dataset.v); });
 $('feedback').addEventListener('click',e=>{ const b=e.target.closest('.speak'); if (b){ TTS.say(b.dataset.say); } });
 
@@ -831,6 +833,7 @@ function setMode(mc){
   $('mcBtn').textContent = mc ? '☰ Multiple choice: on' : '☰ Multiple choice';
   $('typeArea').classList.toggle('hidden', mc);
   $('choices').classList.toggle('hidden', !mc);
+  $('mcNext').classList.toggle('hidden', !(mc && answered));
   store.set(LS.mc, mc?'on':'off');
 }
 $('mcBtn').addEventListener('click',()=>{
