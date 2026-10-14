@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kohikori · Japanese Practice</title>
-<meta name="description" content="Free Japanese practice apps: kana, kanji, verb and adjective conjugation, counters, JLPT vocabulary and listening quizzes, made by a learner for learners.">
+<meta name="description" content="Free Japanese practice apps: kana, kanji, verb and adjective conjugation, numbers, counters, JLPT vocabulary and listening quizzes, made by a learner for learners.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-favicon-64.png">
 <link rel="apple-touch-icon" href="icon-home-180.png">
@@ -96,6 +96,18 @@
 
   /* phones: no lingering tap highlight or 'hover' outline after tapping */
   button,a,label{-webkit-tap-highlight-color:transparent}
+  /* ---- rearranging the tiles ---- */
+  .arrangebar{display:flex;justify-content:flex-end;gap:14px;margin-top:8px}
+  .linkbtn{background:none;border:none;color:var(--muted);font:inherit;font-size:12.5px;cursor:pointer;padding:4px 2px}
+  .linkbtn:hover{color:var(--accent)}
+  .mv{display:none;gap:6px;width:100%;margin-top:8px}
+  body.arranging .mv{display:flex}
+  body.arranging a.app{border-style:dashed;border-color:var(--accent);cursor:default}
+  body.arranging a.app:active{transform:none}
+  .mvb{flex:1;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;font-size:16px;line-height:1;padding:6px 0;cursor:pointer;font-family:inherit}
+  .mvb:disabled{opacity:.3;cursor:default}
+  @media (hover:hover){.mvb:not(:disabled):hover{border-color:var(--accent);color:var(--accent)}}
+  body.arranging #arrangeBtn{color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
@@ -139,7 +151,7 @@
     <a class="app" href="kanji.html">
       <div class="tile" style="background:#343a40">漢</div>
       <h2>Kanji</h2>
-      <p class="jp">漢字</p><p>Read</p>
+      <p class="jp">漢字</p><p>Recognize</p>
       <div class="progress none" id="pKanji"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
     </a>
     <a class="app" href="verb.html">
@@ -153,6 +165,12 @@
       <h2>Adjectives</h2>
       <p class="jp">形容詞</p><p>Describe</p>
       <div class="progress none" id="pAdj"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
+    </a>
+    <a class="app" href="numbers.html">
+      <div class="tile" style="background:#087f5b">百</div>
+      <h2>Numbers</h2>
+      <p class="jp">数字</p><p>Count</p>
+      <div class="progress none" id="pNum"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
     </a>
     <a class="app" href="counters.html">
       <div class="tile" style="background:#e67700">数</div>
@@ -173,6 +191,7 @@
       <div class="progress none" id="pListen"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
     </a>
   </div>
+  <div class="arrangebar"><button type="button" class="linkbtn hidden" id="arrangeReset">Reset order</button><button type="button" class="linkbtn" id="arrangeBtn">↕ Rearrange</button></div>
 
   <section class="sync hidden" id="sync">
     <button class="x syncx" id="syncClose" aria-label="Close">×</button>
@@ -233,6 +252,7 @@ function showProgress(el, {c,t,p}){
 }
 showProgress($('pKana'),  total('jkana_stats_v1','jkana_peers_v1'));
 showProgress($('pKanji'), total('jkanji_stats_v1','jkanji_peers_v1'));
+showProgress($('pNum'),   total('jnum_stats_v1','jnum_peers_v1'));
 showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
 showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
 showProgress($('pListen'), total('jlisten_stats_v1','jlisten_peers_v1'));
@@ -267,6 +287,7 @@ const SYNC_APPS = [
   {key:'kanji', name:'Kanji',      p:'jkanji_', app:'jkanji-quiz', kanji:true},
   {key:'verb',  name:'Verbs',      p:'jvq_',    app:'jvq-verb-quiz'},
   {key:'adj',   name:'Adjectives', p:'jadj_',   app:'jadj-adjective-quiz'},
+  {key:'num',   name:'Numbers',    p:'jnum_',   app:'jnum-quiz'},
   {key:'cnt',   name:'Counters',   p:'jcnt_',   app:'jcnt-counters-quiz'},
   {key:'vocab', name:'Vocabulary', p:'jvocab_', app:'jvocab-quiz', syn:true},
   {key:'listen', name:'Listening', p:'jlisten_', app:'jlisten-quiz'},
@@ -287,7 +308,7 @@ function exportApp(a){
   return d;
 }
 const buildBackup = () => ({app:'kohikori-backup', version:1, exportedAt:Date.now(),
-  apps:Object.fromEntries(SYNC_APPS.map(a=>[a.key, exportApp(a)]))});
+  apps:Object.fromEntries(SYNC_APPS.map(a=>[a.key, exportApp(a)])), order:savedOrder()});
 
 function normSyn(s){   // same rule the vocab quiz uses to match synonyms
   let t=s.toLowerCase().replace(/[’‘`]/g,"'").replace(/[^a-z0-9' \-]/g,' ').replace(/-/g,' ').replace(/\s+/g,' ').trim();
@@ -330,6 +351,7 @@ function mergeApp(a, d){
   return {devs, spots, syn};
 }
 function restore(d){
+  if (d && d.order && d.order.o){ const mine=savedOrder(); if (!mine || d.order.at>mine.at){ set(ORDER_KEY, JSON.stringify(d.order)); applyOrder(d.order.o); refreshArrows(); } }
   // accepts the all-in-one backup or a single quiz's own export file
   const parts = d && d.app==='kohikori-backup' ? d.apps||{} : {};
   if (d && d.app!=='kohikori-backup'){ const a=SYNC_APPS.find(x=>x.app===d.app); if (a) parts[a.key]=d; }
@@ -412,6 +434,7 @@ $('codeGo').addEventListener('click', async ()=>{
 function refreshProgress(){
   showProgress($('pKana'),  total('jkana_stats_v1','jkana_peers_v1'));
   showProgress($('pKanji'), total('jkanji_stats_v1','jkanji_peers_v1'));
+  showProgress($('pNum'),   total('jnum_stats_v1','jnum_peers_v1'));
   showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
   showProgress($('pAdj'),   total('jadj_stats_v1','jadj_peers_v1'));
   showProgress($('pCnt'),   total('jcnt_stats_v1','jcnt_peers_v1'));
@@ -431,6 +454,43 @@ window.addEventListener('hashchange',()=>{ if (location.hash==='#sync') openSync
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
   navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ================= REARRANGE THE TILES =================
+   The order is saved on this device (and travels with the 🔄 backup). New quizzes added later show up at the end. */
+const ORDER_KEY='kohikori_order_v1';
+const appsEl=document.querySelector('.apps');
+const tiles=()=>[...appsEl.querySelectorAll('a.app')];
+const hrefOf=a=>a.getAttribute('href');
+const DEFAULT_ORDER=tiles().map(hrefOf);
+function applyOrder(order){
+  if (!Array.isArray(order)) return;
+  const map=Object.fromEntries(tiles().map(a=>[hrefOf(a),a])), seen=new Set();
+  for (const h of order) if (map[h] && !seen.has(h)){ appsEl.appendChild(map[h]); seen.add(h); }
+  for (const h of DEFAULT_ORDER) if (!seen.has(h)) appsEl.appendChild(map[h]);
+}
+function savedOrder(){ try { return JSON.parse(get(ORDER_KEY)||'null'); } catch(e){ return null; } }
+function saveOrder(){ set(ORDER_KEY, JSON.stringify({o:tiles().map(hrefOf), at:Date.now()})); }
+{ const so=savedOrder(); if (so && so.o) applyOrder(so.o); }
+for (const a of tiles()) a.insertAdjacentHTML('beforeend','<span class="mv"><button type="button" class="mvb" data-d="-1" aria-label="Move earlier">‹</button><button type="button" class="mvb" data-d="1" aria-label="Move later">›</button></span>');
+function refreshArrows(){ const ts=tiles(); ts.forEach((a,i)=>{ const [b1,b2]=a.querySelectorAll('.mvb'); b1.disabled=i===0; b2.disabled=i===ts.length-1; }); }
+function setArranging(on){
+  document.body.classList.toggle('arranging',on);
+  $('arrangeBtn').textContent = on ? '✓ Done' : '↕ Rearrange';
+  $('arrangeReset').classList.toggle('hidden',!on);
+  refreshArrows();
+}
+$('arrangeBtn').addEventListener('click',()=>setArranging(!document.body.classList.contains('arranging')));
+$('arrangeReset').addEventListener('click',()=>{ applyOrder(DEFAULT_ORDER); try { localStorage.removeItem(ORDER_KEY); } catch(e){} refreshArrows(); });
+appsEl.addEventListener('click',e=>{
+  if (!document.body.classList.contains('arranging')) return;
+  e.preventDefault();                                   // while rearranging, tapping a tile doesn't open it
+  const b=e.target.closest('.mvb'); if (!b || b.disabled) return;
+  const a=b.closest('a.app'), ts=tiles(), i=ts.indexOf(a), j=i+ +b.dataset.d;
+  if (j<0 || j>=ts.length) return;
+  if (+b.dataset.d<0) appsEl.insertBefore(a, ts[j]); else appsEl.insertBefore(a, ts[j].nextSibling);
+  saveOrder(); refreshArrows();
+  const nb=a.querySelector(`.mvb[data-d="${b.dataset.d}"]`); if (nb && !nb.disabled) nb.focus({preventScroll:true});
+});
 </script>
 <script src="ja.js"></script>
 </body>

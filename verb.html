@@ -2072,7 +2072,9 @@ function updateSrs(v,f,ok){
   store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
 }
 const sessionSeen = new Set();   // pairs already asked this session (no repeats)
-let recentVerbs = [];            // last few verbs, to avoid back-to-back same verb
+let recentVerbs = [];
+let formDeck = [], lastForm = null;
+const shuffleArr = a => { a=[...a]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };            // last few verbs, to avoid back-to-back same verb
 const GROUP_LABEL = {u:'う-verbs (godan)', ru:'る-verbs (ichidan)', irr:'Irregular (する / 来る)'};
 
 function record(st, v, f, ok){
@@ -2110,6 +2112,15 @@ function nextQuestion(){
     if (!cand.length){ sessionSeen.clear(); cand = pool; }        // whole pool done: start over
     const fresh = cand.filter(([v]) => !recentVerbs.includes(v.b));
     if (fresh.length) cand = fresh;
+    if (!filters.srs){
+      // Without weak-spot focus, deal the forms like a shuffled deck: every selected form comes up once
+      // before any repeats, so no form goes missing for long and none bunches up.
+      const avail=[...new Set(cand.map(([,f])=>f))];
+      formDeck=formDeck.filter(f=>avail.includes(f));
+      if (!formDeck.length) formDeck=shuffleArr(avail.filter(f=>f!==lastForm).concat(avail.includes(lastForm)&&avail.length>1?[]:avail.filter(f=>f===lastForm)));
+      const want=formDeck.shift(); lastForm=want;
+      cand=cand.filter(([,f])=>f===want);
+    }
     const weights = cand.map(([v,f]) => pairWeight(v,f));
     let r = Math.random() * weights.reduce((a,b)=>a+b,0), idx = 0;
     while (idx < cand.length-1 && (r -= weights[idx]) > 0) idx++;
