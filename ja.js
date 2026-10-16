@@ -16,6 +16,12 @@ const D = {
   'Japanese Counters Quiz':'助数詞クイズ', 'Japanese Vocabulary Quiz':'語彙クイズ',
   '活用 Verb Conjugation Quiz':'動詞活用クイズ', '形容詞 Adjective Quiz':'形容詞クイズ', '助数詞 Counters Quiz':'助数詞クイズ', '語彙 Vocabulary Quiz':'語彙クイズ',
   'Verb Conjugation Quiz':'動詞活用クイズ', 'Adjective Quiz':'形容詞クイズ', 'Counters Quiz':'助数詞クイズ', 'Vocabulary Quiz':'語彙クイズ',
+  // verb learn tab
+  "How verb conjugation works":"動詞の活用のしくみ",
+  "Every form, by group":"グループ別の全活用形",
+  "Group 1: the columns":"グループ1：段の変化",
+  "Group 1 て-form and た-form":"グループ1のて形・た形",
+  "Irregular":"不規則",
   // home page
   'Free Japanese practice – built by and for learners.':'無料の日本語練習アプリ ― 学習者による、学習者のための。',
   'Conjugate 1,500 verbs into 18 forms, from ます and て to passive and causative. Every mistake comes with the rule that explains it.':'約1,500の動詞を、「ます」「て」から受身・使役まで18の形に活用。間違えると、その理由になるルールを表示します。',
@@ -66,7 +72,7 @@ const D = {
   'Check':'答え合わせ', 'Show answer':'答えを見る', 'Next →':'次へ →', 'Finish →':'終了 →', 'Convert to':'活用形：',
   'type in romaji…':'ローマ字で入力…', 'type in romaji… (e.g. sanbon)':'ローマ字で入力（例：sanbon）', 'type the English meaning…':'英語の意味を入力…',
   'type in Japanese…':'日本語で入力…', 'search Japanese or English…':'日本語または英語で検索…',
-  '✏️ Please check your spelling':'✏️ つづりを確認してください', 'Correct!':'正解！', 'Answer':'答え', 'Correct':'正解', 'I was right':'合っていたことにする', 'Marked correct':'正解にしました',
+  '✏️ Please check your spelling':'✏️ つづりを確認してください', 'Correct!':'正解！', 'Answer':'答え', 'Correct':'正解', 'I was right':'合っていたことにする', '✓ I was right':'✓ 合っていたことにする', 'Meant the same thing?':'同じ意味のつもり？', 'Marked correct':'正解にしました',
   '⚑ Report a mistake in this word':'⚑ この単語の誤りを報告', '⚑ Report a mistake in this question':'⚑ この問題の誤りを報告',
   'answer in Japanese':'日本語で答える', 'type what the word means':'意味を入力', 'type the form of the verb you hear':'聞こえた動詞を活用',
   'type the form of the adjective you hear':'聞こえた形容詞を活用',
@@ -330,7 +336,7 @@ const D = {
   'Best streak':'最高連続正解', 'Weak items cleared':'克服した苦手', 'You wrote':'あなたの答え', '(revealed)':'（答えを表示）', 'No misses this session. Nice work.':'今回はミスなし。お見事！',
   'Review mode':'復習モード', 'Wrapping up':'まとめ中', 'Done. Press Finish to see your summary':'終了です。「終了」を押すとまとめが表示されます',
   // word list
-  'answers are extra accepted synonyms,':'の答えは追加で認められる同義語、', 'are ones you approved with “I was right” (× removes one), and':'は「合っていたことにする」で承認したもの（×で削除）、',
+  "You've added":'「合っていたことにする」で追加した答え：', 'answer(s) with “I was right”.':'件。', 'Email them to me':'メールで送る', "and I'll add them for everyone.":'と、みんなのクイズに追加します。', 'answers are extra accepted synonyms,':'の答えは追加で認められる同義語、', 'are ones you approved with “I was right” (× removes one), and':'は「合っていたことにする」で承認したもの（×で削除）、',
   'explain tricky meanings.':'は紛らわしい意味の説明です。', 'Italic':'斜体',
   // counters
   'How counters work':'助数詞のしくみ', 'Core counters':'基本の助数詞', 'More things':'その他のもの', 'Times, floors, age, clock':'回数・階・年齢・時刻',

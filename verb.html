@@ -151,6 +151,37 @@
   }
   /* ---- typing on a phone: leave room to scroll the question to the top of the screen ---- */
   body.kbd{padding-bottom:70vh}
+  /* ---- learn tab ---- */
+  .lead{font-size:14.5px;line-height:1.6;margin:0 0 8px}
+  .note2{font-size:13.5px;color:var(--muted);line-height:1.55;margin:4px 0 8px}
+  .grp{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .grp .gt{font-weight:600;font-size:15px}
+  .grp .gt .tag2{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:10px;margin-right:6px;color:#fff}
+  .g1{background:#3b5bdb} .g2{background:#2b8a3e} .g3{background:#e8590c}
+  .grp .gd{font-size:14px;line-height:1.6;margin-top:4px}
+  .jpl{font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+  .vtab{width:100%;border-collapse:collapse;font-size:16px;text-align:center;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+  .vtab th,.vtab td{border:1px solid var(--line);padding:5px 2px}
+  .vtab th{font-size:11.5px;color:var(--muted);font-family:system-ui,sans-serif;font-weight:600;line-height:1.3}
+  .vtab td.dict{background:var(--accentbg);font-weight:600}
+  .vtab td.wa{color:var(--accent);font-weight:700}
+  .vtab th.use{font-weight:400;text-transform:none}
+  .fcard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0}
+  .fcard .fh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .fcard .fn{font-weight:600}
+  .fcard .fj{font-family:"Noto Sans JP","Hiragino Sans",system-ui,sans-serif;color:var(--muted);font-size:14px}
+  .fcard .fu{font-size:12.5px;color:var(--muted);margin:2px 0 6px}
+  .frow{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+  .frow .gl{font-size:11px;font-weight:700;color:#fff;border-radius:6px;text-align:center;padding:2px 0}
+  .frow .ex{font-family:"Noto Sans JP","Hiragino Sans",system-ui,sans-serif;font-size:16px;white-space:nowrap;text-align:right}
+  .frow .ex ruby rt{font-size:.5em}
+  .ttab{width:100%;border-collapse:collapse;font-size:14.5px}
+  .ttab td,.ttab th{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left}
+  .ttab th{font-size:12px;color:var(--muted);font-weight:600}
+  .ttab .jpl{font-size:16px}
+  .catnav{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+  .catnav a{font-size:12.5px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--text);text-decoration:none}
+  @media (max-width:420px){ .vtab{font-size:14px} .vtab th{font-size:10px} .frow{grid-template-columns:24px 1fr;} .frow .ex{grid-column:2;text-align:left} }
 </style>
 </head>
 <body>
@@ -158,6 +189,7 @@
   <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>活用 Verb Conjugation Quiz</h1>
   <nav>
     <button data-tab="quiz" class="active">Quiz</button>
+    <button data-tab="learn">Learn</button>
     <button data-tab="filters">Filters</button>
     <button data-tab="stats">Stats</button>
   </nav>
@@ -208,6 +240,7 @@
   </section>
 
   <!-- FILTERS -->
+  <section id="tab-learn" class="card hidden"><h2>How verb conjugation works</h2><div id="learnBody"></div></section>
   <section id="tab-filters" class="card hidden">
     <h2>Filters</h2>
     <div id="filterBody"></div>
@@ -2160,6 +2193,26 @@ function kanaVariants(expected){
   return out;
 }
 const kanaMatch = (given, expected) => kanaVariants(expected).includes(toHira(given));
+/* noun + する verbs: accept a particle between the noun and する (勉強をする, 勉強はしない, 勉強もした).
+   Not for one-kanji verbs (愛する), adverb-like stems (しっかりする, いらいらする), and を not for
+   stems where it isn't natural (故障をする, 意味をする). お typed for を also counts. */
+const NO_WO = ['意味','関係','原因','安心','経由','存在','一致','相違','矛盾','故障','混雑','渋滞','誕生','死亡','不足','回転','紅葉','噴火','停電','断水','生存','冷蔵','承知'];
+function suruParticle(v, given, answer){
+  if (v.irr!=='suru' || v.b==='する') return null;
+  const stemK=toKanji(v.b).slice(0,-2), stemR=toReading(v.b).slice(0,-2);
+  if (stemK.length<2 || /々/.test(stemK)) return null;
+  if (/^[ぁ-んァ-ンー]+$/.test(stemK) && (/(り|っと)$/.test(stemK) || /^(.{2})\1$/.test(stemK) || stemK==='ちゃんと')) return null;
+  if (stemK==='何とか') return null;
+  const g=given.replace(/\s+/g,''), endR=toReading(answer).slice(stemR.length), endK=toKanji(answer).slice(stemK.length);
+  for (const [stem, isK] of [[stemK,true],[stemR,false],[toHira(stemR),false]]){
+    if (!g.startsWith(stem)) continue;
+    let p=g[stem.length]; if (p==='お') p='を';
+    if (!'をはも'.includes(p) || (p==='を' && NO_WO.includes(stemK))) continue;
+    const rest=g.slice(stem.length+1);
+    if (kanaMatch(stemR+rest, toReading(answer)) || rest===endK || kanaMatch(rest, endR)) return p;
+  }
+  return null;
+}
 
 /* ---- spelling slip in the stem: ask once to fix it before grading ----
    If the conjugated ending is right and only the unchanged start of the word has a small typo
@@ -2194,6 +2247,8 @@ function check(reveal){
   inp.value=given;
   const {v,f,answer}=current;
   let ok = !reveal && (kanaMatch(given, toReading(answer)) || given===toKanji(answer));
+  let particle=null;   // noun + する: 勉強をします / 勉強はしません also count
+  if (!ok && !reveal){ particle=suruParticle(v, given, answer); ok=!!particle; }
   let homo=null;   // listening: a different verb that sounds the same (e.g. 帰る / 変える) also counts
   if (listening && !reveal && !ok){
     homo = soundAlikes(v).find(o => allowed(o,f) && kanaMatch(given, toReading(conjugate(o,f)))) || null;
@@ -2225,6 +2280,7 @@ function check(reveal){
     html+=ex.notes.map(n=>`<div class="note">⚠ ${n}</div>`).join('');
   }
   html+=`<div class="rule" style="color:var(--muted);font-size:13px">${ex.use}</div>`;
+  if (particle) html+=`<div class="homo">${escH(given.replace(/\s+/g,''))} counts too. With noun + する verbs, ${particle==='を'?'を between the noun and する is fine':particle+' between the noun and する is fine in the right context'}.</div>`;
   if (homo) html+=`<div class="homo">You heard ${toKanji(homo.b)} (${homo.m}), which sounds the same, so that counts.</div>`;
   else if (listening && soundAlikes(v).length) html+=`<div class="homo">Sounds the same: ${soundAlikes(v).map(o=>toKanji(o.b)+' ('+escH(o.m)+')').join(', ')}</div>`;
   html+=`<div class="reportline"><a href="${reportHref(v,f,answer,reveal?'':given)}">⚑ Report a mistake in this question</a></div></div>`;
@@ -2371,10 +2427,69 @@ $('importFile').addEventListener('change',async e=>{
     : '<span style="color:var(--muted)">Already up to date. Nothing new in that file.</span>';
 });
 
+
+/* ================= LEARN ================= */
+const LV = b => VERBS.find(v=>v.b===b);
+const EX = {g1:LV('書[か]く'), g2:LV('食[た]べる'), suru:LV('する'), kuru:LV('来[く]る')};
+const COLS = ['あ','い','う','え','お'];
+const ENDINGS = ['う','く','ぐ','す','つ','ぬ','ぶ','む','る'];
+const COL_OF = {い:I_ROW, あ:A_ROW, え:E_ROW, お:O_ROW};
+const COL_USE = {あ:'ない · なかった · passive · causative', い:'ます forms · たい', う:'dictionary form', え:'ば · potential · command', お:'volitional (〜う)'};
+const exHTML = (v,f) => `<ruby>${toRuby(conjugate(v,f))}</ruby>`.replace(/^<ruby>|<\/ruby>$/g,'');
+function g1Rule(f){
+  if (f==='te') return 'Depends on the last kana: see the て-form table below';
+  if (f==='ta') return 'Like the て-form, with た / だ instead of て / で';
+  if (f==='tara') return 'た-form + <b>ら</b>';
+  if (f==='proh') return 'Dictionary form + <b>な</b>';
+  const [col,suf]=GODAN_RULE[f];
+  return `Shift to the <b>${col}</b>-column${suf?` + <b class="jpl">${suf}</b>`:''}`;
+}
+const g2Rule = f => f==='proh' ? 'Dictionary form + <b>な</b>' : `Drop る + <b class="jpl">${RU_SUFFIX[f]}</b>`;
+function renderLearn(){
+  let h=`<p class="lead">Every Japanese verb belongs to one of three groups, and the group decides how it changes. Find the group first, then follow the rule for the form you want.</p>
+  <div class="grp"><div class="gt"><span class="tag2 g1">1</span>Group 1 · う-verbs (godan)</div>
+    <div class="gd">End in any う-sound: <span class="jpl">う く ぐ す つ ぬ ぶ む る</span>. Examples: <span class="jpl">書く, 飲む, 話す, 買う</span>.<br>
+    The last kana <b>moves to a different column</b> of its row (書<b>く</b> → 書<b>き</b>ます, 書<b>か</b>ない).</div></div>
+  <div class="grp"><div class="gt"><span class="tag2 g2">2</span>Group 2 · る-verbs (ichidan)</div>
+    <div class="gd">End in <b>る</b> with an い or え sound just before it (-iru / -eru): <span class="jpl">食べる, 見る, 起きる</span>.<br>
+    Just <b>drop る</b> and add the ending (食べ<b>る</b> → 食べ<b>ます</b>).<br>
+    <span style="color:var(--muted)">Watch out: a few -iru / -eru verbs are Group 1, e.g. <span class="jpl">帰る, 入る, 走る, 知る, 切る</span> (帰る → 帰ります, not 帰ます).</span></div></div>
+  <div class="grp"><div class="gt"><span class="tag2 g3">3</span>Group 3 · irregular</div>
+    <div class="gd">Only <span class="jpl">する</span> (do) and <span class="jpl">来る</span> (くる, come). Nouns + する (<span class="jpl">勉強する</span>) change just the する part. They have to be memorized, but they're shown in every row below.</div></div>`;
+  h+=`<h3>Group 1: the columns</h3><p class="note2">The last kana stays in its row (k-row, s-row…) and shifts column. Find the verb's last kana in the middle column, then move left or right.</p>
+    <table class="vtab"><tr><th>あ<br>column</th><th>い<br>column</th><th>う<br>(dictionary)</th><th>え<br>column</th><th>お<br>column</th></tr>
+    ${ENDINGS.map(e=>`<tr>${COLS.map(c=>c==='う'?`<td class="dict">${e}</td>`:`<td class="${e==='う'&&c==='あ'?'wa':''}">${COL_OF[c][e]}</td>`).join('')}</tr>`).join('')}
+    <tr>${COLS.map(c=>`<th class="use">${COL_USE[c]}</th>`).join('')}</tr></table>
+    <p class="note2">Highlighted: verbs ending in <b>う</b> use <b>わ</b> instead of あ (買う → 買<b>わ</b>ない).</p>`;
+  h+=`<h3>Every form, by group</h3><div class="catnav">${[...new Set(FORMS.map(f=>f.cat))].map(c=>`<a href="#cat-${c.replace(/\W/g,'')}">${c}</a>`).join('')}</div>`;
+  let lastCat='';
+  for (const F of FORMS){
+    const f=F.id;
+    if (F.cat!==lastCat){ h+=`<h3 id="cat-${F.cat.replace(/\W/g,'')}" style="margin-top:16px">${F.cat}</h3>`; lastCat=F.cat; }
+    h+=`<div class="fcard"><div class="fh"><span class="fn">${F.label}</span><span class="fj">${F.jp}</span></div><div class="fu">${FORM_USE[f]||''}</div>
+      <div class="frow"><span class="gl g1">1</span><span>${g1Rule(f)}</span><span class="ex">${exHTML(EX.g1,f)}</span></div>
+      <div class="frow"><span class="gl g2">2</span><span>${g2Rule(f)}</span><span class="ex">${exHTML(EX.g2,f)}</span></div>
+      <div class="frow"><span class="gl g3">3</span><span>Irregular</span><span class="ex">${exHTML(EX.suru,f)}　${exHTML(EX.kuru,f)}</span></div></div>`;
+  }
+  const TE_EX = {う:'買[か]う',つ:'待[ま]つ',る:'帰[かえ]る',む:'飲[の]む',ぶ:'遊[あそ]ぶ',ぬ:null,く:'書[か]く',ぐ:'泳[およ]ぐ',す:'話[はな]す'};
+  const groups=[['う','つ','る'],['む','ぶ','ぬ'],['く'],['ぐ'],['す']];
+  h+=`<h3 id="te-table">Group 1 て-form and た-form</h3><p class="note2">The ending depends on the verb's last kana. Group 2 just drops る and adds て / た; する → して, 来る → きて.</p>
+    <table class="ttab"><tr><th>Last kana</th><th>て-form</th><th>た-form</th><th>Example</th></tr>
+    ${groups.map(g=>{ const te=TE_END[g[0]], ta=te.replace(/て$/,'た').replace(/で$/,'だ');
+      const exs=g.map(e=>TE_EX[e]).filter(Boolean).map(b=>{ const v=LV(b); return v?`<span class="jpl">${toRuby(v.b)} → ${toRuby(conjugate(v,'te'))}</span>`:''; }).filter(Boolean).join('<br>');
+      return `<tr><td class="jpl">${g.join(' ')}</td><td class="jpl"><b>${te}</b></td><td class="jpl"><b>${ta}</b></td><td>${exs}</td></tr>`; }).join('')}
+    </table>
+    <p class="note2">One exception: <span class="jpl">行く → 行<b>って</b> / 行<b>った</b></span> (not 行いて).</p>`;
+  h+=`<p class="note2" style="margin-top:14px">Other exceptions the quiz knows about: <span class="jpl">ある</span> → <span class="jpl">ない</span> (not あらない), and する's potential is <span class="jpl">できる</span>.</p>`;
+  $('learnBody').innerHTML=h;
+}
+$('learnBody') && $('learnBody').addEventListener('click',e=>{ const a=e.target.closest('.catnav a'); if (a){ e.preventDefault(); const t=document.querySelector(a.getAttribute('href')); if (t) t.scrollIntoView({behavior:'smooth',block:'start'}); } });
+
 /* ================= WIRING ================= */
 document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click',()=>{
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));
-  for (const t of ['quiz','filters','stats']) $('tab-'+t).classList.toggle('hidden', t!==btn.dataset.tab);
+  for (const t of ['quiz','learn','filters','stats']) $('tab-'+t).classList.toggle('hidden', t!==btn.dataset.tab);
+  if (btn.dataset.tab==='learn') renderLearn();
   if (btn.dataset.tab==='filters') renderFilters();
   if (btn.dataset.tab==='stats') renderStats();
   if (btn.dataset.tab==='quiz'){
