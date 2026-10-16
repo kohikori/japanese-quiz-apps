@@ -178,6 +178,12 @@
       <p class="jp">助数詞</p><p>Tally</p>
       <div class="progress none" id="pCnt"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
     </a>
+    <a class="app" href="particles.html">
+      <div class="tile" style="background:#9c36b5">助</div>
+      <h2>Particles</h2>
+      <p class="jp">助詞</p><p>Connect</p>
+      <div class="progress none" id="pPart"><span class="ptxt">Not started</span><span class="bar"><i style="width:0"></i></span></div>
+    </a>
     <a class="app" href="vocab.html">
       <div class="tile" style="background:#0b7285">語</div>
       <h2>Vocabulary</h2>
@@ -256,6 +262,7 @@ showProgress($('pNum'),   total('jnum_stats_v1','jnum_peers_v1'));
 showProgress($('pVerb'),  total('jvq_stats_v1','jvq_peers_v1'));
 showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
 showProgress($('pListen'), total('jlisten_stats_v1','jlisten_peers_v1'));
+showProgress($('pPart'),  total('jpart_stats_v1','jpart_peers_v1'));
 showProgress($('pAdj'),   total('jadj_stats_v1','jadj_peers_v1'));
 showProgress($('pCnt'),   total('jcnt_stats_v1','jcnt_peers_v1'));
 
@@ -291,6 +298,7 @@ const SYNC_APPS = [
   {key:'cnt',   name:'Counters',   p:'jcnt_',   app:'jcnt-counters-quiz'},
   {key:'vocab', name:'Vocabulary', p:'jvocab_', app:'jvocab-quiz', syn:true},
   {key:'listen', name:'Listening', p:'jlisten_', app:'jlisten-quiz'},
+  {key:'part',  name:'Particles',  p:'jpart_',  app:'jpart-quiz'},
 ];
 const jget = k => { try { return JSON.parse(get(k)||'null'); } catch(e){ return null; } };
 const jset = (k,v) => set(k, JSON.stringify(v));
@@ -440,6 +448,7 @@ function refreshProgress(){
   showProgress($('pCnt'),   total('jcnt_stats_v1','jcnt_peers_v1'));
   showProgress($('pVocab'), total('jvocab_stats_v1','jvocab_peers_v1'));
   showProgress($('pListen'), total('jlisten_stats_v1','jlisten_peers_v1'));
+  showProgress($('pPart'),  total('jpart_stats_v1','jpart_peers_v1'));
 }
 showLast();
 function openSync(open){

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon-favicon-64.png">
+<link rel="apple-touch-icon" href="icon-part-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Particles">
+<meta name="theme-color" content="#9c36b5">
+<script>(function(){var d;try{d=localStorage.getItem('jpart_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+<title>Particles Quiz</title>
+<style>
+  :root{--bg:#fafafa;--card:#fff;--text:#222;--muted:#777;--line:#e3e3e3;--accent:#3b5bdb;--ok:#2b8a3e;--okbg:#ebfbee;--bad:#c92a2a;--badbg:#fff5f5;
+    --accentbg:#edf2ff;--okline:#b2f2bb;--badline:#ffc9c9;--pill:#f1f3f5;--warn:#8a5a00;--sub:#333;--hl:#fff3bf;--mid:#fff3bf;--midline:#e8a300}
+  :root.dark{--bg:#15171c;--card:#1e2128;--text:#e4e6ea;--muted:#9aa0aa;--line:#353a45;--accent:#7b93f7;--ok:#69db7c;--okbg:#17301f;
+    --bad:#ff8787;--badbg:#3a1d21;--accentbg:#262d48;--okline:#2b6a3a;--badline:#7a2e35;--pill:#2a2e37;--warn:#f0c14b;--sub:#cfd3da;--hl:#4a3f12;--mid:#4a3f12;--midline:#c99a1e;color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans",sans-serif;background:var(--bg);color:var(--text)}
+  .jpf{font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+  header{display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap}
+  header h1{font-size:18px;margin:0;font-weight:600;display:flex;align-items:center;gap:10px}
+  .homelink{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--muted);text-decoration:none;flex:none}
+  nav button{background:none;border:none;padding:8px 14px;font-size:14px;color:var(--muted);cursor:pointer;border-radius:6px;font-family:inherit}
+  nav button.active{color:var(--accent);background:var(--accentbg);font-weight:600}
+  .gearbtn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;margin-left:auto;padding:0;flex:none}
+  .gearbtn[aria-expanded="true"]{color:var(--accent);border-color:var(--accent);background:var(--accentbg)}
+  .settings{flex-basis:100%;display:flex;gap:14px;flex-wrap:wrap;padding:10px 2px 2px;border-top:1px solid var(--line)}
+  .settings.closed{display:none}
+  .toggle{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer}
+  @media (max-width:640px){
+    header{display:grid;grid-template-columns:1fr auto;padding:10px 14px;gap:6px 8px}
+    header h1{font-size:16px;min-width:0} .gearbtn{grid-column:2;grid-row:1} header nav{grid-column:1/-1;display:flex;margin:0 -6px} nav button{padding:7px 10px}
+    .settings{grid-column:1/-1} main{margin-top:16px}
+  }
+  main{max-width:760px;margin:22px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:26px}
+  @media (max-width:420px){main{padding:0 10px}.card{padding:20px 14px}}
+  .hidden{display:none!important}
+  h2{font-size:17px;margin:0 0 4px}
+  h3{font-size:12.5px;margin:20px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  .sub{font-size:13px;color:var(--muted)}
+  .note{font-size:12.5px;color:var(--muted);line-height:1.55}
+  button.btn{font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-family:inherit}
+  button.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  :root.dark button.btn.primary{background:#4c6ef5;border-color:#4c6ef5}
+  button.btn.small{font-size:12.5px;padding:5px 12px}
+  button.btn:disabled{opacity:.45;cursor:default}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .between{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  ruby rt{font-size:.5em;color:var(--muted)}
+  .speak{background:none;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:13px;padding:1px 7px;color:var(--text);vertical-align:middle;font-family:inherit}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:10px;background:var(--hl);color:var(--text);margin-left:4px;vertical-align:middle;font-family:system-ui,sans-serif}
+  .tgt{background:var(--hl);border-radius:4px;padding:0 3px;font-weight:600}
+  /* learn: home */
+  .nextcard{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+  .nextk{display:flex;gap:6px;flex-wrap:wrap}
+  .nextk span{font-size:30px;width:52px;height:52px;display:grid;place-items:center;border-radius:10px;background:var(--accentbg)}
+  .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+  .lchip{border:1px solid var(--line);border-radius:9px;padding:6px 4px;text-align:center;background:var(--card);color:var(--text);font-family:inherit;cursor:pointer;min-width:0}
+  .lchip .n{font-size:11px;color:var(--muted)}
+  .lchip .ks{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lchip.done{border-color:var(--ok);background:var(--okbg)}
+  .lchip.next{border-color:var(--accent);background:var(--accentbg)}
+  .lchip.locked{opacity:.45;cursor:default}
+  /* learn: lesson */
+  .dots{display:flex;gap:6px;flex-wrap:wrap}
+  .dot{min-width:30px;height:30px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-size:16px;cursor:pointer;background:var(--card);color:var(--text);padding:0 4px}
+  .dot.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent)}
+  .dot.words{padding:0 10px;font-size:12.5px}
+  .khead{display:flex;gap:18px;align-items:center;margin:18px 0 6px}
+  .kbig{font-size:92px;line-height:1;width:128px;height:128px;display:grid;place-items:center;border-radius:18px;background:var(--accentbg);color:var(--text);flex:none}
+  .kmean{font-size:24px;font-weight:600}
+  .rchips{display:grid;gap:8px}
+  .rchip{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .rchip .rd{font-size:21px;min-width:60px;font-weight:600;color:var(--accent)}
+  .rchip .ex{font-size:14px}
+  .rchip .ex .jpf{font-size:17px}
+  .later{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.6}
+  .mnem{border-left:3px solid var(--accent);background:var(--pill);padding:10px 14px;border-radius:0 10px 10px 0;font-size:14.5px;line-height:1.6}
+  .mnem.mine{border-left-color:var(--ok)}
+  .mnem .who{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .mnem .who a{color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0;font-size:12.5px}
+  textarea{width:100%;min-height:84px;font:inherit;font-size:14.5px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+  .callout{border:1px solid var(--line);background:var(--pill);border-radius:10px;padding:10px 14px;font-size:14px;margin:6px 0 12px}
+  .wlist{display:grid;gap:10px}
+  .witem{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .witem .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .witem .w{font-size:24px}
+  .witem .r{font-size:15px;color:var(--accent)}
+  .witem .m{font-size:14px;color:var(--sub)}
+  .witem .sent{font-size:17px;line-height:2;margin-top:4px}
+  .witem .en{font-size:13px;color:var(--muted)}
+  /* review */
+  .scorebar{display:flex;gap:18px;justify-content:center;font-size:13px;color:var(--muted);margin-bottom:14px}
+  .scorebar b{color:var(--text)}
+  .dirbar{display:flex;justify-content:center;margin:0 auto 16px;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content;max-width:100%}
+  .dirbtn{border:none;background:var(--card);color:var(--muted);padding:8px 14px;font-size:14px;cursor:pointer;font-family:inherit;border-right:1px solid var(--line)}
+  .dirbtn:last-child{border-right:none}
+  .dirbtn.on{background:var(--accentbg);color:var(--accent);font-weight:600}
+  .qsent{text-align:center;font-size:26px;line-height:2.1;margin:4px 0 4px}
+  .qsent .tgt{font-size:1.12em}
+  .qask{text-align:center;color:var(--muted);font-size:14px;margin-bottom:14px}
+  #answer{width:100%;font-size:24px;padding:12px 14px;border:2px solid var(--line);border-radius:10px;outline:none;font-family:inherit;text-align:center;background:var(--card);color:var(--text)}
+  #answer:focus{border-color:var(--accent)}
+  #answer.ok{border-color:var(--ok);background:var(--okbg)} #answer.bad{border-color:var(--bad);background:var(--badbg)}
+  .buttons{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .choice{position:relative;padding:12px 14px 12px 38px;font-size:15.5px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;text-align:left;min-height:54px}
+  .choice .k{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 6px}
+  .choice.right{border-color:var(--ok);background:var(--okbg)} .choice.wrong{border-color:var(--bad);background:var(--badbg)}
+  .choice:disabled{cursor:default}
+  @media (hover:hover){.choice:hover:not(:disabled){border-color:var(--accent)} .speak:hover{border-color:var(--accent)} .lchip:not(.locked):hover{border-color:var(--accent)}}
+  .feedback{margin-top:16px;padding:14px 16px;border-radius:10px;font-size:15px;line-height:1.6;border:1px solid}
+  .feedback.ok{background:var(--okbg);border-color:var(--okline)} .feedback.bad{background:var(--badbg);border-color:var(--badline)}
+  .feedback .head{font-weight:600;margin-bottom:4px}
+  .feedback.ok .head{color:var(--ok)} .feedback.bad .head{color:var(--bad)}
+  .feedback .ans{font-size:22px}
+  .parts{display:grid;gap:6px;margin-top:10px}
+  .part{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;border-top:1px solid var(--line);padding-top:8px}
+  .part .pk{font-size:26px;line-height:1;min-width:34px}
+  .part .pb{flex:1;min-width:0}
+  .reportline{margin-top:10px;font-size:12px;text-align:right}
+  .reportline a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+  .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:12px}
+  .empty{text-align:center;color:var(--muted);padding:20px 0}
+  /* stats */
+  .totals{display:flex;gap:30px;margin-bottom:6px}
+  .totals div{font-size:13px;color:var(--muted)}
+  .totals b{display:block;font-size:24px;color:var(--text)}
+  .lchart{display:grid;gap:8px;margin:4px 0 8px}
+  .lrow{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;font-size:13px}
+  .lbar{display:flex;height:12px;border-radius:6px;background:var(--pill);overflow:hidden}
+  .lbar i{display:block;height:100%} .lbar .la{background:var(--ok)} .lbar .lb{background:var(--okline)}
+  .lnum{font-variant-numeric:tabular-nums;color:var(--muted);text-align:right;min-width:74px}
+  .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:4px}
+  .kc{height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:7px;font-size:17px;background:var(--card);color:var(--muted)}
+  .kc.m{background:var(--okbg);border-color:var(--ok);color:var(--text)} .kc.p{background:var(--mid);border-color:var(--midline);color:var(--text)}
+  .kc.x{background:var(--badbg);border-color:var(--bad);color:var(--text)} .kc.l{background:var(--pill);color:var(--text)}
+  .legend2{font-size:12px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .legend2 .sw{display:inline-block;width:14px;height:12px;border:1px solid var(--line);border-radius:3px;margin-left:6px}
+  .legend2 .sw:first-child{margin-left:0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  td,th{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;color:var(--muted);font-weight:600}
+  td.num{text-align:right;white-space:nowrap}
+  .reset{margin-top:20px;font-size:12px}
+  .sitefoot{max-width:760px;margin:8px auto 40px;padding:18px 16px 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+  .sitefoot p{margin:0;line-height:1.6;max-width:46ch}
+  .sitefoot .links{display:flex;gap:8px;flex-wrap:wrap}
+  .sitefoot a{display:inline-block;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-size:13px}
+  .sitefoot a.donate{border-color:var(--accent);color:var(--accent);background:var(--accentbg)}
+  @media (max-width:520px){.sitefoot{justify-content:center;text-align:center}}
+  button,a,label{-webkit-tap-highlight-color:transparent}
+  body.kbd{padding-bottom:70vh}
+  @media (max-width:420px){.qsent{font-size:22px}.kbig{font-size:76px;width:104px;height:104px}.choices{grid-template-columns:1fr}}
+</style>
+<style>
+  /* ---- particles quiz ---- */
+  .qsent{font-size:28px;line-height:2.2;text-align:center;margin:6px 0 2px}
+  .qsent ruby rt{font-size:.42em}
+  .blank{display:inline-block;width:2.1em;height:1.15em;border-bottom:3px solid var(--accent);margin:0 .12em;vertical-align:-.12em}
+  .pfill{display:inline-block;padding:0 .14em;margin:0 .06em;border-radius:6px;background:var(--badbg);color:var(--bad);font-weight:700}
+  .pfill.good{background:var(--okbg);color:var(--ok)}
+  .qen{text-align:center;font-size:16px;color:var(--sub);margin:0 0 6px}
+  .choices{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  .choice{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 6px;font-size:24px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;position:relative;min-height:62px}
+  .choice .k{position:absolute;left:7px;top:6px;transform:none;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-family:system-ui,sans-serif}
+  #answer{max-width:260px;display:block;margin:12px auto 0}
+  .fsent{font-size:21px;line-height:2.1}
+  .fsent ruby rt{font-size:.45em}
+  .fen{font-size:14.5px;color:var(--sub);margin-bottom:6px}
+  .why{font-size:14px;line-height:1.6;margin-top:6px}
+  .why.muted{color:var(--muted)}
+  .tip{margin-top:10px;border-left:3px solid var(--accent);background:var(--pill);padding:8px 12px;border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.6}
+  .tip .tt,.pair .tt{font-weight:700;font-size:15px;margin-bottom:2px}
+  .lead{font-size:14.5px;line-height:1.6;margin:0 0 6px}
+  .note2{font-size:13.5px;color:var(--muted);line-height:1.55;margin:10px 0 4px}
+  .pchips{display:flex;flex-wrap:wrap;gap:8px}
+  .pchip{min-width:52px;padding:8px 12px;font-size:20px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);cursor:pointer}
+  .pchip.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent)}
+  .pcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:16px}
+  .ptitle{display:flex;align-items:center;gap:14px;font-size:15px;font-weight:600;margin-bottom:6px}
+  .pbig{font-size:40px;line-height:1;min-width:56px;height:56px;display:grid;place-items:center;border-radius:12px;background:var(--accentbg);color:var(--accent);padding:0 8px}
+  .puse{border-top:1px solid var(--line);padding:10px 0;font-size:14px;line-height:1.6}
+  .lex{font-size:18px;line-height:2;margin-top:4px}
+  .len{font-size:13px;color:var(--muted);line-height:1.4}
+  .pair{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:14px;line-height:1.6}
+  .pex{font-size:15.5px;margin-top:4px}
+  .rows{display:flex;flex-wrap:wrap;gap:6px}
+  .rowchip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:17px;cursor:pointer}
+  .rowchip .cnt{font-size:11px;color:var(--muted);font-family:system-ui,sans-serif}
+  .rowchip.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent)}
+  .rowchip input{display:none}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px}
+  .checks label{font-size:14px;display:flex;gap:8px;align-items:center;cursor:pointer}
+  .poolinfo{margin-top:16px;font-size:13px;color:var(--muted)}
+  @media (max-width:420px){ .qsent{font-size:23px} .choice{font-size:21px;padding:12px 4px;min-height:56px} .choices{gap:7px;grid-template-columns:repeat(4,1fr)} .fsent{font-size:19px} }
+</style>
+</head>
+<body>
+<header>
+  <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>助詞 Particles Quiz</h1>
+  <nav>
+    <button data-tab="quiz" class="active">Quiz</button>
+    <button data-tab="learn">Learn</button>
+    <button data-tab="filters">Filters</button>
+    <button data-tab="stats">Stats</button>
+  </nav>
+  <button type="button" class="gearbtn" id="gearBtn" aria-label="Settings" aria-expanded="false" aria-controls="settingsPanel" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  <div class="settings closed" id="settingsPanel">
+    <label class="toggle"><input type="checkbox" id="furiToggle"> Furigana</label>
+    <label class="toggle"><input type="checkbox" id="darkToggle"> Dark mode</label>
+    <label class="toggle" title="Read the sentence aloud after you answer"><input type="checkbox" id="autoToggle"> Auto-play audio</label>
+  </div>
+</header>
+<main>
+  <div id="storeWarn" class="hidden" style="font-size:12px;color:var(--warn);background:var(--pill);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:14px;text-align:center">This viewer blocks saving, so lifetime stats won't persist.</div>
+  <section id="tab-quiz" class="card">
+    <div class="scorebar"><span>Session: <b id="sScore">0 / 0</b></span><span>Streak: <b id="sStreak">0</b></span></div>
+    <div class="dirbar" role="group" aria-label="Question type">
+      <button type="button" class="dirbtn" data-mode="mc">Multiple choice</button>
+      <button type="button" class="dirbtn" data-mode="hard">Hard mode</button>
+    </div>
+    <div id="quizBody">
+      <div class="qsent jpf" id="qSent"></div>
+      <div class="qen" id="qEn"></div>
+      <div class="qask" id="qAsk"></div>
+      <div class="choices" id="choices"></div>
+      <div id="typeRow" class="hidden">
+        <input id="answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" lang="ja" placeholder="e.g. de or で">
+        <div class="buttons"><button class="btn primary" id="checkBtn">Check</button><button class="btn" id="showBtn">Show answer</button></div>
+      </div>
+      <div id="fb"></div>
+      <div class="buttons hidden" id="nextRow"><button class="btn primary" id="mcNextBtn">Next →</button></div>
+      <div class="hint" id="keyHint"></div>
+    </div>
+    <div id="emptyPool" class="hidden empty">No particles selected. Pick at least one on the Filters tab.</div>
+  </section>
+  <section id="tab-learn" class="card hidden"><h2>How particles work</h2><div id="learnBody"></div></section>
+  <section id="tab-filters" class="card hidden"><h2>Filters</h2><div id="filterBody"></div><div class="poolinfo" id="poolInfo"></div></section>
+  <section id="tab-stats" class="card hidden"><div id="statsBody"></div>
+    <h3>Sync between devices</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px"><b>Tip:</b> the <a href="./#sync">home page</a> backs up and restores all quizzes at once. Results are combined without double-counting.</div>
+    <div class="buttons" style="justify-content:flex-start;margin-top:0">
+      <button class="btn" id="exportBtn">Export progress</button>
+      <button class="btn" id="importBtn">Import progress</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+    </div>
+    <div id="syncMsg" style="font-size:13px;margin-top:8px"></div>
+    <div id="syncInfo" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+    <button class="btn reset" id="resetBtn">Reset lifetime stats</button>
+  </section>
+</main>
+<footer class="sitefoot">
+  <p>Have an idea for an improvement or addition? I'd love to hear it.</p>
+  <div class="links">
+    <a href="mailto:support.kohikori@gmail.com?subject=Feedback:%20Particles%20Quiz">Send feedback</a>
+    <a class="donate" href="https://paypal.me/kohikori" target="_blank" rel="noopener">☕ Donate via PayPal</a>
+  </div>
+</footer>
+<script>
+const DATA_TXT=`# lvl | answers (MC + hard) | also natural without English (hard mode only, never offered as wrong options) | use | sentence (＿ = blank) | English
+# ---------- は ----------
+5|は|も|wa_topic|私[わたし]＿学生[がくせい]です。|I am a student.
+5|は|も|wa_topic|これ＿私[わたし]の傘[かさ]です。|This is my umbrella.
+5|は|も|wa_topic|今日[きょう]＿月曜日[げつようび]です。|Today is Monday.
+5|は|も|wa_topic|田中[たなか]さん＿先生[せんせい]です。|Mr. Tanaka is a teacher.
+5|は|も|wa_topic|東京[とうきょう]＿大[おお]きい町[まち]です。|Tokyo is a big city.
+5|は|も/が|wa_topic|この店[みせ]のラーメン＿おいしいです。|This shop's ramen is delicious.
+5|は|も|wa_topic|姉[あね]＿銀行[ぎんこう]で働[はたら]いています。|My older sister works at a bank.
+5|は||wa_topic|トイレ＿どこですか。|Where is the restroom?
+5|は||wa_topic|お名前[なまえ]＿何[なん]ですか。|What is your name?
+5|は||wa_topic|駅[えき]＿あそこです。|The station is over there.
+5|は|も|wa_topic|この本[ほん]＿面白[おもしろ]いです。|This book is interesting.
+5|は|も|wa_topic|私[わたし]の趣味[しゅみ]＿料理[りょうり]です。|My hobby is cooking.
+5|は|も|wa_contrast|肉[にく]＿食[た]べますが、魚[さかな]＿食[た]べません。|I eat meat, but I don't eat fish.
+5|は|も/を|wa_contrast|お酒[さけ]＿あまり飲[の]みません。|I don't drink alcohol much.
+5|は|も|wa_contrast|今日[きょう]＿雨[あめ]が降[ふ]っていません。|It isn't raining today.
+5|は|も|wa_contrast|日曜日[にちようび]＿休[やす]みです。|Sunday is a day off.
+5|は|も|wa_topic|象[ぞう]＿鼻[はな]が長[なが]いです。|Elephants have long trunks.
+5|は|も|wa_topic|兄[あに]＿背[せ]が高[たか]いです。|My older brother is tall.
+4|は|も|wa_topic|日本[にほん]＿夏[なつ]が暑[あつ]いです。|In Japan, the summer is hot.
+4|は|も|wa_contrast|ひらがな＿読[よ]めますが、漢字[かんじ]＿まだ読[よ]めません。|I can read hiragana, but I can't read kanji yet.
+# ---------- が ----------
+5|が||ga_q|誰[だれ]＿来[き]ましたか。|Who came?
+5|が||ga_q|どれ＿あなたのかばんですか。|Which one is your bag?
+5|が||ga_q|何[なに]＿一番[いちばん]好[す]きですか。|What do you like best?
+5|が||ga_q|どの店[みせ]＿安[やす]いですか。|Which shop is cheap?
+5|が|は|ga_subj|あ、雨[あめ]＿降[ふ]っています。|Oh, it's raining.
+5|が|は|ga_subj|バス＿来[き]ましたよ。|The bus has come.
+5|が|は/も|ga_exist|机[つくえ]の上[うえ]に本[ほん]＿あります。|There is a book on the desk.
+5|が|は/も|ga_exist|公園[こうえん]に子供[こども]＿います。|There are children in the park.
+5|が|は/も|ga_exist|私[わたし]は兄弟[きょうだい]＿二人[ふたり]います。|I have two siblings.
+5|が|は|ga_exist|明日[あした]、テスト＿あります。|There's a test tomorrow.
+5|が|は/も|ga_exist|冷蔵庫[れいぞうこ]に牛乳[ぎゅうにゅう]＿ありません。|There's no milk in the fridge.
+5|が|は/も|ga_like|私[わたし]は猫[ねこ]＿好[す]きです。|I like cats.
+5|が|は/も|ga_like|母[はは]は料理[りょうり]＿上手[じょうず]です。|My mother is good at cooking.
+5|が|は/も|ga_like|弟[おとうと]は野菜[やさい]＿嫌[きら]いです。|My younger brother dislikes vegetables.
+5|が|は/も|ga_like|新[あたら]しい靴[くつ]＿欲[ほ]しいです。|I want new shoes.
+5|が|は/も|ga_like|私[わたし]は日本語[にほんご]＿少[すこ]し分[わ]かります。|I understand a little Japanese.
+5|が|は/も|ga_like|父[ちち]は歌[うた]＿下手[へた]です。|My father is bad at singing.
+5|が|は|ga_like|私[わたし]は頭[あたま]＿痛[いた]いです。|I have a headache.
+5|が|は/も|ga_subj|この部屋[へや]は窓[まど]＿大[おお]きいです。|This room has big windows.
+5|が|は|ga_subj|妹[いもうと]は髪[かみ]＿長[なが]いです。|My younger sister has long hair.
+5|が|は|ga_subj|今日[きょう]は天気[てんき]＿いいですね。|The weather is nice today, isn't it?
+4|が|は/も|ga_can|私[わたし]は泳[およ]ぐこと＿できます。|I can swim.
+4|が|は/も/を|ga_can|兄[あに]はギター＿弾[ひ]けます。|My brother can play the guitar.
+4|が|は/も/を|ga_can|日本語[にほんご]＿少[すこ]し話[はな]せます。|I can speak a little Japanese.
+4|が|は/も/を|ga_can|私[わたし]は箸[はし]＿使[つか]えます。|I can use chopsticks.
+4|が|は/も|ga_can|運転[うんてん]＿できますか。|Can you drive?
+4|が|は/も|ga_sense|窓[まど]から海[うみ]＿見[み]えます。|You can see the sea from the window.
+4|が|は/も|ga_sense|隣[となり]の部屋[へや]からピアノの音[おと]＿聞[き]こえます。|I can hear a piano from the next room.
+4|が|は/も|ga_sense|新幹線[しんかんせん]から富士山[ふじさん]＿見[み]えました。|We could see Mt. Fuji from the bullet train.
+4|が|は/の|ga_subj|母[はは]＿作[つく]った料理[りょうり]はおいしいです。|The food my mother made is delicious.
+4|が|の|ga_subj|これは私[わたし]＿撮[と]った写真[しゃしん]です。|This is a photo I took.
+4|が|の|ga_subj|友達[ともだち]＿くれた本[ほん]を読[よ]みました。|I read the book my friend gave me.
+4|が||ga_but|すみません＿、駅[えき]はどこですか。|Excuse me, but where is the station?
+4|が|けど|ga_but|この服[ふく]は好[す]きです＿、少[すこ]し高[たか]いです。|I like these clothes, but they're a bit expensive.
+4|が|けど|ga_but|行[い]きたいです＿、時間[じかん]がありません。|I want to go, but I don't have time.
+4|が|は|ga_subj|最近[さいきん]、寒[さむ]くなりました。風邪[かぜ]＿はやっています。|It's got cold lately. Colds are going around.
+# ---------- を ----------
+5|を|は/も|wo_obj|毎朝[まいあさ]コーヒー＿飲[の]みます。|I drink coffee every morning.
+5|を|は/も|wo_obj|昨日[きのう]、映画[えいが]＿見[み]ました。|I watched a movie yesterday.
+5|を|は/も|wo_obj|夜[よる]、本[ほん]＿読[よ]みます。|I read books at night.
+5|を|は/も|wo_obj|友達[ともだち]に手紙[てがみ]＿書[か]きました。|I wrote a letter to a friend.
+5|を|は/も|wo_obj|スーパーで野菜[やさい]＿買[か]いました。|I bought vegetables at the supermarket.
+5|を|は/も|wo_obj|日曜日[にちようび]に部屋[へや]＿掃除[そうじ]します。|I clean my room on Sundays.
+5|を|は/も|wo_obj|窓[まど]＿開[あ]けてください。|Please open the window.
+5|を|は/も|wo_obj|電気[でんき]＿消[け]してください。|Please turn off the light.
+5|を|は/も|wo_obj|ここに名前[なまえ]＿書[か]いてください。|Please write your name here.
+5|を|は/も|wo_obj|毎日[まいにち]日本語[にほんご]＿勉強[べんきょう]しています。|I study Japanese every day.
+5|を|は/も|wo_obj|写真[しゃしん]＿撮[と]ってもいいですか。|May I take a photo?
+5|を|は/も|wo_obj|母[はは]に花[はな]＿あげました。|I gave my mother flowers.
+5|を|は/も|wo_obj|朝[あさ]ご飯[はん]＿食[た]べましたか。|Did you eat breakfast?
+5|を|は/も|wo_obj|音楽[おんがく]＿聞[き]きながら走[はし]ります。|I run while listening to music.
+5|を|は/も|wo_obj|先生[せんせい]に質問[しつもん]＿しました。|I asked the teacher a question.
+5|を||wo_through|公園[こうえん]＿散歩[さんぽ]します。|I take a walk in the park.
+5|を||wo_through|この道[みち]＿まっすぐ行[い]ってください。|Please go straight along this road.
+5|を||wo_through|次[つぎ]の角[かど]＿右[みぎ]に曲[ま]がってください。|Please turn right at the next corner.
+5|を||wo_through|橋[はし]＿渡[わた]ります。|I cross the bridge.
+5|を|から|wo_through|七時[しちじ]に家[いえ]＿出[で]ます。|I leave home at seven.
+5|を|から|wo_through|次[つぎ]の駅[えき]で電車[でんしゃ]＿降[お]ります。|I get off the train at the next station.
+4|を|から|wo_through|去年[きょねん]大学[だいがく]＿卒業[そつぎょう]しました。|I graduated from university last year.
+4|を||wo_through|毎朝[まいあさ]、川[かわ]の近[ちか]く＿走[はし]ります。|Every morning I run along the river.
+4|を|は/も|wo_obj|傘[かさ]＿持[も]って行[い]ったほうがいいですよ。|You'd better take an umbrella.
+4|を|は/も|wo_obj|財布[さいふ]＿なくしました。|I lost my wallet.
+4|を|は/も|wo_obj|ゆっくり息[いき]＿してください。|Please breathe slowly.
+# ---------- に ----------
+5|に||ni_time|毎朝[まいあさ]六時[ろくじ]＿起[お]きます。|I get up at six every morning.
+5|に|は|ni_time|日曜日[にちようび]＿友達[ともだち]に会[あ]います。|I'm meeting a friend on Sunday.
+5|に|は|ni_time|八月[はちがつ]＿日本[にほん]へ行[い]きます。|I'm going to Japan in August.
+5|に|から|ni_time|授業[じゅぎょう]は九時[くじ]＿始[はじ]まります。|Class starts at nine.
+5|に|は|ni_time|夏休[なつやす]み＿海[うみ]に行[い]きました。|I went to the beach during summer vacation.
+5|に||ni_time|銀行[ぎんこう]は三時[さんじ]＿閉[し]まります。|The bank closes at three.
+5|に|へ|ni_dest|来年[らいねん]、日本[にほん]＿行[い]きます。|I'm going to Japan next year.
+5|に|へ|ni_dest|毎日[まいにち]、会社[かいしゃ]＿行[い]きます。|I go to the office every day.
+5|に|へ|ni_dest|何時[なんじ]に家[いえ]＿帰[かえ]りますか。|What time do you go home?
+5|に|へ|ni_dest|友達[ともだち]が私[わたし]の家[いえ]＿来[き]ました。|A friend came to my house.
+5|に|へ|ni_dest|週末[しゅうまつ]は図書館[としょかん]＿行[い]きます。|I go to the library on weekends.
+5|に||ni_exist|猫[ねこ]は机[つくえ]の下[した]＿います。|The cat is under the desk.
+5|に|は|ni_exist|部屋[へや]＿テレビがあります。|There is a TV in the room.
+5|に||ni_exist|私[わたし]は大阪[おおさか]＿住[す]んでいます。|I live in Osaka.
+5|に|は|ni_exist|駅[えき]の前[まえ]＿コンビニがあります。|There's a convenience store in front of the station.
+5|に||ni_exist|鍵[かぎ]はかばんの中[なか]＿あります。|The key is in the bag.
+5|に||ni_exist|姉[あね]は東京[とうきょう]＿住[す]んでいます。|My older sister lives in Tokyo.
+5|に|と|ni_target|駅[えき]で友達[ともだち]＿会[あ]いました。|I met a friend at the station.
+5|に||ni_target|母[はは]＿電話[でんわ]をかけました。|I called my mother.
+5|に||ni_target|弟[おとうと]＿本[ほん]をあげました。|I gave my younger brother a book.
+5|に|から|ni_target|友達[ともだち]＿プレゼントをもらいました。|I got a present from a friend.
+5|に||ni_target|先生[せんせい]＿質問[しつもん]しました。|I asked the teacher a question.
+5|に||ni_target|分[わ]からないことは先生[せんせい]＿聞[き]いてください。|Please ask the teacher if there's anything you don't understand.
+5|に||ni_target|子供[こども]＿英語[えいご]を教[おし]えています。|I teach English to children.
+5|に||ni_into|電車[でんしゃ]＿乗[の]ります。|I get on the train.
+5|に||ni_into|このいす＿座[すわ]ってください。|Please sit on this chair.
+5|に||ni_into|お風呂[ふろ]＿入[はい]ります。|I take a bath.
+5|に||ni_into|ノート＿名前[なまえ]を書[か]きました。|I wrote my name in the notebook.
+5|に||ni_into|かばんを机[つくえ]の上[うえ]＿置[お]きました。|I put the bag on the desk.
+5|に||ni_purpose|デパートへ買[か]い物[もの]＿行[い]きます。|I'm going to the department store to shop.
+5|に||ni_purpose|友達[ともだち]が遊[あそ]び＿来[き]ました。|A friend came over to hang out.
+5|に||ni_purpose|レストランへ昼[ひる]ご飯[はん]を食[た]べ＿行[い]きました。|I went to a restaurant to eat lunch.
+4|に||ni_become|来年[らいねん]、医者[いしゃ]＿なりたいです。|I want to become a doctor next year.
+4|に||ni_become|部屋[へや]がきれい＿なりました。|The room became clean.
+4|に||ni_become|私[わたし]はコーヒー＿します。|I'll have coffee.
+4|に||ni_freq|一日[いちにち]＿三回[さんかい]歯[は]を磨[みが]きます。|I brush my teeth three times a day.
+4|に||ni_freq|一週間[いっしゅうかん]＿二回[にかい]ジムに行[い]きます。|I go to the gym twice a week.
+4|に||ni_target|友達[ともだち]＿写真[しゃしん]を撮[と]ってもらいました。|I had a friend take a photo for me.
+4|に||ni_target|この料理[りょうり]は姉[あね]＿教[おし]えてもらいました。|My sister taught me this dish.
+4|に||ni_into|バスに乗[の]って、駅[えき]＿着[つ]きました。|I took the bus and arrived at the station.
+4|に|と|ni_target|母[はは]＿似[に]ています。|I take after my mother.
+4|に||ni_target|荷物[にもつ]をホテル＿預[あず]けました。|I left my luggage with the hotel.
+# ---------- で ----------
+5|で||de_place|図書館[としょかん]＿勉強[べんきょう]します。|I study at the library.
+5|で||de_place|公園[こうえん]＿テニスをしました。|I played tennis in the park.
+5|で||de_place|駅[えき]の前[まえ]＿待[ま]っています。|I'm waiting in front of the station.
+5|で||de_place|家[いえ]＿晩[ばん]ご飯[はん]を食[た]べます。|I eat dinner at home.
+5|で||de_place|この店[みせ]＿パンを買[か]います。|I buy bread at this shop.
+5|で||de_place|姉[あね]は銀行[ぎんこう]＿働[はたら]いています。|My older sister works at a bank.
+5|で||de_place|海[うみ]＿泳[およ]ぎました。|I swam in the sea.
+5|で||de_place|台所[だいどころ]＿料理[りょうり]を作[つく]ります。|I cook in the kitchen.
+5|で||de_place|どこ＿会[あ]いましょうか。|Where shall we meet?
+5|で||de_means|バス＿学校[がっこう]へ行[い]きます。|I go to school by bus.
+5|で||de_means|箸[はし]＿ご飯[はん]を食[た]べます。|I eat rice with chopsticks.
+5|で||de_means|日本語[にほんご]＿話[はな]してください。|Please speak in Japanese.
+5|で||de_means|ペン＿書[か]いてください。|Please write with a pen.
+5|で||de_means|メール＿送[おく]ります。|I'll send it by email.
+5|で||de_means|自転車[じてんしゃ]＿駅[えき]まで行[い]きます。|I go to the station by bike.
+5|で||de_means|これは日本語[にほんご]＿何[なん]と言[い]いますか。|How do you say this in Japanese?
+5|で||de_scope|日本[にほん]＿一番[いちばん]高[たか]い山[やま]は富士山[ふじさん]です。|The tallest mountain in Japan is Mt. Fuji.
+5|で||de_scope|三つ＿千円[せんえん]です。|Three for 1,000 yen.
+5|で||de_scope|クラス＿誰[だれ]が一番[いちばん]背[せ]が高[たか]いですか。|Who is the tallest in the class?
+5|で||de_scope|全部[ぜんぶ]＿いくらですか。|How much is it altogether?
+4|で||de_scope|一人[ひとり]＿旅行[りょこう]しました。|I traveled alone.
+4|で||de_scope|家族[かぞく]＿食事[しょくじ]をしました。|We had a meal as a family.
+4|で||de_cause|雨[あめ]＿試合[しあい]が中止[ちゅうし]になりました。|The game was cancelled because of rain.
+4|で||de_cause|風邪[かぜ]＿学校[がっこう]を休[やす]みました。|I stayed home from school with a cold.
+4|で||de_cause|事故[じこ]＿電車[でんしゃ]が遅[おく]れました。|The train was delayed because of an accident.
+4|で||de_cause|渋滞[じゅうたい]＿遅[おく]くなりました。|I was late because of a traffic jam.
+4|で||de_means|木[き]＿作[つく]ったいすです。|It's a chair made of wood.
+4|で||de_place|コンビニ＿安[やす]いチケットが買[か]えます。|You can buy cheap tickets at a convenience store.
+# ---------- と ----------
+5|と||to_with|友達[ともだち]＿映画[えいが]を見[み]ました。|I watched a movie with a friend.
+5|と||to_with|週末[しゅうまつ]、家族[かぞく]＿出[で]かけます。|I'm going out with my family at the weekend.
+5|と||to_with|誰[だれ]＿行[い]きますか。|Who are you going with?
+5|と||to_with|母[はは]＿電話[でんわ]で話[はな]しました。|I talked with my mother on the phone.
+4|と||to_with|来月[らいげつ]、彼女[かのじょ]＿結婚[けっこん]します。|I'm marrying her next month.
+5|と|や|to_and|パン＿牛乳[ぎゅうにゅう]を買[か]いました。|I bought bread and milk.
+5|と|や|to_and|犬[いぬ]＿猫[ねこ]がいます。|I have a dog and a cat.
+5|と|や|to_and|父[ちち]＿母[はは]は元気[げんき]です。|My father and mother are well.
+5|と||to_and|月曜日[げつようび]＿水曜日[すいようび]に授業[じゅぎょう]があります。|I have class on Monday and Wednesday.
+4|と||to_quote|友達[ともだち]は「おいしい」＿言[い]いました。|My friend said, "It's delicious."
+4|と||to_quote|明日[あした]は雨[あめ]だ＿思[おも]います。|I think it will rain tomorrow.
+4|と||to_quote|この字[じ]は何[なん]＿読[よ]みますか。|How do you read this character?
+4|と|に|to_with|姉[あね]は私[わたし]＿よく似[に]ています。|My older sister looks a lot like me.
+# ---------- も ----------
+5|も||mo_also|私[わたし]＿学生[がくせい]です。|I'm a student too.
+5|も||mo_also|兄[あに]＿姉[あね]＿東京[とうきょう]に住[す]んでいます。|Both my brother and my sister live in Tokyo.
+5|も||mo_also|この本[ほん]＿面白[おもしろ]いですよ。|This book is interesting too.
+5|も||mo_also|コーヒー＿紅茶[こうちゃ]＿好[す]きです。|I like both coffee and tea.
+5|も||mo_also|明日[あした]＿雨[あめ]でしょう。|It will probably rain tomorrow too.
+5|も||mo_also|私[わたし]＿行[い]きたいです。|I want to go too.
+5|も||mo_neg|昨日[きのう]は何[なに]＿食[た]べませんでした。|I didn't eat anything yesterday.
+5|も||mo_neg|教室[きょうしつ]には誰[だれ]＿いません。|There's no one in the classroom.
+5|も||mo_neg|週末[しゅうまつ]はどこ＿行[い]きませんでした。|I didn't go anywhere at the weekend.
+4|も||mo_neg|一度[いちど]＿日本[にほん]へ行[い]ったことがありません。|I've never been to Japan, not even once.
+4|も||mo_also|日本語[にほんご]＿英語[えいご]＿話[はな]せます。|I can speak both Japanese and English.
+4|も||mo_also|ケーキを三[みっ]つ＿食[た]べました。|I ate as many as three pieces of cake.
+# ---------- の ----------
+5|の||no_poss|これは私[わたし]＿本[ほん]です。|This is my book.
+5|の||no_poss|田中[たなか]さん＿お母[かあ]さんは先生[せんせい]です。|Mr. Tanaka's mother is a teacher.
+5|の||no_poss|日本語[にほんご]＿先生[せんせい]は優[やさ]しいです。|The Japanese teacher is kind.
+5|の||no_poss|駅[えき]＿前[まえ]で待[ま]っています。|I'm waiting in front of the station.
+5|の||no_poss|机[つくえ]＿上[うえ]に辞書[じしょ]があります。|There's a dictionary on the desk.
+5|の||no_poss|それは誰[だれ]＿傘[かさ]ですか。|Whose umbrella is that?
+5|の||no_poss|日本[にほん]＿車[くるま]は人気[にんき]があります。|Japanese cars are popular.
+5|の||no_poss|これは友達[ともだち]＿です。|This is my friend's.
+4|の|こと|no_nominal|私[わたし]は絵[え]を描[か]く＿が好[す]きです。|I like drawing.
+4|の|こと|no_nominal|料理[りょうり]を作[つく]る＿は楽[たの]しいです。|Cooking is fun.
+# ---------- や ----------
+5|や|と|ya_list|かばんの中[なか]に本[ほん]＿ノートなどがあります。|There are books, notebooks and so on in the bag.
+5|や|と|ya_list|週末[しゅうまつ]は掃除[そうじ]＿洗濯[せんたく]をします。|At weekends I do things like cleaning and laundry.
+5|や|と|ya_list|冷蔵庫[れいぞうこ]に卵[たまご]＿牛乳[ぎゅうにゅう]があります。|There are eggs, milk and such in the fridge.
+5|や|と|ya_list|京都[きょうと]＿奈良[なら]へ行[い]きたいです。|I want to go to places like Kyoto and Nara.
+4|や|と|ya_list|カレーにじゃがいも＿玉[たま]ねぎを入[い]れます。|I put potatoes, onions and so on in curry.
+4|や|と|ya_list|公園[こうえん]には桜[さくら]＿梅[うめ]の木[き]があります。|The park has cherry trees, plum trees and others.
+# ---------- か ----------
+5|か|ね|ka_q|これは何[なん]です＿。|What is this?
+5|か||ka_q|コーヒーを飲[の]みません＿。|Won't you have some coffee?
+5|か|ね|ka_q|日本[にほん]は初[はじ]めてです＿。|Is this your first time in Japan?
+5|か||ka_q|一緒[いっしょ]に行[い]きましょう＿。|Shall we go together?
+5|か|や/と|ka_or|コーヒー＿紅茶[こうちゃ]はいかがですか。|Would you like coffee or tea?
+5|か||ka_or|電車[でんしゃ]＿バスで行[い]きます。|I'll go by train or bus.
+5|か||ka_or|明日[あした]＿あさって、会[あ]えますか。|Can we meet tomorrow or the day after?
+4|か||ka_some|どこ＿で財布[さいふ]を落[お]としました。|I dropped my wallet somewhere.
+4|か||ka_some|いつ＿京都[きょうと]に住[す]みたいです。|I'd like to live in Kyoto someday.
+4|か||ka_embed|駅[えき]はどこにある＿分[わ]かりますか。|Do you know where the station is?
+# ---------- から ----------
+5|から|に|kara_from|授業[じゅぎょう]は九時[くじ]＿始[はじ]まります。|Class starts from nine.
+5|から||kara_from|東京[とうきょう]＿大阪[おおさか]まで新幹線[しんかんせん]で行[い]きます。|I go from Tokyo to Osaka by bullet train.
+5|から||kara_from|どこ＿来[き]ましたか。|Where are you from?
+5|から||kara_from|銀行[ぎんこう]は九時[くじ]＿三時[さんじ]までです。|The bank is open from nine to three.
+5|から|に|kara_from|友達[ともだち]＿手紙[てがみ]をもらいました。|I received a letter from a friend.
+5|から||kara_from|窓[まど]＿山[やま]が見[み]えます。|You can see the mountains from the window.
+5|から|ので|kara_because|雨[あめ]です＿、タクシーで行[い]きましょう。|It's raining, so let's take a taxi.
+5|から|ので|kara_because|時間[じかん]がない＿、急[いそ]いでください。|There's no time, so please hurry.
+5|から|ので|kara_because|おいしい＿、毎日[まいにち]食[た]べます。|It's tasty, so I eat it every day.
+5|から|ので|kara_because|疲[つか]れた＿、早[はや]く寝[ね]ます。|I'm tired, so I'll go to bed early.
+4|から||kara_after|ご飯[はん]を食[た]べて＿、出[で]かけます。|I'll go out after eating.
+4|から||kara_from|夏休[なつやす]みは来週[らいしゅう]＿です。|Summer vacation starts next week.
+# ---------- まで ----------
+5|まで||made_until|毎日[まいにち]五時[ごじ]＿働[はたら]きます。|I work until five every day.
+5|まで||made_until|駅[えき]＿歩[ある]いて十分[じゅっぷん]です。|It's ten minutes' walk to the station.
+5|まで||made_until|東京[とうきょう]から京都[きょうと]＿新幹線[しんかんせん]で行[い]きました。|I went from Tokyo to Kyoto by bullet train.
+5|まで||made_until|月曜日[げつようび]から金曜日[きんようび]＿学校[がっこう]があります。|There's school from Monday to Friday.
+5|まで||made_until|夜[よる]遅[おそ]く＿勉強[べんきょう]しました。|I studied until late at night.
+4|まで||made_until|空港[くうこう]＿どのくらいかかりますか。|How long does it take to the airport?
+4|まで||made_until|雨[あめ]がやむ＿ここで待[ま]ちましょう。|Let's wait here until the rain stops.
+4|まで||made_until|最後[さいご]＿読[よ]みました。|I read it to the end.
+# ---------- より (N4) ----------
+4|より||yori_than|今日[きょう]は昨日[きのう]＿暑[あつ]いです。|Today is hotter than yesterday.
+4|より||yori_than|電車[でんしゃ]はバス＿速[はや]いです。|Trains are faster than buses.
+4|より||yori_than|私[わたし]は肉[にく]＿魚[さかな]のほうが好[す]きです。|I prefer fish to meat.
+4|より||yori_than|東京[とうきょう]は大阪[おおさか]＿大[おお]きいです。|Tokyo is bigger than Osaka.
+4|より||yori_than|兄[あに]は父[ちち]＿背[せ]が高[たか]いです。|My older brother is taller than my father.
+4|より||yori_than|思[おも]った＿簡単[かんたん]でした。|It was easier than I thought.
+4|より||yori_than|夏[なつ]＿冬[ふゆ]のほうが好[す]きです。|I like winter better than summer.
+4|より||yori_than|去年[きょねん]＿日本語[にほんご]が上手[じょうず]になりました。|My Japanese has got better than last year.
+# ---------- ね / よ (N4) ----------
+4|ね||ne_agree|今日[きょう]は暑[あつ]いです＿。|It's hot today, isn't it?
+4|ね||ne_agree|この景色[けしき]、きれいです＿。|This view is beautiful, isn't it?
+4|ね|よ|ne_agree|それはいいです＿。|That sounds good!
+4|ね||ne_agree|明日[あした]は休[やす]みです＿。|Tomorrow is a day off, right?
+4|ね||ne_agree|田中[たなか]さんは大阪[おおさか]の出身[しゅっしん]です＿。|You're from Osaka, right, Mr. Tanaka?
+4|よ||yo_tell|あの店[みせ]のケーキはおいしいです＿。|That shop's cakes are delicious, you know.
+4|よ||yo_tell|電車[でんしゃ]がもう来[き]ました＿。|Hey, the train is already here.
+4|よ||yo_tell|大丈夫[だいじょうぶ]です＿。心配[しんぱい]しないでください。|It's fine, honestly. Don't worry.
+4|よ||yo_tell|明日[あした]は雨[あめ]が降[ふ]ります＿。傘[かさ]を持[も]って行[い]ってね。|It's going to rain tomorrow, I'm telling you. Take an umbrella.
+4|よ||yo_tell|この映画[えいが]、とても面白[おもしろ]かったです＿。|This movie was really good, I tell you.
+# ---------- だけ / しか / ばかり / など (N4) ----------
+4|だけ||dake_only|一つ＿ください。|Just one, please.
+4|だけ||dake_only|ひらがな＿読[よ]めます。|I can only read hiragana.
+4|だけ||dake_only|少[すこ]し＿食[た]べました。|I ate just a little.
+4|だけ||dake_only|このことは君[きみ]に＿話[はな]します。|I'm telling only you about this.
+4|だけ||dake_only|見[み]る＿です。買[か]いません。|I'm just looking. I'm not buying.
+4|しか||shika_only|財布[さいふ]に百円[ひゃくえん]＿ありません。|I only have 100 yen in my wallet.
+4|しか||shika_only|昨日[きのう]は三時間[さんじかん]＿寝[ね]ませんでした。|I only slept three hours last night.
+4|しか||shika_only|ひらがな＿読[よ]めません。|I can only read hiragana.
+4|しか||shika_only|このことは母[はは]に＿話[はな]していません。|I've only told my mother about this.
+4|しか||shika_only|教室[きょうしつ]には学生[がくせい]が二人[ふたり]＿いませんでした。|There were only two students in the classroom.
+4|ばかり||bakari|弟[おとうと]はゲーム＿しています。|My younger brother does nothing but play games.
+4|ばかり||bakari|最近[さいきん]、雨[あめ]＿ですね。|It's been nothing but rain lately.
+4|ばかり|だけ|bakari|甘[あま]いもの＿食[た]べないでください。|Don't eat only sweet things.
+4|ばかり|ところ|bakari_just|今[いま]、起[お]きた＿です。|I've just woken up.
+4|ばかり|ところ|bakari_just|日本[にほん]に来[き]た＿です。|I've just arrived in Japan.
+4|など|や|nado_etc|京都[きょうと]や奈良[なら]＿へ行[い]きました。|I went to Kyoto, Nara and other places.
+4|など||nado_etc|週末[しゅうまつ]は掃除[そうじ]や洗濯[せんたく]＿をします。|At weekends I do cleaning, laundry and so on.
+4|など||nado_etc|サッカーやテニス＿のスポーツが好[す]きです。|I like sports like soccer and tennis.
+4|など||nado_etc|お茶[ちゃ]やお菓子[かし]＿を買[か]いました。|I bought tea, snacks and so on.
+`;
+/* ================= DATA ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toHira = s => s.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+const hash = s => { let h=5381; for (const c of s) h=((h*33)^c.codePointAt(0))>>>0; return h.toString(36); };
+const ITEMS = DATA_TXT.trim().split('\n').filter(l=>l && !l.startsWith('#')).map(l=>{
+  const [lvl,a,h,u,s,e]=l.split('|');
+  return {id:'p'+hash(s+'|'+a), lvl:'N'+lvl, ans:a.split('/'), also:h?h.split('/'):[], use:u, s, e};
+});
+const PARTS_N5 = ['は','が','を','に','で','と','も','の','や','か','から','まで'];
+const PARTS_N4 = ['より','ね','よ','だけ','しか','ばかり','など'];
+const PARTS = [...PARTS_N5, ...PARTS_N4];
+const mainOf = it => it.ans[0];
+
+/* what each use means (shown after answering and on the Learn tab) */
+const USE = {
+  wa_topic:'<b>は</b> marks the topic: what the sentence is about (“as for …”).',
+  wa_contrast:'<b>は</b> sets one thing against another: “X (as opposed to Y)”. Very common with negatives.',
+  ga_subj:'<b>が</b> marks the subject, especially new information, inside a description (象は鼻<b>が</b>長い) or inside a clause that describes a noun (母<b>が</b>作った料理).',
+  ga_q:'Question words like 誰, 何 and どれ take <b>が</b> as the subject, never は. The answer takes が too: 田中さん<b>が</b>来ました.',
+  ga_like:'<b>が</b> marks the object of liking, disliking, skill, wanting and understanding: 好き, 嫌い, 上手, 下手, 欲しい, 分かる.',
+  ga_can:'With “can do” forms (話せる, 弾ける) and できる, the thing you can do usually takes <b>が</b>. を is heard too, but が is the textbook choice.',
+  ga_sense:'見える and 聞こえる (“can be seen / heard”) take <b>が</b> for what comes into view or earshot.',
+  ga_exist:'With ある and いる, <b>が</b> marks the thing or person that exists.',
+  ga_but:'<b>が</b> after a whole clause means “but”, or softens a request: すみません<b>が</b>….',
+  wo_obj:'<b>を</b> marks the direct object: the thing the action is done to.',
+  wo_through:'<b>を</b> marks a place you move through or along (道<b>を</b>歩く), or a place you leave (家<b>を</b>出る).',
+  ni_time:'<b>に</b> marks a specific point in time: clock times, dates, days and months. Relative words like 今日, 明日 and 毎朝 take no particle.',
+  ni_dest:'<b>に</b> marks the destination with 行く, 来る and 帰る. (へ also works here.)',
+  ni_exist:'<b>に</b> marks where something is, with ある, いる and 住む.',
+  ni_target:'<b>に</b> marks the person on the receiving end: give to, call, tell, ask, meet, teach.',
+  ni_into:'<b>に</b> marks the spot something goes into or onto: get on (乗る), enter (入る), sit on (座る), put (置く), write in (書く), arrive at (着く).',
+  ni_purpose:'Verb stem or する-noun + <b>に</b> + 行く/来る: going somewhere in order to do something.',
+  ni_become:'<b>に</b> with なる (become) and する (decide on, choose).',
+  ni_freq:'<b>に</b> means “per” in frequencies: 一日<b>に</b>三回 (three times a day).',
+  de_place:'<b>で</b> marks where an action happens.',
+  de_means:'<b>で</b> marks the means: by bus, with chopsticks, in Japanese, by email, made of wood.',
+  de_scope:'<b>で</b> marks a range or group: in Japan, in the class, altogether, alone, as a family.',
+  de_cause:'<b>で</b> can mark a cause: because of the rain, off sick with a cold.',
+  to_with:'<b>と</b> means “with (someone)”: doing something together.',
+  to_and:'<b>と</b> joins nouns into a complete list: “A and B” (and nothing else).',
+  to_quote:'<b>と</b> marks what is said, thought or called: と言う, と思う, と読む.',
+  mo_also:'<b>も</b> means “also, too” (or “both … and” when repeated). It replaces は, が or を.',
+  mo_neg:'<b>も</b> with a question word and a negative means “not any”: 何<b>も</b> (nothing), 誰<b>も</b> (nobody), どこ<b>も</b> (nowhere). After a number or 一度 it adds emphasis.',
+  no_poss:'<b>の</b> links two nouns: my book, the teacher’s, in front of the station. It can also stand for the noun (友達<b>の</b> = my friend’s).',
+  no_nominal:'<b>の</b> after a verb turns the action into a noun: 描く<b>の</b>が好き (I like drawing). こと works the same way.',
+  ya_list:'<b>や</b> lists examples: “A, B and so on” (the list isn’t complete). と would mean only those things.',
+  ka_q:'<b>か</b> at the end makes a question (or an invitation: 行きません<b>か</b>, 行きましょう<b>か</b>).',
+  ka_or:'<b>か</b> between nouns means “or”.',
+  ka_some:'Question word + <b>か</b> means “some-”: どこ<b>か</b> (somewhere), いつ<b>か</b> (someday), 誰<b>か</b> (someone), 何<b>か</b> (something).',
+  ka_embed:'<b>か</b> turns a question into part of a bigger sentence: どこにある<b>か</b>分かりますか (Do you know where it is?).',
+  kara_from:'<b>から</b> means “from”: a starting time, place or person.',
+  kara_after:'て-form + <b>から</b> means “after doing”: 食べて<b>から</b>出かけます.',
+  kara_because:'<b>から</b> after a reason means “because, so”. The reason comes first. (ので works too and is a little softer.)',
+  made_until:'<b>まで</b> means “until” or “as far as”: the end point in time or distance.',
+  yori_than:'<b>より</b> means “than” in comparisons: A は B <b>より</b> … (A is more … than B).',
+  ne_agree:'<b>ね</b> at the end looks for agreement or shares a feeling: “isn’t it?”, “right?”',
+  yo_tell:'<b>よ</b> at the end tells the listener something they may not know: “you know”, “I’m telling you”.',
+  dake_only:'<b>だけ</b> means “only, just”. It works with positive and negative verbs.',
+  shika_only:'<b>しか</b> means “only, nothing but”, and the verb is always negative: 百円<b>しか</b>ありません.',
+  bakari:'<b>ばかり</b> means “nothing but, always”, often with a note of complaint.',
+  bakari_just:'た-form + <b>ばかり</b> means “have just done”.',
+  nado_etc:'<b>など</b> means “and so on, things like”. It often follows a や list.',
+};
+/* one-line summary of each particle: used to explain a wrong pick */
+const SUM = {
+  'は':'marks the topic or a contrast', 'が':'marks the subject, or what you like / can do / what exists; between clauses it means “but”',
+  'を':'marks the object of an action, or a place you move through or leave', 'に':'marks a time, a destination, where something is, or who receives something',
+  'で':'marks where an action happens, or the means (by, with, in)', 'と':'means “with” someone, “and” in a complete list, or marks a quote',
+  'も':'means “also / too”', 'の':'links two nouns (“of”, ’s)', 'や':'lists examples (“A, B and so on”)', 'か':'makes a question, or means “or”',
+  'から':'means “from”, or “because” after a reason', 'まで':'means “until / as far as”', 'より':'means “than”', 'ね':'asks for agreement (“isn’t it?”)',
+  'よ':'tells the listener something new (“you know”)', 'だけ':'means “only / just”', 'しか':'means “only”, with a negative verb', 'ばかり':'means “nothing but”',
+  'など':'means “and so on”', 'へ':'marks a direction (like に with 行く)', 'ので':'means “because”', 'けど':'means “but”', 'こと':'turns a verb into a noun', 'ところ':'means “just (now)”',
+};
+/* the classic mix-ups */
+const PAIRS = [
+  {p:['は','が'], t:'<b>は</b> sets the topic (“as for me…”); <b>が</b> points at the subject, especially new information and the answer to “who/what”. Question words always take が: 誰<b>が</b>来ましたか.', ex:['私<b>は</b>学生です。 (As for me, I’m a student.)','誰<b>が</b>来ましたか。 (Who came?)']},
+  {p:['に','で'], t:'<b>に</b> marks where something <i>is</i> or <i>goes</i>; <b>で</b> marks where something <i>happens</i>. Ask: is there an action taking place there? Then it’s で.', ex:['図書館<b>に</b>います。 (I’m at the library.)','図書館<b>で</b>勉強します。 (I study at the library.)']},
+  {p:['を','が'], t:'Most verbs take <b>を</b> for their object, but likes, skills, wants and “can do” forms use <b>が</b>: 猫<b>が</b>好き, ギター<b>が</b>弾ける.', ex:['ギター<b>を</b>弾きます。 (I play the guitar.)','ギター<b>が</b>弾けます。 (I can play the guitar.)']},
+  {p:['を','に'], t:'Getting on, into or onto something takes <b>に</b> (電車<b>に</b>乗る, お風呂<b>に</b>入る); getting off or out takes <b>を</b> (電車<b>を</b>降りる, 家<b>を</b>出る).', ex:['電車<b>に</b>乗ります。 (I get on the train.)','電車<b>を</b>降ります。 (I get off the train.)']},
+  {p:['を','で'], t:'Moving through or along a place takes <b>を</b> (公園<b>を</b>散歩する). Doing an activity in a place takes <b>で</b> (公園<b>で</b>テニスをする).', ex:['公園<b>を</b>歩きます。 (I walk through the park.)','公園<b>で</b>遊びます。 (I play in the park.)']},
+  {p:['と','や'], t:'<b>と</b> gives the complete list; <b>や</b> gives examples and hints there’s more.', ex:['パン<b>と</b>牛乳を買いました。 (bread and milk, that’s all)','パン<b>や</b>牛乳を買いました。 (bread, milk and other things)']},
+  {p:['に','と'], t:'会う and 似る take either. <b>に</b> is one-directional (I went to meet them); <b>と</b> is mutual (we met up).', ex:['駅で友達<b>に</b>会いました。','友達<b>と</b>会いました。']},
+  {p:['だけ','しか'], t:'Both mean “only”. <b>だけ</b> works with any verb; <b>しか</b> needs a negative verb and sounds more like “nothing but”.', ex:['ひらがな<b>だけ</b>読めます。','ひらがな<b>しか</b>読めません。']},
+  {p:['から','まで'], t:'<b>から</b> is the starting point (“from”), <b>まで</b> the end point (“until, as far as”). Together: 九時<b>から</b>五時<b>まで</b>.', ex:['九時<b>から</b>五時<b>まで</b>働きます。']},
+  {p:['ね','よ'], t:'<b>ね</b> assumes the listener already agrees (“isn’t it?”); <b>よ</b> tells them something they may not know (“you know”).', ex:['暑いです<b>ね</b>。 (Hot, isn’t it?)','暑いです<b>よ</b>。 (It’s hot, I’m telling you.)']},
+];
+const pairTip = (a,b) => PAIRS.find(x=>x.p.includes(a) && x.p.includes(b));
+/* plausible wrong options for each answer */
+const CONF = {
+  'は':['が','を','も','に','の'], 'が':['は','を','に','で','の'], 'を':['が','に','で','は','と'], 'に':['で','を','が','と','から'],
+  'で':['に','を','が','と','から'], 'と':['に','や','も','で','の'], 'も':['は','が','と','に','の'], 'の':['が','は','に','と','を'],
+  'や':['と','も','の','か','に'], 'か':['や','と','も','の','ね'], 'から':['まで','に','で','より','を'], 'まで':['から','に','で','より','を'],
+  'より':['から','まで','で','に','と'], 'ね':['よ','か','の','も'], 'よ':['ね','か','の','も'], 'だけ':['しか','ばかり','も','まで'],
+  'しか':['だけ','ばかり','も','まで'], 'ばかり':['だけ','しか','も','まで'], 'など':['や','と','も','の','か'],
+};
+
+/* ================= TEXT ================= */
+// 漢字[かな] → ruby (or plain kanji when furigana is off)
+const rubyfy = s => s.replace(/([一-龯々〆ヵヶ]+)\[([^\]]+)\]/g, (m,k,r)=> furiOn() ? `<ruby>${k}<rt>${r}</rt></ruby>` : k);
+const plain = s => s.replace(/\[[^\]]*\]/g,'');
+const filled = (it, p) => plain(it.s).split('＿').join(p);
+function sentHTML(it, fill, cls){
+  const parts=it.s.split('＿').map(rubyfy);
+  const slot = fill ? `<span class="pfill ${cls||''}">${esc(fill)}</span>` : `<span class="blank" aria-label="blank"></span>`;
+  return parts.join(slot);
+}
+
+/* ================= STORAGE ================= */
+const P='jpart_';
+const store = (() => { const mem={}; let ok=false;
+  try { localStorage.setItem('__jpart','1'); localStorage.removeItem('__jpart'); ok=true; } catch(e){}
+  return { persistent:ok, get(k){ try { return ok?localStorage.getItem(k):(k in mem?mem[k]:null); } catch(e){ return null; } },
+           set(k,v){ try { if(ok) localStorage.setItem(k,v); else mem[k]=v; } catch(e){ mem[k]=v; } } }; })();
+const loadJSON = k => { try { return JSON.parse(store.get(k)||'null'); } catch(e){ return null; } };
+const LS={stats:P+'stats_v1',filters:P+'filters_v1',srs:P+'srs_v1',srsT:P+'srs_time_v1',peers:P+'peers_v1',device:P+'device_v1',dark:P+'dark_v1',auto:P+'autoplay_v1',mode:P+'mode_v1',furi:P+'furi_v1'};
+const blankStats = () => ({c:0,t:0,modes:{},parts:{},mix:{},items:{}});
+let lifetime=Object.assign(blankStats(), loadJSON(LS.stats)||{}), session=blankStats(), streak=0;
+let filters=Object.assign({parts:[...PARTS_N5], srs:true}, loadJSON(LS.filters)||{});
+const saveFilters=()=>store.set(LS.filters,JSON.stringify(filters));
+let srs=loadJSON(LS.srs)||{}, srsT=loadJSON(LS.srsT)||{}, peers=loadJSON(LS.peers)||{};
+let deviceId=store.get(LS.device); if (!deviceId){ deviceId=Math.random().toString(36).slice(2,10); store.set(LS.device,deviceId); }
+function addStats(a,b){ const o=blankStats(); o.c=(a.c||0)+(b.c||0); o.t=(a.t||0)+(b.t||0);
+  for (const k of ['modes','parts','items']) for (const s of [a[k],b[k]]) for (const key in (s||{})){ const x=o[k][key]||(o[k][key]={c:0,t:0}); x.c+=s[key].c; x.t+=s[key].t; }
+  for (const s of [a.mix,b.mix]) for (const key in (s||{})) o.mix[key]=(o.mix[key]||0)+s[key];
+  return o; }
+let combined; const recombine=()=>{ combined=Object.values(peers).reduce((acc,p)=>addStats(acc,p.stats), addStats(blankStats(),lifetime)); }; recombine();
+const furiOn = () => store.get(LS.furi)!=='off';
+
+/* ================= QUIZ ================= */
+let mode=store.get(LS.mode)||'mc', current=null, answered=false, recent=[];
+const MODES={mc:'Multiple choice', hard:'Hard mode'};
+const pool = () => ITEMS.filter(it=>filters.parts.includes(mainOf(it)));
+function pick(){
+  const ps=pool(); if (!ps.length) return null;
+  const fresh=ps.filter(it=>!recent.includes(it.id)); const src=fresh.length?fresh:ps;
+  if (filters.srs){ const missed=src.filter(it=>srs[it.id]===0); if (missed.length && Math.random()<.25) return missed[Math.floor(Math.random()*missed.length)]; }
+  // spread questions evenly over the chosen particles, then pick a sentence
+  const byP={}; for (const it of src) (byP[mainOf(it)]=byP[mainOf(it)]||[]).push(it);
+  const keys=Object.keys(byP), list=byP[keys[Math.floor(Math.random()*keys.length)]];
+  return list[Math.floor(Math.random()*list.length)];
+}
+function options(it){
+  const bad=new Set([...it.ans, ...it.also, 'へ']);
+  const out=[]; for (const p of (CONF[mainOf(it)]||[])) if (!bad.has(p) && out.length<3) out.push(p);
+  for (const p of PARTS) if (out.length<3 && !bad.has(p) && !out.includes(p)) out.push(p);
+  const all=[mainOf(it), ...out];
+  for (let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
+  return all;
+}
+function nextQuestion(){
+  TTS.stop();
+  const it=pick();
+  $('quizBody').classList.toggle('hidden',!it); $('emptyPool').classList.toggle('hidden',!!it);
+  if (!it){ current=null; return; }
+  recent=[it.id,...recent].slice(0,Math.min(20,Math.floor(pool().length/2)));
+  current={it, m:mode, opts:mode==='mc'?options(it):null}; answered=false;
+  $('qSent').innerHTML=sentHTML(it);
+  $('qEn').textContent = mode==='mc' ? it.e : '';
+  $('qEn').classList.toggle('hidden', mode!=='mc');
+  $('qAsk').textContent = mode==='mc' ? 'Which particle fills the blank?' : 'Type the particle that fits (romaji or kana)';
+  $('choices').classList.toggle('hidden', mode!=='mc'); $('typeRow').classList.toggle('hidden', mode==='mc');
+  if (mode==='mc'){
+    $('choices').innerHTML=current.opts.map((p,i)=>`<button type="button" class="choice jpf" data-p="${p}"><span class="k">${i+1}</span>${p}</button>`).join('');
+  } else {
+    const inp=$('answer'); inp.value=''; inp.className=''; inp.readOnly=false;
+    setTimeout(()=>{ if (!$('tab-quiz').classList.contains('hidden')) inp.focus({preventScroll:true}); },0);
+  }
+  $('keyHint').textContent = mode==='mc' ? 'Keys 1–4 pick an answer · Enter = next' : 'Romaji turns into kana (wa → は, o → を) · Enter = check / next';
+  $('fb').innerHTML=''; $('nextRow').classList.add('hidden'); $('checkBtn').textContent='Check';
+  document.querySelectorAll('.dirbtn').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));
+}
+function record(st,it,m,ok,picked){ const b=(o,k)=>{ o[k]=o[k]||{c:0,t:0}; o[k].t++; if (ok) o[k].c++; };
+  st.t++; if (ok) st.c++; b(st.modes,m); b(st.parts,mainOf(it)); b(st.items,it.id);
+  if (!ok && picked && picked!==mainOf(it)){ const k=mainOf(it)+'>'+picked; st.mix[k]=(st.mix[k]||0)+1; } }
+// typed answer → particle
+function normParticle(raw){
+  let k=toHira(romajiToKana(raw.trim().toLowerCase(),true)).replace(/[\s。、.,!?！？「」]/g,'');
+  const MAP={'わ':'は','お':'を','え':'へ','ha':'は'}; if (MAP[k]) k=MAP[k];
+  return k;
+}
+function answer(picked, show){
+  if (!current || answered) return;
+  const {it,m}=current;
+  const okSet = m==='mc' ? it.ans : [...it.ans, ...it.also];
+  const ok = !show && okSet.includes(picked);
+  answered=true;
+  record(session,it,m,ok,picked); record(lifetime,it,m,ok,picked);
+  const prev=srs[it.id]; srs[it.id] = ok ? Math.min(4, prev===undefined?2:prev+1) : 0; srsT[it.id]=Date.now();
+  store.set(LS.stats,JSON.stringify(lifetime)); store.set(LS.srs,JSON.stringify(srs)); store.set(LS.srsT,JSON.stringify(srsT)); recombine();
+  streak = ok ? streak+1 : 0; updateScore();
+  const main=mainOf(it), shown = ok ? picked : main; current.shown=shown; current.cls='good';
+  if (m==='mc') document.querySelectorAll('.choice').forEach(b=>{ b.disabled=true; if (it.ans.includes(b.dataset.p)) b.classList.add('right'); else if (b.dataset.p===picked) b.classList.add('wrong'); });
+  else { const inp=$('answer'); inp.readOnly=true; inp.className=ok?'ok':'bad'; if (picked) inp.value=picked; }
+  const altOk = it.ans.includes(shown) ? it.ans.filter(p=>p!==shown) : [];
+  const head = ok ? (picked===main||m==='mc' ? 'Correct!' : `Correct! ${esc(picked)} works here too.`) : show ? 'Here’s the answer' : `Not quite. You picked ${esc(picked||'—')}`;
+  let h=`<div class="feedback ${ok?'ok':'bad'}"><div class="head">${head}</div>
+    <div class="fsent jpf">${sentHTML(it, shown, 'good')} ${spk(filled(it,shown))}</div>
+    <div class="fen">${esc(it.e)}</div>
+    <div class="why">${USE[it.use]||''}</div>`;
+  if (altOk.length) h+=`<div class="why muted">${altOk.map(esc).join(' / ')} is also correct here.</div>`;
+  if (ok && picked!==main && m==='hard') h+=`<div class="why muted">Going by the English, the usual choice is <b class="jpf">${esc(main)}</b>.</div>`;
+  else if (ok && m==='hard' && it.also.length) h+=`<div class="why muted">Without the English, ${it.also.map(p=>`<b class="jpf">${esc(p)}</b>`).join(' / ')} would also be natural, with a slightly different meaning.</div>`;
+  if (!ok && picked && !show){
+    if (SUM[picked]) h+=`<div class="why"><b class="jpf">${esc(picked)}</b> ${SUM[picked]}, which doesn’t fit this sentence.</div>`;
+    const t=pairTip(main,picked); if (t) h+=`<div class="tip"><div class="tt">${esc(t.p.join(' vs '))}</div>${t.t}</div>`;
+  }
+  h+=`<div class="reportline"><a href="${reportHref(it,m,picked)}">⚑ Report a mistake in this sentence</a></div></div>`;
+  $('fb').innerHTML=h;
+  $('nextRow').classList.toggle('hidden', m!=='mc'); $('checkBtn').textContent='Next →';
+  if (autoT.checked) TTS.say(filled(it,shown));
+}
+function check(show){
+  if (!current) return;
+  if (answered){ nextQuestion(); return; }
+  if (current.m==='mc'){ if (show) answer(null,true); return; }
+  const raw=$('answer').value; if (!show && !raw.trim()){ $('answer').focus(); return; }
+  answer(show?null:normParticle(raw), show);
+}
+function updateScore(){ $('sScore').textContent=`${session.c} / ${session.t}`; $('sStreak').textContent=streak; }
+const REPORT_TO='support.kohikori@gmail.com';
+function reportHref(it,m,picked){
+  const subj=`Mistake report: Particles Quiz – ${filled(it,mainOf(it))}`;
+  const body=['App: Particles Quiz',`Sentence: ${plain(it.s)}`,`English: ${it.e}`,`Expected: ${it.ans.join(' / ')}${it.also.length?' (also natural: '+it.also.join(' / ')+')':''}`,`Question type: ${MODES[m]}`,`My answer: ${picked||'(revealed)'}`,`ID: ${it.id}`,'','What looks wrong:',''].join('\n');
+  return 'mailto:'+REPORT_TO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
+document.querySelectorAll('.dirbtn').forEach(b=>b.addEventListener('click',()=>{ mode=b.dataset.mode; store.set(LS.mode,mode); nextQuestion(); }));
+$('choices').addEventListener('click',e=>{ const b=e.target.closest('.choice'); if (b && !answered) answer(b.dataset.p,false); });
+$('checkBtn').addEventListener('click',()=>check(false));
+$('showBtn').addEventListener('click',()=>{ if (!answered) check(true); });
+$('mcNextBtn').addEventListener('click',()=>nextQuestion());
+$('fb').addEventListener('click',e=>{ const b=e.target.closest('.speak'); if (b) TTS.say(b.dataset.say); });
+document.addEventListener('keydown',e=>{ if ($('tab-quiz').classList.contains('hidden') || composing) return;
+  if (e.key==='Enter'){ e.preventDefault(); if (current && current.m==='mc' && !answered) return; check(false); return; }
+  if (current && current.m==='mc' && !answered && /^[1-4]$/.test(e.key)){ const b=document.querySelectorAll('.choice')[+e.key-1]; if (b) answer(b.dataset.p,false); } });
+/* romaji → kana while typing */
+const ROMA=(()=>{ const t={a:'あ',i:'い',u:'う',e:'え',o:'お'}, rows={k:'かきくけこ',g:'がぎぐげご',s:'さしすせそ',z:'ざじずぜぞ',t:'たちつてと',d:'だぢづでど',n:'なにぬねの',h:'はひふへほ',b:'ばびぶべぼ',p:'ぱぴぷぺぽ',m:'まみむめも',r:'らりるれろ'};
+  for (const c in rows) for (let i=0;i<5;i++) t[c+'aiueo'[i]]=rows[c][i];
+  Object.assign(t,{ya:'や',yu:'ゆ',yo:'よ',wa:'わ',wo:'を',shi:'し',chi:'ち',tsu:'つ',fu:'ふ',ji:'じ',ti:'ち',tu:'つ',si:'し',zi:'じ',hu:'ふ',
+    ja:'じゃ',ju:'じゅ',jo:'じょ',sha:'しゃ',shu:'しゅ',sho:'しょ',cha:'ちゃ',chu:'ちゅ',cho:'ちょ',nn:'ん',"n'":'ん','-':'ー'});
+  for (const c of 'kgnhbpmr') for (const [v,s] of [['a','ゃ'],['u','ゅ'],['o','ょ']]) t[c+'y'+v]=rows[c][1]+s;
+  return t; })();
+const ROMA_PREFIX=new Set(); for (const k in ROMA) for (let i=1;i<=k.length;i++) ROMA_PREFIX.add(k.slice(0,i));
+function romajiToKana(str, final){ let out='', i=0; const s=str.toLowerCase();
+  while (i<s.length){ const ch=s[i];
+    if (!/[a-z'\-]/.test(ch)){ out+=str[i]; i++; continue; }
+    if (ch==='n'){ const nx=s[i+1];
+      if (nx===undefined){ out+=final?'ん':'n'; i++; continue; }
+      if (nx==='n'){ const n2=s[i+2]; if (n2===undefined){ out+='ん'; i+=2; continue; } if ('aiueoy'.includes(n2)){ out+='ん'; i+=1; continue; } out+='ん'; i+=2; continue; }
+      if (nx==="'"){ out+='ん'; i+=2; continue; }
+      if (!'aiueoy'.includes(nx)){ out+='ん'; i++; continue; } }
+    if (/[bcdfghjkmprstvwz]/.test(ch) && (s[i+1]===ch || (ch==='t' && s[i+1]==='c' && s[i+2]==='h'))){ out+='っ'; i++; continue; }
+    let hit=false; for (let L=3;L>=1;L--){ const sub=s.substr(i,L); if (sub.length===L && ROMA[sub]){ out+=ROMA[sub]; i+=L; hit=true; break; } }
+    if (hit) continue;
+    if (ROMA_PREFIX.has(s.slice(i))){ out+=str.slice(i); break; }
+    out+=str[i]; i++; }
+  return out; }
+let composing=false;
+$('answer').addEventListener('compositionstart',()=>composing=true);
+$('answer').addEventListener('compositionend',()=>composing=false);
+$('answer').addEventListener('input',()=>{
+  if (composing || answered || !current || current.m!=='hard') return;
+  const inp=$('answer'), raw=inp.value; if (!/[a-z]/i.test(raw)) return;
+  const conv=romajiToKana(raw,false);
+  if (conv!==raw){ inp.value=conv; inp.setSelectionRange(conv.length,conv.length); }
+});
+
+/* ================= LEARN ================= */
+const exFor = use => ITEMS.find(it=>it.use===use);
+const exHTML = it => it ? `<div class="lex"><span class="jpf">${sentHTML(it, mainOf(it), 'good')}</span> ${spk(filled(it,mainOf(it)))}<div class="len">${esc(it.e)}</div></div>` : '';
+const LEARN_USES = {
+  'は':['wa_topic','wa_contrast'], 'が':['ga_subj','ga_q','ga_like','ga_can','ga_sense','ga_exist','ga_but'], 'を':['wo_obj','wo_through'],
+  'に':['ni_time','ni_dest','ni_exist','ni_target','ni_into','ni_purpose','ni_become','ni_freq'], 'で':['de_place','de_means','de_scope','de_cause'],
+  'と':['to_with','to_and','to_quote'], 'も':['mo_also','mo_neg'], 'の':['no_poss','no_nominal'], 'や':['ya_list'], 'か':['ka_q','ka_or','ka_some','ka_embed'],
+  'から':['kara_from','kara_after','kara_because'], 'まで':['made_until'], 'より':['yori_than'], 'ね':['ne_agree'], 'よ':['yo_tell'],
+  'だけ':['dake_only'], 'しか':['shika_only'], 'ばかり':['bakari','bakari_just'], 'など':['nado_etc'],
+};
+let learnOpen=null;
+function renderLearn(){
+  let h=`<p class="lead">Particles are the short words after a noun (or at the end of a sentence) that show its job: who does it, to whom, where, with what. Tap a particle to see how it’s used, with examples from the quiz.</p>
+    <h3>N5</h3><div class="pchips">${PARTS_N5.map(p=>`<button type="button" class="pchip jpf${learnOpen===p?' on':''}" data-p="${p}">${p}</button>`).join('')}</div>
+    <h3>N4</h3><div class="pchips">${PARTS_N4.map(p=>`<button type="button" class="pchip jpf${learnOpen===p?' on':''}" data-p="${p}">${p}</button>`).join('')}</div>`;
+  if (learnOpen){
+    const p=learnOpen;
+    h+=`<div class="pcard"><div class="ptitle"><span class="pbig jpf">${p}</span><span>${SUM[p][0].toUpperCase()+SUM[p].slice(1)}.</span></div>
+      ${(LEARN_USES[p]||[]).map(u=>`<div class="puse"><div>${USE[u]}</div>${exHTML(exFor(u))}</div>`).join('')}
+      ${PAIRS.filter(x=>x.p.includes(p)).map(x=>`<div class="tip"><div class="tt">${esc(x.p.join(' vs '))}</div>${x.t}</div>`).join('')}</div>`;
+  }
+  h+=`<h3>Common mix-ups</h3>${PAIRS.map(x=>`<div class="pair"><div class="tt jpf">${x.p.join(' vs ')}</div><div>${x.t}</div>${x.ex.map(e=>`<div class="pex jpf">${e}</div>`).join('')}</div>`).join('')}
+    <p class="note2">へ also marks direction (日本<b>へ</b>行きます) but is rarer in everyday speech than に, so the quiz doesn’t offer it. If you type it in Hard mode where it fits, it still counts.</p>`;
+  $('learnBody').innerHTML=h;
+}
+$('learnBody').addEventListener('click',e=>{ const c=e.target.closest('.pchip'); if (c){ learnOpen = learnOpen===c.dataset.p ? null : c.dataset.p; renderLearn(); return; }
+  const b=e.target.closest('.speak'); if (b) TTS.say(b.dataset.say); });
+
+/* ================= FILTERS ================= */
+function renderFilters(){
+  const chip=p=>{ const n=ITEMS.filter(it=>mainOf(it)===p).length; return `<label class="rowchip jpf${filters.parts.includes(p)?' on':''}"><input type="checkbox" data-k="parts" value="${p}" ${filters.parts.includes(p)?'checked':''}> ${p} <span class="cnt">${n}</span></label>`; };
+  let h=`<h3>N5 particles</h3><div class="rows">${PARTS_N5.map(chip).join('')}</div>
+    <div class="row" style="margin-top:8px"><button class="btn small" data-set="n5">All N5</button><button class="btn small" data-set="none">Clear</button></div>
+    <h3>N4 particles</h3><div class="rows">${PARTS_N4.map(chip).join('')}</div>
+    <div class="row" style="margin-top:8px"><button class="btn small" data-set="n4">All N4</button><button class="btn small" data-set="all">Everything</button></div>
+    <div class="note2">Each sentence counts under the particle that fills its blank. Wrong options are always chosen from particles that don’t fit.</div>`;
+  h+=`<h3>Practice</h3><div class="checks"><label style="grid-column:1/-1"><input type="checkbox" id="fSrs" ${filters.srs?'checked':''}> <span>Bring back sentences I missed <span style="color:var(--muted)">— they come up again now and then</span></span></label></div>`;
+  $('filterBody').innerHTML=h;
+  $('poolInfo').textContent=filters.parts.length?`${pool().length} sentences in your practice set.`:'Pick at least one particle.';
+}
+$('filterBody').addEventListener('change',e=>{ const t=e.target;
+  if (t.dataset.k) filters.parts=[...document.querySelectorAll('input[data-k="parts"]:checked')].map(x=>x.value);
+  else if (t.id==='fSrs') filters.srs=t.checked;
+  saveFilters(); renderFilters(); });
+$('filterBody').addEventListener('click',e=>{ const b=e.target.closest('[data-set]'); if (!b) return;
+  filters.parts = {n5:[...PARTS_N5], n4:[...PARTS_N4], all:[...PARTS], none:[]}[b.dataset.set]; saveFilters(); renderFilters(); });
+
+/* ================= STATS ================= */
+const pct=o=>o&&o.t?Math.round(100*o.c/o.t):null;
+const bar=p=>p===null?'<span style="color:var(--muted)">—</span>':`<span class="lbar" style="display:inline-flex;width:90px;vertical-align:middle;height:8px"><i class="la" style="width:${p}%;background:${p>=80?'var(--ok)':p>=60?'#e8a300':'var(--bad)'}"></i></span> ${p}%`;
+function renderStats(){
+  const L=combined; renderSyncInfo();
+  let h=`<h2>Stats</h2><div class="totals"><div>Session<b>${session.c} / ${session.t}</b>${pct(session)!==null?pct(session)+'%':''}</div><div>Lifetime<b>${L.c} / ${L.t}</b>${pct(L)!==null?pct(L)+'%':''}</div></div>`;
+  h+=`<h3>By question type</h3><table><tr><th>Type</th><th class="num">Answered</th><th>Accuracy</th></tr>${Object.entries(MODES).map(([k,l])=>{ const x=L.modes[k]; return `<tr><td>${l}</td><td class="num">${x?x.t:0}</td><td>${bar(pct(x))}</td></tr>`; }).join('')}</table>`;
+  h+=`<h3>By particle</h3><table><tr><th>Particle</th><th class="num">Answered</th><th>Accuracy</th></tr>${PARTS.filter(p=>L.parts[p]).map(p=>{ const x=L.parts[p]; return `<tr><td class="jpf" style="font-size:17px">${p}</td><td class="num">${x.t}</td><td>${bar(pct(x))}</td></tr>`; }).join('')||'<tr><td colspan="3" class="note">None yet.</td></tr>'}</table>`;
+  const mix=Object.entries(L.mix).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  h+=`<h3>Most common mix-ups</h3>`+(mix.length?`<table><tr><th>Needed</th><th>You picked</th><th class="num">Times</th></tr>${mix.map(([k,n])=>{ const [a,b]=k.split('>'); return `<tr><td class="jpf" style="font-size:17px">${a}</td><td class="jpf" style="font-size:17px">${b}</td><td class="num">${n}</td></tr>`; }).join('')}</table>`:'<div class="note">None yet.</div>');
+  const byId=Object.fromEntries(ITEMS.map(it=>[it.id,it]));
+  const missed=Object.entries(L.items).map(([id,o])=>[byId[id],o.t-o.c]).filter(x=>x[0]&&x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  h+=`<h3>Most-missed sentences</h3>`+(missed.length?`<table><tr><th>Sentence</th><th class="num">Missed</th></tr>${missed.map(([it,m])=>`<tr><td><span class="jpf">${sentHTML(it,mainOf(it),'good')}</span><div class="note">${esc(it.e)}</div></td><td class="num">${m}</td></tr>`).join('')}</table>`:'<div class="note">None yet.</div>');
+  $('statsBody').innerHTML=h;
+}
+$('resetBtn').addEventListener('click',()=>{ if (!confirm('Reset all lifetime stats? This cannot be undone.')) return;
+  lifetime=blankStats(); srs={}; srsT={}; peers={};
+  for (const [k,v] of [[LS.stats,lifetime],[LS.srs,{}],[LS.srsT,{}],[LS.peers,{}]]) store.set(k,JSON.stringify(v));
+  recombine(); renderStats(); updateScore(); });
+const fmtDate=ms=>new Date(ms).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+function renderSyncInfo(){ const ids=Object.keys(peers);
+  $('syncInfo').innerHTML=`This device: ${lifetime.t} answers`+(ids.length?` · Imported from ${ids.length} other device${ids.length>1?'s':''}: `+ids.map(id=>`${peers[id].stats.t} answers (as of ${fmtDate(peers[id].at)})`).join(', '):' · No other devices imported yet'); }
+$('exportBtn').addEventListener('click',()=>{
+  const data={app:'jpart-quiz',version:1,exportedAt:Date.now(),device:deviceId,own:lifetime,peers,srs,srsT};
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
+  a.download=`particles-quiz-progress-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  $('syncMsg').innerHTML='<span style="color:var(--ok)">Exported. Import this file on your other device.</span>'; });
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async e=>{
+  const f=e.target.files[0]; e.target.value=''; if (!f) return;
+  let d; try { d=JSON.parse(await f.text()); } catch(err){ d=null; }
+  if (d && d.app==='kohikori-backup') d=(d.apps||{})['part'];
+  if (!d || d.app!=='jpart-quiz' || !d.own){ $('syncMsg').innerHTML='<span style="color:var(--bad)">That file isn\'t a particles quiz export.</span>'; return; }
+  if (d.device===deviceId){ $('syncMsg').innerHTML='<span style="color:var(--bad)">That file came from this device, so there\'s nothing new to add.</span>'; return; }
+  const incoming={...(d.peers||{}), [d.device]:{at:d.exportedAt, stats:d.own}}; if (!(d.own && d.own.t)) delete incoming[d.device];
+  let devs=0, pairs=0;
+  for (const id in incoming){ if (id===deviceId||!incoming[id]||!incoming[id].stats) continue; if (!peers[id]||incoming[id].at>peers[id].at){ peers[id]=incoming[id]; devs++; } }
+  for (const k in (d.srs||{})){ const t=(d.srsT||{})[k]||0; if (srs[k]===undefined||t>(srsT[k]||0)){ srs[k]=d.srs[k]; srsT[k]=t; pairs++; } }
+  store.set(LS.peers,JSON.stringify(peers)); store.set(LS.srs,JSON.stringify(srs)); store.set(LS.srsT,JSON.stringify(srsT)); recombine(); renderStats();
+  $('syncMsg').innerHTML = devs||pairs ? `<span style="color:var(--ok)">Imported: updated results from ${devs} device${devs===1?'':'s'} and ${pairs} missed-sentence entr${pairs===1?'y':'ies'}.</span>` : '<span style="color:var(--muted)">Already up to date. Nothing new in that file.</span>';
+});
+
+/* ================= VOICE ================= */
+let TTS_LAST=null;
+function ttsNote(err){
+  let n=$('ttsNote'); if (!n){ n=document.createElement('div'); n.id='ttsNote';
+    n.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);max-width:92vw;z-index:99;background:var(--card);color:var(--text);border:1px solid var(--bad);border-radius:10px;padding:10px 14px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.18)';
+    document.body.appendChild(n); }
+  const hint = err==='not-allowed' ? 'Your browser blocked it. Tap 🔊 again.' : (err==='language-unavailable'||err==='voice-unavailable') ? 'No Japanese voice is installed on this device.' : 'Your browser\'s speech engine reported a problem.';
+  n.textContent='🔇 Audio couldn\'t play ('+err+'). '+hint; clearTimeout(n._t); n._t=setTimeout(()=>n.remove(),6000);
+}
+const TTS=(()=>{
+  const ok=typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined';
+  let voice=null;
+  const pick=()=>{ const ja=speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang)); voice=ja.find(v=>/premium|enhanced|natural|google|kyoko|otoya|nanami/i.test(v.name+' '+(v.voiceURI||'')))||ja[0]||null; };
+  if (ok){ pick(); speechSynthesis.onvoiceschanged=pick; }
+  return { ok, say(text){ if(!ok||!text) return; const ss=speechSynthesis; if (!voice) pick();
+      const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; if (voice) u.voice=voice; u.rate=0.9;
+      u.onerror=e=>{ if (e.error!=='interrupted' && e.error!=='canceled') ttsNote(e.error); };
+      TTS_LAST=u; if (ss.speaking||ss.pending) ss.cancel(); if (ss.paused) ss.resume(); ss.speak(u); },
+    stop(){ if (ok) try{ speechSynthesis.cancel(); }catch(e){} } };
+})();
+const spk = t => TTS.ok ? `<button type="button" class="speak" data-say="${esc(t)}" title="Play audio">🔊</button>` : '';
+
+/* ================= WIRING ================= */
+function switchTab(t){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  for (const x of ['quiz','learn','filters','stats']) $('tab-'+x).classList.toggle('hidden',x!==t);
+  if (t!=='quiz') TTS.stop();
+  if (t==='learn') renderLearn(); if (t==='filters') renderFilters(); if (t==='stats') renderStats();
+  if (t==='quiz' && (!current || answered || !filters.parts.includes(mainOf(current.it)))) nextQuestion();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+const darkT=$('darkToggle'); darkT.checked=document.documentElement.classList.contains('dark');
+darkT.addEventListener('change',()=>{ document.documentElement.classList.toggle('dark',darkT.checked); store.set(LS.dark,darkT.checked?'on':'off'); });
+const furiT=$('furiToggle'); furiT.checked=furiOn();
+furiT.addEventListener('change',()=>{ store.set(LS.furi,furiT.checked?'on':'off');
+  if (current){ $('qSent').innerHTML=sentHTML(current.it);
+    const f=$('fb').querySelector('.fsent'); if (f && current.shown) f.innerHTML=sentHTML(current.it, current.shown, current.cls)+' '+spk(filled(current.it,current.shown)); }
+  if (!$('tab-learn').classList.contains('hidden')) renderLearn(); });
+const autoT=$('autoToggle'); autoT.checked=store.get(LS.auto)==='on'; if (!TTS.ok) autoT.disabled=true;
+autoT.addEventListener('change',()=>store.set(LS.auto,autoT.checked?'on':'off'));
+if (!store.persistent) $('storeWarn').classList.remove('hidden');
+updateScore(); nextQuestion();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+</script>
+<script>
+/* Recent accuracy: keeps the last 25 answers on this device (shown on the home page) */
+(function(){
+  const SK='jpart_stats_v1', RK='jpart_recent_v1', N=25;
+  if (typeof store==='undefined' || !store.set) return;
+  const orig=store.set.bind(store), parse=v=>{ try { return JSON.parse(v); } catch(e){ return null; } };
+  let prev=parse(store.get(SK));
+  store.set=function(k,v){
+    orig(k,v);
+    if (k!==SK) return;
+    const cur=parse(v); if (!cur) return;
+    let log=parse(store.get(RK)); if (!Array.isArray(log)) log=[];
+    const pt=prev?prev.t||0:0, pc=prev?prev.c||0:0;
+    if (cur.t===pt+1) log.push([Date.now(), cur.c>pc?1:0]);
+    else if (cur.t===pt && cur.c===pc+1 && log.length) log[log.length-1][1]=1;   // answer later marked correct
+    else if (cur.t<pt) log=[];                                                     // stats were reset
+    orig(RK, JSON.stringify(log.slice(-N))); prev=cur;
+  };
+})();
+</script>
+<script>
+/* Settings panel behind the gear button */
+(function(){
+  const b=document.getElementById('gearBtn'), p=document.getElementById('settingsPanel'); if (!b||!p) return;
+  b.addEventListener('click',()=>{ const open=p.classList.toggle('closed')===false; b.setAttribute('aria-expanded', open); });
+})();
+/* Phones: while typing an answer, keep the score, question and answer box in view above the keyboard */
+(function(){
+  if (!window.matchMedia || !matchMedia('(hover:none)').matches) return;
+  let t=null;
+  // keep the question (with its furigana / romaji) just under the top of the screen
+  function fit(){
+    if (!document.body.classList.contains('kbd')) return;
+    const q=document.querySelector('section:not(.hidden) #qSent');
+    if (!q) return;
+    window.scrollTo({top: Math.max(0, q.getBoundingClientRect().top+scrollY-8), behavior:'smooth'});
+  }
+  let mt=null; const qb=document.getElementById('quizBody');
+  if (qb && window.MutationObserver) new MutationObserver(()=>{ clearTimeout(mt); mt=setTimeout(fit,120); }).observe(qb,{childList:true,subtree:true,characterData:true});
+  const on=()=>{ clearTimeout(t); document.body.classList.add('kbd'); setTimeout(fit,350); };
+  // the answer box is often focused already, so a tap on it (which opens the keyboard) counts too
+  document.addEventListener('focusin',e=>{ if (e.target && e.target.id==='answer') on(); });
+  document.addEventListener('click',e=>{ if (e.target && e.target.id==='answer') on(); });
+  document.addEventListener('focusout',e=>{ if (e.target && e.target.id==='answer'){ clearTimeout(t); t=setTimeout(()=>{ const a=document.activeElement; if (!a || a.id!=='answer') document.body.classList.remove('kbd'); },250); } });
+  if (window.visualViewport) visualViewport.addEventListener('resize',()=>{ const a=document.activeElement;
+    if (a && a.id==='answer' && visualViewport.height<innerHeight*0.8) on(); else setTimeout(fit,60); });
+})();
+</script>
+<script src="ja.js"></script>
+</body>
+</html>

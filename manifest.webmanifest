@@ -1,7 +1,7 @@
 {
   "name": "Kohikori · Japanese Practice",
   "short_name": "Kohikori",
-  "description": "Kana, kanji, verb and adjective conjugation, numbers, counters, JLPT vocabulary and listening quizzes.",
+  "description": "Kana, kanji, verb and adjective conjugation, numbers, counters, particles, JLPT vocabulary and listening quizzes.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -110,6 +110,17 @@
       "icons": [
         {
           "src": "icon-listen-180.png",
+          "sizes": "180x180"
+        }
+      ]
+    },
+    {
+      "name": "Particles Quiz",
+      "short_name": "Particles",
+      "url": "particles.html",
+      "icons": [
+        {
+          "src": "icon-part-180.png",
           "sizes": "180x180"
         }
       ]
