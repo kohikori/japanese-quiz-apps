@@ -483,7 +483,9 @@ const VERB_DATA = `
 説明[せつめい]する|to explain|irr|4
 連絡[れんらく]する|to contact|irr|4
 案内[あんない]する|to guide|irr|4
-持[も]って来[く]る|to bring|irr|4
+持[も]って来[く]る|to bring (here)|irr|4
+持[も]って行[い]く|to take (along); to bring (there)|u|4
+息[いき]をする|to breathe|irr|4
 意味[いみ]する|to mean; to signify|irr|5
 買[か]い物[もの]する|to shop; to go shopping|irr|5
 曇[くも]る|to become cloudy; to become dim|u|5|nv
@@ -1835,7 +1837,7 @@ const toReading = b => b.replace(KANJI_RE, '$2');
 const toKanji   = b => b.replace(KANJI_RE, '$1');
 const toRuby    = b => b.replace(KANJI_RE, '<ruby>$1<rt>$2</rt></ruby>');
 
-const isIku = v => toReading(v.b) === 'いく';
+const isIku = v => toReading(v.b) === 'いく' || /行\[い\]く$/.test(v.b);   // 行く and compounds like 持って行く
 const isAru = v => v.b === 'ある';
 
 function godan(v, f){
