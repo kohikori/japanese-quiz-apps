@@ -47,6 +47,9 @@
   .feedback .ex .jp{font-size:18px;line-height:2}
   .feedback .ex .en{font-size:14px;color:#555}
   .overrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px;padding:8px 10px;border-radius:10px;background:var(--card);border:1px dashed var(--badline);font-size:13.5px;color:var(--sub)}
+  .matchf{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:0 0 10px;cursor:pointer;line-height:1.45}
+  .matchf input{margin-top:3px}
+  .mfinfo{color:var(--muted);font-size:13px}
   .override{font:inherit;font-size:14px;font-weight:600;color:var(--accent);background:var(--accentbg);border:1px solid var(--accent);border-radius:999px;padding:6px 14px;cursor:pointer;line-height:1.2}
   @media (hover:hover){ .override:hover{filter:brightness(.95)} }
   ruby rt{font-size:.5em;color:var(--muted)}
@@ -234,6 +237,7 @@
     <h2>Word list</h2>
     <div style="font-size:13px;color:var(--muted);margin-bottom:10px"><span class="added">Italic</span> answers are extra accepted synonyms, <span class="usyn">your own synonyms<span class="mk">✱</span></span> are ones you approved with “I was right” (× removes one), and <span class="fixnote">notes</span> explain tricky meanings.</div>
     <div id="shareSyn" class="hidden" style="font-size:13px;margin:-2px 0 10px">You've added <b id="synN">0</b> answer(s) with “I was right”. <a id="shareSynLink" href="#">Email them to me</a> and I'll add them for everyone.</div>
+    <label class="matchf"><input type="checkbox" id="listMatch"> <span>Only show words in my current quiz filters <span id="listMatchInfo" class="mfinfo"></span></span></label>
     <input id="listSearch" placeholder="search Japanese or English…">
     <div id="listBody"></div>
   </section>
@@ -729,13 +733,22 @@ function synMail(){
 function renderList(){
   { const sm=synMail(); $('shareSyn').classList.toggle('hidden',!sm.n); $('synN').textContent=sm.n; $('shareSynLink').href=sm.href; }
   const q=$('listSearch').value.trim().toLowerCase();
-  const rows=WORDS.filter(w=>!q || w.w.includes(q) || (w.r||'').includes(q) || w.m.toLowerCase().includes(q) || (w.x||'').toLowerCase().includes(q) || (w.y||'').toLowerCase().includes(q) || userSyn(w.id).some(s=>s.toLowerCase().includes(q)));
-  const total=rows.length; rows.splice(300);
-  $('listBody').innerHTML=(total>300?`<div style="font-size:13px;color:var(--muted);margin:6px 0">Showing 300 of ${total}. Search to narrow it down.</div>`:'')+`<table><tr><th>Word</th><th>Lvl</th><th>Meaning</th></tr>`+rows.map(w=>`<tr>
+  const match=listMatchOn(), src=match?pool():WORDS;
+  $('listMatch').checked=match; $('listMatchInfo').textContent = match ? `(${src.length} word${src.length===1?'':'s'}; change them on the Filters tab)` : `(showing all ${WORDS.length} words)`;
+  const rows=src.filter(w=>!q || w.w.includes(q) || (w.r||'').includes(q) || w.m.toLowerCase().includes(q) || (w.x||'').toLowerCase().includes(q) || (w.y||'').toLowerCase().includes(q) || userSyn(w.id).some(s=>s.toLowerCase().includes(q)));
+  const total=rows.length; rows.splice(listLimit);
+  $('listBody').innerHTML=(total===0?`<div class="note" style="margin:8px 0">No words match${q?' that search':''}.</div>`:'')+`<table><tr><th>Word</th><th>Lvl</th><th>Meaning</th></tr>`+rows.map(w=>`<tr>
     <td style="font-size:18px;white-space:nowrap">${wordRuby(w.w,w.r)}</td><td>${w.lvl}</td>
     <td>${esc(w.m)}${w.x?`<br><span class="added">${esc(w.x.split(';').join(', '))}</span>`:''}${userSyn(w.id).length?`<br>`+userSyn(w.id).map((s,i)=>`<span class="usyn">${esc(s)}<span class="mk">✱</span><button class="usyn-del" title="Remove this synonym" data-id="${w.id}" data-i="${i}">×</button></span>`).join(' '):''}${w.note?`<br><span class="fixnote">⚑ ${esc(w.note)}</span>`:''}</td></tr>`).join('')+'</table>';
+  const mr=$('listMoreRow'); if (mr) mr.classList.toggle('hidden', total<=listLimit);
 }
-$('listSearch').addEventListener('input',renderList);
+const LS_LISTMATCH='jvocab_listmatch_v1';
+const listMatchOn = () => store.get(LS_LISTMATCH)!=='off';
+let listLimit=300;
+$('listMatch').addEventListener('change',e=>{ store.set(LS_LISTMATCH, e.target.checked?'on':'off'); listLimit=300; renderList(); });
+$('listSearch').addEventListener('input',()=>{ listLimit=300; renderList(); });
+$('listMore') || $('listBody').insertAdjacentHTML('afterend','<div class="buttons hidden" id="listMoreRow"><button class="btn" id="listMore">Show more</button></div>');
+$('listMore').addEventListener('click',()=>{ listLimit+=300; renderList(); });
 $('listBody').addEventListener('click',e=>{ const b=e.target.closest('.usyn-del'); if(!b) return; removeUserSyn(b.dataset.id, +b.dataset.i); renderList(); });
 
 /* ---------- wiring ---------- */

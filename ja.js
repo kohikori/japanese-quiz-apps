@@ -174,6 +174,7 @@ const D = {
   "Listen":"聞く",
   "Transcribe":"書き取る",
   "Recognize":"見分ける",
+  'Only show words in my current quiz filters':'今のクイズのフィルタに合う単語だけ表示', 'Show more':'もっと見る',
   'Particles Quiz':'助詞クイズ',
   '助詞 Particles Quiz':'助詞クイズ',
   'Particles':'助詞',
