@@ -47,6 +47,31 @@
   .feedback .ex .jp{font-size:18px;line-height:2}
   .feedback .ex .en{font-size:14px;color:#555}
   .overrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px;padding:8px 10px;border-radius:10px;background:var(--card);border:1px dashed var(--badline);font-size:13.5px;color:var(--sub)}
+  /* flashcards */
+  .fcintro{font-size:14px;color:var(--muted);margin:2px 0 4px}
+  .fcopts{display:flex;flex-wrap:wrap;gap:6px}
+  .fcopt{padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--text);font:inherit;font-size:14px;cursor:pointer}
+  .fcopt.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent);font-weight:600}
+  .fcopt .c{font-size:12px;color:var(--muted);font-weight:400;margin-left:4px}
+  .fcnote{font-size:13px;color:var(--muted);margin-top:10px}
+  .fctop{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:10px}
+  .linkbtn2{background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;font-size:13px;padding:0}
+  .fccard{border:1.5px solid var(--line);border-radius:16px;min-height:260px;padding:26px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;background:var(--card);outline:none}
+  .fccard:focus-visible{border-color:var(--accent)}
+  .fccard.back{cursor:default;justify-content:flex-start}
+  .fcw{font-size:46px;line-height:1.5}
+  .fcw ruby rt{font-size:.36em}
+  .fcmean{font-size:22px;font-weight:600;line-height:1.4}
+  .fcsub{font-size:13px;color:var(--muted);margin-top:6px}
+  .fcrd{display:inline-block;margin-top:4px;padding:2px 12px;border-radius:999px;background:var(--pill);font-size:17px}
+  .fcalso{font-size:14px;color:var(--muted);margin-top:4px}
+  .fcex{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);width:100%;text-align:left}
+  .fcex .jp{font-size:18px;line-height:2}
+  .fcex .en{font-size:13.5px;color:var(--muted)}
+  .fcfront-hint{font-size:13px;color:var(--muted);margin-top:14px}
+  button.btn.fcagain{border-color:var(--bad);color:var(--bad)}
+  #fcRateRow .btn,#fcFlipRow .btn{min-width:130px;padding:12px 18px;font-size:15px}
+  @media (max-width:420px){ .fcw{font-size:38px} .fccard{min-height:230px} }
   .matchf{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:0 0 10px;cursor:pointer;line-height:1.45}
   .matchf input{margin-top:3px}
   .mfinfo{color:var(--muted);font-size:13px}
@@ -176,6 +201,7 @@
   <h1><a class="homelink" href="./" title="All apps" aria-label="All apps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>語彙 Vocabulary Quiz</h1>
   <nav>
     <button data-tab="quiz" class="active">Quiz</button>
+    <button data-tab="cards">Cards</button>
     <button data-tab="filters">Filters</button>
     <button data-tab="stats">Stats</button>
     <button data-tab="list">Word list</button>
@@ -233,6 +259,29 @@
     <div id="syncMsg" style="font-size:13px;margin-top:8px"></div>
     <div id="syncInfo" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
     <button class="btn reset" id="resetBtn">Reset lifetime stats</button></section>
+  <section id="tab-cards" class="card hidden">
+    <div id="fcSetup">
+      <h2>Flashcards</h2>
+      <p class="fcintro">Meet new words before you're quizzed on them. Cards come from your current quiz filters.</p>
+      <h3>Which words</h3><div class="fcopts" id="fcSrc"></div>
+      <h3>How many</h3><div class="fcopts" id="fcSize"></div>
+      <h3>Front of the card</h3><div class="fcopts" id="fcDir"></div>
+      <div class="buttons" style="justify-content:flex-start;margin-top:18px"><button class="btn primary" id="fcStart">Start</button></div>
+      <div class="fcnote" id="fcNote"></div>
+    </div>
+    <div id="fcPlay" class="hidden">
+      <div class="fctop"><span id="fcProg"></span><button class="linkbtn2" id="fcQuit">End deck</button></div>
+      <div class="fccard" id="fcCard" tabindex="0" role="button" aria-label="Flip card"></div>
+      <div class="buttons" id="fcFlipRow"><button class="btn primary" id="fcFlip">Show answer</button></div>
+      <div class="buttons hidden" id="fcRateRow"><button class="btn fcagain" id="fcAgain">Again</button><button class="btn primary" id="fcGot">Got it</button></div>
+      <div class="hint" id="fcHint">Tap the card or press Space to flip · 1 = Again · 2 = Got it</div>
+    </div>
+    <div id="fcDone" class="hidden">
+      <h2>Deck done</h2>
+      <div id="fcDoneBody"></div>
+      <div class="buttons" style="justify-content:flex-start"><button class="btn primary" id="fcQuizThese">Quiz these words</button><button class="btn" id="fcAgainDeck">Go through them again</button><button class="btn" id="fcNew">New deck</button></div>
+    </div>
+  </section>
   <section id="tab-list" class="card hidden">
     <h2>Word list</h2>
     <div style="font-size:13px;color:var(--muted);margin-bottom:10px"><span class="added">Italic</span> answers are extra accepted synonyms, <span class="usyn">your own synonyms<span class="mk">✱</span></span> are ones you approved with “I was right” (× removes one), and <span class="fixnote">notes</span> explain tricky meanings.</div>
@@ -754,7 +803,8 @@ $('listBody').addEventListener('click',e=>{ const b=e.target.closest('.usyn-del'
 /* ---------- wiring ---------- */
 document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click',()=>{
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));
-  for (const t of ['quiz','filters','stats','list']) $('tab-'+t).classList.toggle('hidden',t!==btn.dataset.tab);
+  for (const t of ['quiz','cards','filters','stats','list']) $('tab-'+t).classList.toggle('hidden',t!==btn.dataset.tab);
+  if (btn.dataset.tab==='cards') fcShow();
   if (btn.dataset.tab==='filters') renderFilters();
   if (btn.dataset.tab==='stats') renderStats();
   if (btn.dataset.tab==='list') renderList();
@@ -835,12 +885,13 @@ function pickWeighted(list, w){
   return list[list.length-1];
 }
 function updateModeUI(){
-  $('reviewBtn').textContent = reviewState ? 'Exit review' : 'Review weak spots';
+  $('reviewBtn').textContent = reviewState ? (reviewState.cards ? 'Exit card quiz' : 'Exit review') : 'Review weak spots';
   $('reviewBtn').classList.toggle('on', !!reviewState);
   $('wrapBtn').textContent = wrapLeft===null ? 'Wrap up' : 'Cancel wrap-up';
   $('wrapBtn').classList.toggle('on', wrapLeft!==null);
   const bits=[];
-  if (reviewState) bits.push(`Review mode · ${reviewState.total-reviewState.cleared.size} of ${reviewState.total} weak items left${reviewState.focus?' · focus: '+reviewState.focus:''}`);
+  if (reviewState && reviewState.cards) bits.push(`Quizzing your flashcards · ${reviewState.total-reviewState.cleared.size} of ${reviewState.total} left`);
+  else if (reviewState) bits.push(`Review mode · ${reviewState.total-reviewState.cleared.size} of ${reviewState.total} weak items left${reviewState.focus?' · focus: '+reviewState.focus:''}`);
   if (filters.newFocus && !reviewState) bits.push('Focusing on new words');
   if (wrapLeft!==null) bits.push(wrapLeft>0 ? `Wrapping up · ${wrapLeft} question${wrapLeft===1?'':'s'} left` : 'Done. Press Finish to see your summary');
   const mi=$('modeInfo'); mi.classList.remove('warn');
@@ -863,7 +914,7 @@ function openSummary(title, statsHtml, missHtml){
 function summaryTotals(){
   const p=pct(session);
   let h=`<div class="totals"><div>Score<b>${session.c} / ${session.t}</b>${p!==null?p+'%':''}</div><div>Best streak<b>${bestStreak}</b></div>`;
-  if (reviewState) h+=`<div>Weak items cleared<b>${reviewState.cleared.size} / ${reviewState.total}</b></div>`;
+  if (reviewState) h+=`<div>${reviewState.cards?'Card words cleared':'Weak items cleared'}<b>${reviewState.cleared.size} / ${reviewState.total}</b></div>`;
   return h+'</div>';
 }
 $('reviewBtn').addEventListener('click',()=>{
@@ -879,6 +930,131 @@ $('wrapBtn').addEventListener('click',()=>{
 });
 $('newSessionBtn').addEventListener('click',()=>closeSummary(true));
 $('keepGoingBtn').addEventListener('click',()=>closeSummary(false));
+
+/* ================= FLASHCARDS ================= */
+const LS_CARDS='jvocab_cards_v1', LS_FCCFG='jvocab_cards_cfg_v1';
+let cardLog = loadJSON(LS_CARDS) || {};            // id → {n: times seen, again: last rating was "Again", at}
+let fcCfg = Object.assign({src:'new', size:10, dir:'je'}, loadJSON(LS_FCCFG)||{});
+let fc = null;                                     // {deck:[w], queue:[w], done:Set, again:Set, flipped, cur}
+const quizzed = w => srs[skey(w)]!==undefined || !!combined.words[w.id];
+function fcSources(){
+  const p=pool();
+  const fresh=p.filter(w=>!quizzed(w) && !cardLog[w.id]);
+  const unq=p.filter(w=>!quizzed(w));
+  const hard=p.filter(w=>(cardLog[w.id]&&cardLog[w.id].again) || weakness(w)!==null);
+  return {new: fresh.length ? fresh : unq, hard, all:p, freshN:fresh.length};
+}
+function fcShow(){
+  if (fc && fc.cur) return;          // a deck is in progress
+  $('fcPlay').classList.add('hidden'); $('fcDone').classList.toggle('hidden', !fc); $('fcSetup').classList.toggle('hidden', !!fc);
+  if (!fc) fcRenderSetup();
+}
+function fcRenderSetup(){
+  const S=fcSources();
+  const srcs=[['new','New words',S.new.length],['hard','Words I find hard',S.hard.length],['all','Any words',S.all.length]];
+  $('fcSrc').innerHTML=srcs.map(([k,l,n])=>`<button class="fcopt${fcCfg.src===k?' on':''}" data-src="${k}">${l}<span class="c">${n}</span></button>`).join('');
+  $('fcSize').innerHTML=[5,10,20,30].map(n=>`<button class="fcopt${fcCfg.size===n?' on':''}" data-size="${n}">${n}</button>`).join('');
+  $('fcDir').innerHTML=[['je','Japanese'],['ej','English']].map(([k,l])=>`<button class="fcopt${fcCfg.dir===k?' on':''}" data-dir="${k}">${l}</button>`).join('');
+  const n=S[fcCfg.src].length;
+  $('fcNote').textContent = !S.all.length ? 'No words match your filters. Pick some on the Filters tab.'
+    : fcCfg.src==='new' && !S.freshN && S.new.length ? 'You have seen every word in your filters on a card already; these are the ones you haven’t been quizzed on yet.'
+    : fcCfg.src==='new' && !n ? 'You have been quizzed on every word in your filters. Try “Any words”, or add a level on the Filters tab.'
+    : fcCfg.src==='hard' && !n ? 'Nothing here yet: words show up once you miss them in the quiz or mark a card “Again”.'
+    : `New words are ones you haven't been quizzed on yet. Your filters: ${filters.levels.join(', ')}.`;
+  $('fcStart').disabled = !n;
+}
+$('tab-cards').addEventListener('click',e=>{
+  const o=e.target.closest('.fcopt'); if (!o) return;
+  if (o.dataset.src) fcCfg.src=o.dataset.src; if (o.dataset.size) fcCfg.size=+o.dataset.size; if (o.dataset.dir) fcCfg.dir=o.dataset.dir;
+  store.set(LS_FCCFG, JSON.stringify(fcCfg)); fcRenderSetup();
+});
+const shuffled = a => { a=a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+function fcStart(words){
+  let deck = words;
+  if (!deck){
+    const S=fcSources(), src=S[fcCfg.src];
+    deck = fcCfg.src==='hard' ? src.slice().sort((a,b)=>(weakness(b)||0.5)-(weakness(a)||0.5)).slice(0,fcCfg.size)
+         : fcCfg.src==='new' ? shuffled(src.filter(w=>w.lvl===src[0].lvl).length>=fcCfg.size ? src.filter(w=>w.lvl===src[0].lvl) : src).slice(0,fcCfg.size)
+         : shuffled(src).slice(0,fcCfg.size);
+    deck=shuffled(deck);
+  }
+  if (!deck.length) return;
+  fc={deck, queue:deck.slice(), done:new Set(), again:new Set(), flipped:false, cur:null};
+  $('fcSetup').classList.add('hidden'); $('fcDone').classList.add('hidden'); $('fcPlay').classList.remove('hidden');
+  fcNext();
+}
+function fcNext(){
+  TTS.stop();
+  if (!fc.queue.length){ fcFinish(); return; }
+  fc.cur=fc.queue.shift(); fc.flipped=false;
+  const ag=fc.queue.filter(x=>fc.again.has(x.id)).length+(fc.again.has(fc.cur.id)?1:0);
+  $('fcProg').textContent=`${fc.done.size} of ${fc.deck.length} done${ag?` · ${ag} coming back`:''}`;
+  $('fcFlipRow').classList.remove('hidden'); $('fcRateRow').classList.add('hidden');
+  fcRender();
+  if (autoT.checked && fcCfg.dir==='je') TTS.say(fc.cur.r||fc.cur.w);
+}
+const fcMeans = w => splitMeanings(w.m).slice(0,4).join(' · ');
+function fcRender(){
+  const w=fc.cur, c=$('fcCard');
+  c.classList.toggle('back', fc.flipped);
+  if (!fc.flipped){
+    c.innerHTML = fcCfg.dir==='je'
+      ? `<div class="fcw jpf">${wordRubyBase(w.w,w.r)}</div><div>${speakBtn(w.r||w.w)}</div><div class="fcfront-hint">What does it mean?</div>`
+      : `<div class="fcmean">${esc(fcMeans(w))}</div><div class="fcsub">${esc(w.t||w.pos.join(', '))} · ${w.lvl}</div><div class="fcfront-hint">How do you say it in Japanese?</div>`;
+    return;
+  }
+  const also=(w.x?w.x.split(';').map(s=>s.trim()).filter(Boolean):[]).slice(0,4);
+  c.innerHTML=`<div class="fcw jpf">${wordRubyBase(w.w,w.r)}</div>
+    <div>${w.r&&w.r!==w.w?`<span class="fcrd jpf">${esc(w.r)}</span> `:''}${speakBtn(w.r||w.w)}</div>
+    <div class="fcmean" style="margin-top:12px">${esc(fcMeans(w))}</div>
+    ${also.length?`<div class="fcalso">also: ${esc(also.join(', '))}</div>`:''}
+    <div class="fcsub">${esc(w.t||w.pos.join(', '))} · ${w.lvl}</div>
+    ${w.note?`<div class="fcalso">⚑ ${esc(w.note)}</div>`:''}
+    ${w.ej?`<div class="fcex"><div class="jp jpf">${bracketRuby(w.ej)} ${speakBtn(exKana(w.ej))}</div><div class="en">${esc(w.ee)}</div></div>`:''}`;
+}
+function fcFlip(){
+  if (!fc || !fc.cur || fc.flipped) return;
+  fc.flipped=true; fcRender();
+  $('fcFlipRow').classList.add('hidden'); $('fcRateRow').classList.remove('hidden');
+  if (autoT.checked) TTS.say(fc.cur.r||fc.cur.w);
+}
+function fcRate(got){
+  if (!fc || !fc.cur || !fc.flipped) return;
+  const w=fc.cur, L=cardLog[w.id]||{n:0};
+  cardLog[w.id]={n:L.n+1, again:!got, at:Date.now()}; store.set(LS_CARDS, JSON.stringify(cardLog));
+  if (got) fc.done.add(w.id);
+  else { fc.again.add(w.id); fc.queue.splice(Math.min(3, fc.queue.length), 0, w); }   // comes back a few cards later
+  fc.cur=null; fcNext();
+}
+function fcFinish(){
+  const words=fc.deck, n=fc.again.size;
+  fc.cur=null;
+  $('fcPlay').classList.add('hidden'); $('fcDone').classList.remove('hidden');
+  $('fcDoneBody').innerHTML=`<p class="fcintro">You went through ${words.length} word${words.length===1?'':'s'}${n?`; ${n} needed a second look`:''}. Quizzing yourself on them now is the best way to make them stick.</p>
+    <table><tr><th>Word</th><th>Meaning</th></tr>${words.map(w=>`<tr><td style="font-size:17px;white-space:nowrap" class="jpf">${wordRubyBase(w.w,w.r)}${fc.again.has(w.id)?' <span class="fcalso">↻</span>':''}</td><td>${esc(fcMeans(w))}</td></tr>`).join('')}</table>`;
+}
+$('fcStart').addEventListener('click',()=>fcStart());
+$('fcCard').addEventListener('click',e=>{ if (e.target.closest('.speak')){ TTS.say(e.target.closest('.speak').dataset.say); return; } fcFlip(); });
+$('fcFlip').addEventListener('click',fcFlip);
+$('fcAgain').addEventListener('click',()=>fcRate(false));
+$('fcGot').addEventListener('click',()=>fcRate(true));
+$('fcQuit').addEventListener('click',()=>{ if (!fc) return; const seen=fc.deck.filter(w=>fc.done.has(w.id)||fc.again.has(w.id)); if (!seen.length){ fc=null; fcShow(); return; } fc.deck=seen; fcFinish(); });
+$('fcNew').addEventListener('click',()=>{ fc=null; fcShow(); });
+$('fcAgainDeck').addEventListener('click',()=>fcStart(shuffled(fc.deck)));
+$('fcQuizThese').addEventListener('click',()=>{
+  const items=fc.deck.map(w=>[w,1]);
+  if (summaryOpen) closeSummary(false);
+  reviewState={items, cleared:new Set(), total:items.length, focus:'', cards:true};
+  fc=null; current=null;
+  document.querySelector('nav button[data-tab="quiz"]').click();
+});
+document.addEventListener('keydown',e=>{
+  if ($('tab-cards').classList.contains('hidden') || !fc || !fc.cur) return;
+  if (e.target.tagName==='INPUT') return;
+  if (!fc.flipped && (e.key===' '||e.key==='Enter')){ e.preventDefault(); fcFlip(); }
+  else if (fc.flipped && (e.key==='1'||e.key==='ArrowLeft')) fcRate(false);
+  else if (fc.flipped && (e.key==='2'||e.key==='ArrowRight'||e.key==='Enter'||e.key===' ')){ e.preventDefault(); fcRate(true); }
+});
 
 const exKana = s => s.replace(/([\u4e00-\u9fff々]+)\[([^\]]+)\]/g,'$2').replace(/\{([^|}]+)\|([^}]+)\}/g,'$2');
 const SRS_ERR=[1,0.4,0.2,0.1,0.05];
@@ -1144,7 +1320,7 @@ function showSummary(){
         <td>${esc(splitMeanings(e.w.m).slice(0,3).join('; '))}</td>
         <td>${e.given?esc(e.given):'<span style="color:var(--muted)">(revealed)</span>'}${e.n>1?` <span class="pill">missed ×${e.n}</span>`:''}</td></tr>`).join('')+'</table>'
     : (session.t ? '<div style="text-align:center;color:var(--muted)">No misses this session. Nice work.</div>' : '');
-  openSummary(reviewDone() ? 'Review complete' : 'Session complete', summaryTotals(), missHtml);
+  openSummary(reviewDone() ? (reviewState.cards ? 'Flashcard quiz complete' : 'Review complete') : 'Session complete', summaryTotals(), missHtml);
 }
 
 if (!store.persistent) $('storeWarn').classList.remove('hidden');
