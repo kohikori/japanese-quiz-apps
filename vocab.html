@@ -623,10 +623,10 @@ function updateScore(){ $('sScore').textContent=`${session.c} / ${session.t}`; $
 /* ---------- filters ---------- */
 function renderFilters(){
   const tp=filters.topics||[];
-  let h=`<h3>Topic<span class="small-links"><a data-clear="topics">clear</a></span></h3>
-  <div class="topics">${TOPICS.map(([k,label,em])=>{const c=WORDS.filter(w=>(w.tp||[]).includes(k)).length;
+  let h=`<h3>Topic</h3>
+  <div class="topics"><button type="button" class="topic${tp.length?'':' on'}" data-topic="__all" aria-pressed="${!tp.length}"><span class="te">✦</span>All topics <span class="tc">${WORDS.length}</span></button>${TOPICS.map(([k,label,em])=>{const c=WORDS.filter(w=>(w.tp||[]).includes(k)).length;
     return `<button type="button" class="topic${tp.includes(k)?' on':''}" data-topic="${k}" aria-pressed="${tp.includes(k)}"><span class="te">${em}</span>${label} <span class="tc">${c}</span></button>`;}).join('')}</div>
-  <div style="font-size:12px;color:var(--muted);margin-top:6px">${tp.length ? 'Only words in the selected topics are asked.' : 'No topic selected, so every word can come up. Pick one or more to focus your practice.'}</div>`;
+  <div style="font-size:12px;color:var(--muted);margin-top:6px">${tp.length ? 'Only words in the selected topics are asked.' : 'All topics: every word can come up, including general words that have no topic. Tap topics to focus your practice.'}</div>`;
   h+=`<h3>Part of speech<span class="small-links"><a data-all="pos">all</a><a data-none="pos">none</a></span></h3><div class="checks">`;
   for (const p in POS_LABEL) h+=`<label><input type="checkbox" data-k="pos" value="${p}" ${filters.pos.includes(p)?'checked':''}> ${POS_LABEL[p]} (${WORDS.filter(w=>w.pos.includes(p)).length})</label>`;
   h+=`</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Words with more than one part of speech (e.g. 勉強 = noun + する verb) are included if any of them is checked.</div>`;
@@ -648,6 +648,7 @@ $('filterBody').addEventListener('change',e=>{
 });
 $('filterBody').addEventListener('click',e=>{
   const tb=e.target.closest('.topic');
+  if (tb && tb.dataset.topic==='__all'){ filters.topics=[]; saveFilters(); renderFilters(); return; }
   if (tb){ const k=tb.dataset.topic, t=new Set(filters.topics||[]); t.has(k)?t.delete(k):t.add(k); filters.topics=[...t]; saveFilters(); renderFilters(); return; }
   if (e.target.dataset.clear){ filters.topics=[]; saveFilters(); renderFilters(); return; }
   const a=e.target.dataset.all, n=e.target.dataset.none;

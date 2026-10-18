@@ -174,6 +174,7 @@ const D = {
   "Listen":"聞く",
   "Transcribe":"書き取る",
   "Recognize":"見分ける",
+  'All topics':'すべてのトピック',
   'Cards':'カード',
   'Flashcards':'フラッシュカード',
   "Meet new words before you're quizzed on them. Cards come from your current quiz filters.":'クイズの前に新しい単語に出会いましょう。カードは今のクイズのフィルタから選ばれます。',
