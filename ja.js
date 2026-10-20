@@ -174,6 +174,7 @@ const D = {
   "Listen":"聞く",
   "Transcribe":"書き取る",
   "Recognize":"見分ける",
+  "Only words I'm practicing":'練習中の単語だけ',
   'All topics':'すべてのトピック',
   'Cards':'カード',
   'Flashcards':'フラッシュカード',

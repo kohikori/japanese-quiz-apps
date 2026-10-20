@@ -379,6 +379,18 @@ function dist(a,b){                  // Damerau-Levenshtein (optimal string alig
 }
 const tolerance = n => n<=4 ? 0 : n<=8 ? 1 : 2;
 // one dropped/extra letter or one pair of swapped neighbours (no letter substitutions, so east≠west)
+// one mistyped letter in a 4-letter word, when it's the key right next to the right one (lovr → love),
+// unless the typo is itself a real answer somewhere in the quiz (live ≠ love)
+const KEYROWS=['qwertyuiop','asdfghjkl','zxcvbnm'], KEYPOS={};
+KEYROWS.forEach((r,y)=>[...r].forEach((c,x)=>KEYPOS[c]=[x+y*0.5,y]));
+const keyNear=(a,b)=>{ const p=KEYPOS[a], q=KEYPOS[b]; return p&&q && Math.abs(p[1]-q[1])<=1 && Math.abs(p[0]-q[0])<=1; };
+let REAL=null;
+const realWord = t => { if (!REAL){ REAL=new Set(); for (const w of WORDS) for (const m of [...splitMeanings(w.m), ...(w.x?w.x.split(';'):[]), ...(w.y?w.y.split(';'):[])]) REAL.add(norm(m.replace(/\([^)]*\)/g,' '))); } return REAL.has(t); };
+function keySlip(a,t){
+  if (a.length!==t.length || a.length!==4 || realWord(a)) return false;
+  const d=[]; for (let i=0;i<a.length;i++) if (a[i]!==t[i]) d.push(i);
+  return d.length===1 && keyNear(a[d[0]], t[d[0]]);
+}
 function smallSlip(a,t){
   if (a===t || Math.min(a.length,t.length)<3) return false;
   if (Math.abs(a.length-t.length)===1){
@@ -416,7 +428,7 @@ function grade(w, input){
   }
   for (const a of tries){
     for (const t of targets){
-      if (dist(a,t) <= tolerance(Math.min(a.length,t.length)) || smallSlip(a,t)) return {ok:true, exact:false, match:t};
+      if (dist(a,t) <= tolerance(Math.min(a.length,t.length)) || smallSlip(a,t) || keySlip(a,t)) return {ok:true, exact:false, match:t};
     }
   }
   return {ok:false};
@@ -511,7 +523,9 @@ function weight(w){
 const $ = id => document.getElementById(id);
 let current=null, answered=false, lastId='', lastResult=null;
 const inTopics = w => !(filters.topics||[]).length || (w.tp||[]).some(t=>filters.topics.includes(t));
-const pool = () => WORDS.filter(w => filters.levels.includes(w.lvl) && w.pos.some(p=>filters.pos.includes(p)) && inTopics(w));
+const basePool = () => WORDS.filter(w => filters.levels.includes(w.lvl) && w.pos.some(p=>filters.pos.includes(p)) && inTopics(w));
+// "Only words I'm practicing": answered before, but not yet right twice in a row (same rule as the Words learned chart)
+const pool = () => filters.practicing ? basePool().filter(w=>wordState(w)==='practicing') : basePool();
 
 function nextQuestion(){
   TTS.stop();
@@ -523,7 +537,7 @@ function nextQuestion(){
   } else {
     const p=pool();
     $('quizBody').classList.toggle('hidden',!p.length); $('emptyPool').classList.toggle('hidden',!!p.length);
-    if (!p.length){ updateModeUI(); return; }
+    if (!p.length){ $('emptyPool').textContent = filters.practicing && basePool().length ? 'No words are in “practicing” with these filters right now. Untick “Only words I’m practicing” on the Filters tab to see the rest.' : 'No words match your filters. Enable at least one part of speech and level.'; updateModeUI(); return; }
     let ws=p.map(w=> w.id===lastId && p.length>1 ? 0 : weight(w)), tot=ws.reduce((a,b)=>a+b,0);
     if (tot<=0){ for (const k in seenThisSession) delete seenThisSession[k]; ws=p.map(w=> w.id===lastId && p.length>1 ? 0 : weight(w)); tot=ws.reduce((a,b)=>a+b,0); }
     let r=Math.random()*tot; pick=p[p.length-1];
@@ -633,6 +647,7 @@ function renderFilters(){
   h+=`<h3>JLPT level<span class="small-links"><a data-all="levels">all</a><a data-none="levels">none</a></span></h3><div class="checks">`;
   for (const l of LEVELS) h+=`<label><input type="checkbox" data-k="levels" value="${l}" ${filters.levels.includes(l)?'checked':''}> ${l} (${WORDS.filter(w=>w.lvl===l).length} words)</label>`;
   h+=`</div><h3>Practice</h3><div class="checks"><label><input type="checkbox" id="weightedToggle" ${filters.weighted!==false?'checked':''}> Focus on weak spots (spaced repetition)</label>
+    <label><input type="checkbox" id="practicingToggle" ${filters.practicing?'checked':''}> <span>Only words I'm practicing <span style="color:var(--muted)">— words you've answered but haven't got right twice in a row yet (${basePool().filter(w=>wordState(w)==='practicing').length.toLocaleString()} with these filters)</span></span></label>
     <label><input type="checkbox" id="newFocusToggle" ${filters.newFocus?'checked':''}> <span>Focus on new words <span style="color:var(--muted)">— words you haven’t answered yet come up much more often (${newCount().toLocaleString()} left with these filters)</span></span></label></div>
   <div style="font-size:12px;color:var(--muted);margin-top:4px">Missed words come back more often; ones you know well show up less. Within a session, a correct word won't repeat, and a missed one returns at most once.</div>`;
   $('filterBody').innerHTML=h; updatePoolInfo();
@@ -641,6 +656,7 @@ const updatePoolInfo = () => $('poolInfo').textContent=`${pool().length} words w
 const saveFilters = () => store.set(LS_FILTERS, JSON.stringify(filters));
 $('filterBody').addEventListener('change',e=>{
   if (e.target.id==='weightedToggle'){ filters.weighted=e.target.checked; saveFilters(); return; }
+  if (e.target.id==='practicingToggle'){ filters.practicing=e.target.checked; saveFilters(); updatePoolInfo(); updateModeUI(); return; }
   if (e.target.id==='newFocusToggle'){ filters.newFocus=e.target.checked; saveFilters(); updateModeUI(); return; }
   const k=e.target.dataset.k; if(!k) return;
   filters[k]=[...document.querySelectorAll(`input[data-k="${k}"]:checked`)].map(x=>x.value);
@@ -810,7 +826,7 @@ document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click
   if (btn.dataset.tab==='stats') renderStats();
   if (btn.dataset.tab==='list') renderList();
   if (btn.dataset.tab==='quiz'){
-    const valid = current && filters.levels.includes(current.lvl) && current.pos.some(p=>filters.pos.includes(p)) && inTopics(current);
+    const valid = current && pool().some(w=>w.id===current.id);
     if (summaryOpen) return;
     if (reviewState){ if (answered || !current) nextQuestion(); else $('answer').focus(); return; }
     if (!valid || answered) nextQuestion(); else $('answer').focus();
@@ -893,7 +909,8 @@ function updateModeUI(){
   const bits=[];
   if (reviewState && reviewState.cards) bits.push(`Quizzing your flashcards · ${reviewState.total-reviewState.cleared.size} of ${reviewState.total} left`);
   else if (reviewState) bits.push(`Review mode · ${reviewState.total-reviewState.cleared.size} of ${reviewState.total} weak items left${reviewState.focus?' · focus: '+reviewState.focus:''}`);
-  if (filters.newFocus && !reviewState) bits.push('Focusing on new words');
+  if (filters.practicing && !reviewState) bits.push(`Practicing words only · ${pool().length} left`);
+  else if (filters.newFocus && !reviewState) bits.push('Focusing on new words');
   if (wrapLeft!==null) bits.push(wrapLeft>0 ? `Wrapping up · ${wrapLeft} question${wrapLeft===1?'':'s'} left` : 'Done. Press Finish to see your summary');
   const mi=$('modeInfo'); mi.classList.remove('warn');
   mi.textContent=bits.join('  ·  '); mi.classList.toggle('hidden', !bits.length || summaryOpen);
