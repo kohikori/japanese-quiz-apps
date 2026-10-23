@@ -72,6 +72,12 @@
   button.btn.fcagain{border-color:var(--bad);color:var(--bad)}
   #fcRateRow .btn,#fcFlipRow .btn{min-width:130px;padding:12px 18px;font-size:15px}
   @media (max-width:420px){ .fcw{font-size:38px} .fccard{min-height:230px} }
+  .knownbtn{float:left;background:none;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font:inherit;font-size:12px;color:var(--muted);cursor:pointer}
+  .knownbtn.done{border-color:var(--ok);color:var(--ok)}
+  .knownbtn .undo{text-decoration:underline;margin-left:6px}
+  .lknown{display:inline-block;margin-top:4px;font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--muted);cursor:pointer;font-family:inherit}
+  .lknown.is{border-color:var(--okline);color:var(--ok);cursor:default}
+  @media (hover:hover){ .knownbtn:hover,.lknown:not(.is):hover{border-color:var(--ok);color:var(--ok)} }
   .matchf{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:0 0 10px;cursor:pointer;line-height:1.45}
   .matchf input{margin-top:3px}
   .mfinfo{color:var(--muted);font-size:13px}
@@ -274,6 +280,7 @@
       <div class="fccard" id="fcCard" tabindex="0" role="button" aria-label="Flip card"></div>
       <div class="buttons" id="fcFlipRow"><button class="btn primary" id="fcFlip">Show answer</button></div>
       <div class="buttons hidden" id="fcRateRow"><button class="btn fcagain" id="fcAgain">Again</button><button class="btn primary" id="fcGot">Got it</button></div>
+      <div class="buttons hidden" id="fcKnownRow" style="margin-top:6px"><button class="linkbtn2" id="fcKnown">I already know this word: mark it as learned</button></div>
       <div class="hint" id="fcHint">Tap the card or press Space to flip · 1 = Again · 2 = Got it</div>
     </div>
     <div id="fcDone" class="hidden">
@@ -607,7 +614,7 @@ function renderFeedback(g, given, reveal){
     ${w.ej ? `<div class="ex"><div class="jp">${bracketRuby(w.ej)} ${speakBtn(exKana(w.ej))}</div><div class="en">${esc(w.ee)}</div></div>` : ''}
     ${g.homo ? `<div class="homo">That's the meaning of ${esc(g.homo.w)}, which sounds the same, so it counts.</div>`
       : (listening && soundAlikes(w).length ? `<div class="homo">Sounds the same: ${soundAlikes(w).slice(0,4).map(o=>esc(o.w)+' ('+esc(splitMeanings(o.m)[0])+')').join(', ')}</div>` : '')}
-    <div class="reportline"><a href="${reportHref(w, reveal?'':given)}">⚑ Report a mistake in this word</a></div>
+    <div class="reportline">${g.ok?knownBtn(w):''}<a href="${reportHref(w, reveal?'':given)}">⚑ Report a mistake in this word</a></div>
   </div>`;
   const ob=$('overrideBtn');
   if (ob) ob.addEventListener('click', overrideCorrect);
@@ -681,6 +688,19 @@ function bar(p){ if(p===null) return '<span style="color:var(--muted)">—</span
 /* ---------- words learned, by level ----------
    A word counts as learned once its most recent answers are right twice in a row
    (in each direction you've practiced it). A miss sends it back to "practicing". */
+// "I know this word": jump straight to learned (top spaced-repetition box), so it rarely comes up again.
+// A later miss still sends it back to practicing, as usual.
+function markKnown(w){
+  const prev={}; for (const k of [w.id,'r:'+w.id]) if (k===w.id || srs[k]!==undefined){ prev[k]=[srs[k],srsT[k]]; srs[k]=4; srsT[k]=Date.now(); }
+  store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
+  if (seenThisSession[w.id]) seenThisSession[w.id].ok=true;
+  return prev;
+}
+function unmarkKnown(prev){
+  for (const k in prev){ const [b,t]=prev[k]; if (b===undefined){ delete srs[k]; delete srsT[k]; } else { srs[k]=b; srsT[k]=t; } }
+  store.set(LS_SRS, JSON.stringify(srs)); store.set(LS_SRS_T, JSON.stringify(srsT));
+}
+const knownBtn = w => wordState(w)==='learned' ? '' : `<button type="button" class="knownbtn" data-known="${w.id}">✓ I know this word, mark as learned</button>`;
 function wordState(w){
   const lv=[srs[w.id], srs['r:'+w.id]].filter(x=>x!==undefined);
   if (!lv.length) return 'new';
@@ -805,7 +825,7 @@ function renderList(){
   const total=rows.length; rows.splice(listLimit);
   $('listBody').innerHTML=(total===0?`<div class="note" style="margin:8px 0">No words match${q?' that search':''}.</div>`:'')+`<table><tr><th>Word</th><th>Lvl</th><th>Meaning</th></tr>`+rows.map(w=>`<tr>
     <td style="font-size:18px;white-space:nowrap">${wordRuby(w.w,w.r)}</td><td>${w.lvl}</td>
-    <td>${esc(w.m)}${w.x?`<br><span class="added">${esc(w.x.split(';').join(', '))}</span>`:''}${userSyn(w.id).length?`<br>`+userSyn(w.id).map((s,i)=>`<span class="usyn">${esc(s)}<span class="mk">✱</span><button class="usyn-del" title="Remove this synonym" data-id="${w.id}" data-i="${i}">×</button></span>`).join(' '):''}${w.note?`<br><span class="fixnote">⚑ ${esc(w.note)}</span>`:''}</td></tr>`).join('')+'</table>';
+    <td>${esc(w.m)}${w.x?`<br><span class="added">${esc(w.x.split(';').join(', '))}</span>`:''}${userSyn(w.id).length?`<br>`+userSyn(w.id).map((s,i)=>`<span class="usyn">${esc(s)}<span class="mk">✱</span><button class="usyn-del" title="Remove this synonym" data-id="${w.id}" data-i="${i}">×</button></span>`).join(' '):''}${w.note?`<br><span class="fixnote">⚑ ${esc(w.note)}</span>`:''}<br>${wordState(w)==='learned'?'<span class="lknown is">✓ learned</span>':`<button type="button" class="lknown" data-lk="${w.id}">mark as known</button>`}</td></tr>`).join('')+'</table>';
   const mr=$('listMoreRow'); if (mr) mr.classList.toggle('hidden', total<=listLimit);
 }
 const LS_LISTMATCH='jvocab_listmatch_v1';
@@ -815,7 +835,7 @@ $('listMatch').addEventListener('change',e=>{ store.set(LS_LISTMATCH, e.target.c
 $('listSearch').addEventListener('input',()=>{ listLimit=300; renderList(); });
 $('listMore') || $('listBody').insertAdjacentHTML('afterend','<div class="buttons hidden" id="listMoreRow"><button class="btn" id="listMore">Show more</button></div>');
 $('listMore').addEventListener('click',()=>{ listLimit+=300; renderList(); });
-$('listBody').addEventListener('click',e=>{ const b=e.target.closest('.usyn-del'); if(!b) return; removeUserSyn(b.dataset.id, +b.dataset.i); renderList(); });
+$('listBody').addEventListener('click',e=>{ const k=e.target.closest('.lknown[data-lk]'); if (k){ const w=WBYID.get(k.dataset.lk); if (w){ markKnown(w); k.outerHTML='<span class="lknown is">✓ learned</span>'; } return; } const b=e.target.closest('.usyn-del'); if(!b) return; removeUserSyn(b.dataset.id, +b.dataset.i); renderList(); });
 
 /* ---------- wiring ---------- */
 document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click',()=>{
@@ -949,6 +969,13 @@ $('wrapBtn').addEventListener('click',()=>{
 $('newSessionBtn').addEventListener('click',()=>closeSummary(true));
 $('keepGoingBtn').addEventListener('click',()=>closeSummary(false));
 
+const WBYID = new Map(WORDS.map(w=>[w.id,w]));
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.knownbtn'); if (!b) return;
+  const w=WBYID.get(b.dataset.known); if (!w) return;
+  if (b._prev){ unmarkKnown(b._prev); b._prev=null; b.classList.remove('done'); b.innerHTML='✓ I know this word, mark as learned'; return; }
+  b._prev=markKnown(w); b.classList.add('done'); b.innerHTML='✓ Marked as learned <span class="undo">undo</span>';
+});
 /* ================= FLASHCARDS ================= */
 const LS_CARDS='jvocab_cards_v1', LS_FCCFG='jvocab_cards_cfg_v1';
 let cardLog = loadJSON(LS_CARDS) || {};            // id → {n: times seen, again: last rating was "Again", at}
@@ -1007,7 +1034,7 @@ function fcNext(){
   fc.cur=fc.queue.shift(); fc.flipped=false;
   const ag=fc.queue.filter(x=>fc.again.has(x.id)).length+(fc.again.has(fc.cur.id)?1:0);
   $('fcProg').textContent=`${fc.done.size} of ${fc.deck.length} done${ag?` · ${ag} coming back`:''}`;
-  $('fcFlipRow').classList.remove('hidden'); $('fcRateRow').classList.add('hidden');
+  $('fcFlipRow').classList.remove('hidden'); $('fcRateRow').classList.add('hidden'); $('fcKnownRow').classList.add('hidden');
   fcRender();
   if (autoT.checked && fcCfg.dir==='je') TTS.say(fc.cur.r||fc.cur.w);
 }
@@ -1033,7 +1060,7 @@ function fcRender(){
 function fcFlip(){
   if (!fc || !fc.cur || fc.flipped) return;
   fc.flipped=true; fcRender();
-  $('fcFlipRow').classList.add('hidden'); $('fcRateRow').classList.remove('hidden');
+  $('fcFlipRow').classList.add('hidden'); $('fcRateRow').classList.remove('hidden'); $('fcKnownRow').classList.toggle('hidden', wordState(fc.cur)==='learned');
   if (autoT.checked) TTS.say(fc.cur.r||fc.cur.w);
 }
 function fcRate(got){
@@ -1056,6 +1083,7 @@ $('fcCard').addEventListener('click',e=>{ if (e.target.closest('.speak')){ TTS.s
 $('fcFlip').addEventListener('click',fcFlip);
 $('fcAgain').addEventListener('click',()=>fcRate(false));
 $('fcGot').addEventListener('click',()=>fcRate(true));
+$('fcKnown').addEventListener('click',()=>{ if (fc && fc.cur && fc.flipped){ markKnown(fc.cur); fcRate(true); } });
 $('fcQuit').addEventListener('click',()=>{ if (!fc) return; const seen=fc.deck.filter(w=>fc.done.has(w.id)||fc.again.has(w.id)); if (!seen.length){ fc=null; fcShow(); return; } fc.deck=seen; fcFinish(); });
 $('fcNew').addEventListener('click',()=>{ fc=null; fcShow(); });
 $('fcAgainDeck').addEventListener('click',()=>fcStart(shuffled(fc.deck)));
@@ -1220,7 +1248,7 @@ function renderFeedbackJa(g, given, reveal){
     ${g.alt ? `<div class="homo">You wrote ${esc(g.alt.w)}${g.alt.r?' ('+esc(g.alt.r)+')':''}, which also means “${esc(splitMeanings(g.alt.m)[0])}”, so it counts.</div>` : ''}
     ${others.length && !g.alt ? `<div class="also">Also accepted: ${others.map(o=>esc(o.w)).join(', ')}</div>` : ''}
     ${w.ej ? `<div class="ex"><div class="jp">${bracketRuby(w.ej)} ${speakBtn(exKana(w.ej))}</div><div class="en">${esc(w.ee)}</div></div>` : ''}
-    <div class="reportline"><a href="${reportHref(w, reveal?'':given)}">⚑ Report a mistake in this word</a></div>
+    <div class="reportline">${g.ok?knownBtn(w):''}<a href="${reportHref(w, reveal?'':given)}">⚑ Report a mistake in this word</a></div>
   </div>`;
   const ob=$('overrideBtn');
   if (ob) ob.addEventListener('click', overrideCorrect);
