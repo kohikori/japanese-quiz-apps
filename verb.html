@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#3b5bdb">
 <script>(function(){var d;try{d=localStorage.getItem('jvq_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
 <title>Japanese Verb Conjugation Quiz</title>
+<script src="tts-fix.js"></script>
 <style>
   :root{
     --bg:#fafafa; --card:#fff; --text:#222; --muted:#777; --line:#e3e3e3;
@@ -2587,7 +2588,7 @@ autoT.checked = store.get(LS_AUTO)==='on';
 if (!TTS.ok){ autoT.disabled=true; autoT.parentElement.title='This browser has no speech support'; }
 autoT.addEventListener('change',()=>store.set(LS_AUTO, autoT.checked?'on':'off'));
 for (const id of ['feedback','summary']) $(id).addEventListener('click',e=>{
-  const b=e.target.closest('.speak'); if(!b) return; TTS.say(b.dataset.say); if (id==='feedback') $('answer').focus();
+  const b=e.target.closest('.speak'); if(!b) return; TTS.say(b.dataset.say); if (id==='feedback' && matchMedia('(hover:hover)').matches) $('answer').focus();
 });
 
 /* ================= LISTENING MODE ================= */
