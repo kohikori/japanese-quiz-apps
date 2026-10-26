@@ -519,12 +519,12 @@ function bumpAll(st, w, dc, dt){
 const BOX_WEIGHT=[3,2,1,0.5,0.25], RETRY_GAP=8;
 const seenThisSession={}; let qCount=0;
 const accBoost = o => (!o || o.t<5) ? 1 : 1 + 0.5*(1 - o.c/o.t);
-const newCount = () => pool().filter(w=>srs[skey(w)]===undefined && !combined.words[w.id]).length;
+const newCount = () => basePool().filter(w=>srs[skey(w)]===undefined && !combined.words[w.id]).length;   // ignores "only practicing", which never includes new words
 function weight(w){
   const s=seenThisSession[w.id];
   if (s){ if (s.ok || s.n>=2) return 0; if (qCount - s.at < RETRY_GAP) return 0; }
   const fresh = srs[skey(w)]===undefined && !combined.words[w.id];
-  const newBoost = filters.newFocus ? (fresh ? 12 : 1) : 1;      // "Focus on new words": unseen words come up far more often
+  const newBoost = filters.newFocus && !filters.practicing ? (fresh ? 12 : 1) : 1;      // "Focus on new words": unseen words come up far more often
   if (filters.weighted===false) return newBoost;
   const box=srs[skey(w)];
   const posBoost = Math.max(...w.pos.map(p=>accBoost(combined.pos[p])));
@@ -660,7 +660,7 @@ function renderFilters(){
   for (const l of LEVELS) h+=`<label><input type="checkbox" data-k="levels" value="${l}" ${filters.levels.includes(l)?'checked':''}> ${l} (${WORDS.filter(w=>w.lvl===l).length} words)</label>`;
   h+=`</div><h3>Practice</h3><div class="checks"><label><input type="checkbox" id="weightedToggle" ${filters.weighted!==false?'checked':''}> Focus on weak spots (spaced repetition)</label>
     <label><input type="checkbox" id="practicingToggle" ${filters.practicing?'checked':''}> <span>Only words I'm practicing <span style="color:var(--muted)">— words you've answered but haven't got right twice in a row yet (${basePool().filter(w=>wordState(w)==='practicing').length.toLocaleString()} with these filters)</span></span></label>
-    <label><input type="checkbox" id="newFocusToggle" ${filters.newFocus?'checked':''}> <span>Focus on new words <span style="color:var(--muted)">— words you haven’t answered yet come up much more often (${newCount().toLocaleString()} left with these filters)</span></span></label></div>
+    <label${filters.practicing?' style="opacity:.5"':''}><input type="checkbox" id="newFocusToggle" ${filters.newFocus?'checked':''} ${filters.practicing?'disabled':''}> <span>Focus on new words <span style="color:var(--muted)">— words you haven’t answered yet come up much more often (${filters.practicing ? 'off while “Only words I’m practicing” is on' : newCount().toLocaleString()+' left with these filters'})</span></span></label></div>
   <div style="font-size:12px;color:var(--muted);margin-top:4px">Missed words come back more often; ones you know well show up less. Within a session, a correct word won't repeat, and a missed one returns at most once.</div>`;
   $('filterBody').innerHTML=h; updatePoolInfo();
 }
@@ -668,11 +668,11 @@ const updatePoolInfo = () => $('poolInfo').textContent=`${pool().length} words w
 const saveFilters = () => store.set(LS_FILTERS, JSON.stringify(filters));
 $('filterBody').addEventListener('change',e=>{
   if (e.target.id==='weightedToggle'){ filters.weighted=e.target.checked; saveFilters(); return; }
-  if (e.target.id==='practicingToggle'){ filters.practicing=e.target.checked; saveFilters(); updatePoolInfo(); updateModeUI(); return; }
+  if (e.target.id==='practicingToggle'){ filters.practicing=e.target.checked; saveFilters(); renderFilters(); updateModeUI(); return; }
   if (e.target.id==='newFocusToggle'){ filters.newFocus=e.target.checked; saveFilters(); updateModeUI(); return; }
   const k=e.target.dataset.k; if(!k) return;
   filters[k]=[...document.querySelectorAll(`input[data-k="${k}"]:checked`)].map(x=>x.value);
-  saveFilters(); updatePoolInfo();
+  saveFilters(); const y=scrollY; renderFilters(); scrollTo(0,y);
 });
 $('filterBody').addEventListener('click',e=>{
   const tb=e.target.closest('.topic');
