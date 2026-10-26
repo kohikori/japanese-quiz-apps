@@ -140,6 +140,20 @@
   }
   /* ---- typing on a phone: leave room to scroll the question to the top of the screen ---- */
   body.kbd{padding-bottom:70vh}
+  /* speak mode */
+  .saybar{display:flex;justify-content:center;gap:6px;margin:0 0 10px;flex-wrap:wrap}
+  .saymode{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+  .saymode.on{border-color:var(--accent);color:var(--accent);background:var(--accentbg);font-weight:600}
+  .saytext{text-align:center;margin:6px 0 4px}
+  .saytext .jp{font-size:24px;line-height:2.1}
+  .saytext .en{font-size:14px;color:var(--muted)}
+  .micbig{display:grid;place-items:center;width:84px;height:84px;margin:12px auto 6px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:34px;cursor:pointer}
+  .micbig.on{background:#e03131;animation:micpulse 1.2s ease-in-out infinite}
+  @keyframes micpulse{0%,100%{box-shadow:0 0 0 0 rgba(224,49,49,.45)}50%{box-shadow:0 0 0 14px rgba(224,49,49,0)}}
+  .micnote{text-align:center;font-size:13.5px;color:var(--muted)}
+  .heard{text-align:center;font-size:19px;min-height:1.6em;margin-top:6px;color:var(--text)}
+  .saynote{font-size:14px;line-height:1.6;color:var(--warn);background:var(--pill);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;text-align:center}
+  .saynote.small{font-size:12.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -165,6 +179,7 @@
       <button type="button" class="dirbtn" data-mode="mean">Meaning</button>
       <button type="button" class="dirbtn" data-mode="gap">Fill the gap</button>
       <button type="button" class="dirbtn" data-mode="dict">Dictation</button>
+      <button type="button" class="dirbtn" data-mode="say">🎤 Speak</button>
       <button type="button" class="dirbtn" data-mode="mix">Mixed</button>
     </div>
     <div id="quizBody">
@@ -315,7 +330,7 @@ function playSentence(o, slow){
 }
 
 /* ================= QUIZ ================= */
-const MODES={mean:'Meaning', gap:'Fill the gap', dict:'Dictation'};
+const MODES={mean:'Meaning', gap:'Fill the gap', dict:'Dictation', say:'Speak'};
 let mode = store.get(LS.mode)||'mean';
 let current=null, answered=false, recent=[], qCount=0, userActed=false;
 const okForMode = (o,m) => m==='mean' ? true : m==='gap' ? o.g.length>0 : !!o.r;
@@ -326,12 +341,12 @@ const SRS_W=[6,3,1,0.4,0.15];
 const skey = (o,m) => m+':'+o.id;
 function weight(o,m){ if (!filters.srs) return 1; const l=srs[skey(o,m)]; return l===undefined ? 1 : SRS_W[Math.min(l,4)]; }
 function nextQuestion(fromTap){
-  TTS.stop();
+  TTS.stop(); recStop(true);
   const pool=buildPool(mode);
   $('quizBody').classList.toggle('hidden', !pool.length); $('emptyPool').classList.toggle('hidden', !!pool.length);
   if (!pool.length){ current=null; return; }
   let cand=pool.filter(o=>!recent.includes(o.id)); if (!cand.length) cand=pool;
-  const pickMode = o => { if (mode!=='mix') return mode; const ms=Object.keys(MODES).filter(m=>okForMode(o,m)); return ms[Math.floor(Math.random()*ms.length)]; };
+  const pickMode = o => { if (mode!=='mix') return mode; const ms=Object.keys(MODES).filter(m=>m!=='say' && okForMode(o,m)); return ms[Math.floor(Math.random()*ms.length)]; };
   const withMode = cand.map(o=>({o, m:pickMode(o)}));
   const ws=withMode.map(x=>weight(x.o,x.m)); let r=Math.random()*ws.reduce((a,b)=>a+b,0), i=0;
   while (i<withMode.length-1 && (r-=ws[i])>0) i++;
@@ -340,7 +355,7 @@ function nextQuestion(fromTap){
   current={o, m, plays:0, voice:TTS.pick(qCount++), gap:m==='gap' ? o.g[Math.floor(Math.random()*o.g.length)] : null};
   answered=false;
   renderQuestion();
-  if (fromTap && userActed) playSentence(o);                     // inside the tap, so phones allow the audio
+  if (fromTap && userActed && !(m==='say' && sayCfg()==='read')) playSentence(o);                     // inside the tap, so phones allow the audio
   else $('playBtn').classList.add('pulse');
 }
 function renderPlays(){ const n=current?current.plays:0; $('plays').textContent = n ? `Played ${n}×` : 'Tap ▶ to listen'; }
@@ -357,6 +372,9 @@ function renderQuestion(){
     h=`<div class="qsub">Which word do you hear in the gap?</div><div class="gapline">${gapHTML(o,a,b)}</div>
       <div class="choices ja" id="choices">${opts.map((x,i)=>`<button type="button" class="choice" data-right="${x.right?1:0}" data-label="${escH(x.t)}"><span class="k">${i+1}</span><span>${escH(x.t)}</span></button>`).join('')}</div>`;
     $('keyHint').textContent='Space = play · 1–4 = answer · Enter = next';
+  } else if (m==='say'){
+    h=sayHTML(o);
+    $('keyHint').textContent = SR ? 'Enter or tap 🎤 = start / stop speaking · Space = play · Enter = next' : '';
   } else {
     h=`<div class="qsub">Type the whole sentence you hear, in kana.</div>
       <input id="answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" lang="ja" placeholder="Type in romaji or kana…">
@@ -395,6 +413,94 @@ function choose(btn){
   const head = ok ? (current.plays<=1 ? 'Correct, on the first listen!' : 'Correct!') : `Not quite. You picked “${escH(btn.dataset.label)}”.`;
   $('feedback').innerHTML=`<div class="feedback ${ok?'ok':'bad'}"><div class="head">${head}</div>${revealHTML(o,a,b)}</div>`;
 }
+/* ---------- speaking (🎤 Speak mode) ----------
+   The browser's speech recognition writes what it hears in normal Japanese (kanji and all).
+   To compare, its kanji are turned back into kana using this sentence's own furigana, then lined up
+   against the reading with the same forgiving rules as dictation (は/わ, long vowels…). */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const sayCfg = () => store.get(P+'saymode_v1')==='listen' ? 'listen' : 'read';
+const KN='〇一二三四五六七八九';
+function numKanji(n){
+  if (!(n>=0) || n>=1e8) return String(n); if (n===0) return '〇';
+  const four = x => { let t=''; [[1000,'千'],[100,'百'],[10,'十']].forEach(([v,c])=>{ const d=Math.floor(x/v)%10; if (d) t+=(d>1?KN[d]:'')+c; }); if (x%10) t+=KN[x%10]; return t; };
+  return (n>=1e4 ? four(Math.floor(n/1e4))+'万' : '') + (n%1e4 ? four(n%1e4) : '');
+}
+function sayKanaVersions(o, raw){
+  const outs=new Set(), pairs=segs(o).filter(x=>x.r).sort((a,b)=>b.t.length-a.t.length);
+  const half = raw.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0));
+  for (const t0 of [half, half.replace(/[0-9]+/g, d=>numKanji(+d))]){
+    let t=t0; for (const x of pairs) t=t.split(x.t).join(x.r);
+    outs.add(toHira(t.replace(PUNCT,'')));
+  }
+  return [...outs];
+}
+function gradeSay(o, alts){
+  let best=null;
+  const E=expected(o).filter(x=>!PUNCT1.test(x.c));
+  const surfE=[...plain(o).replace(PUNCT,'')].map(c=>({c, ok:new Set([toHira(c)])}));
+  for (const raw of alts){
+    const cands = sayKanaVersions(o, raw).map(k=>({E, U:[...k]}));
+    cands.push({E:surfE, U:[...toHira(raw.replace(PUNCT,''))]});
+    for (const c of cands){ const r={...align(c.E,c.U), ...c, raw}; r.acc=Math.max(0,1-r.dist/Math.max(c.E.length,1)); if (!best || r.acc>best.acc) best=r; }
+  }
+  return best;
+}
+function sayHTML(o){
+  const cfg=sayCfg();
+  if (!SR) return `<div class="saynote">🎤 Speaking practice needs speech recognition, which this browser doesn't offer.<br>On iPhone or iPad, use <b>Safari</b> with Dictation turned on (Settings → General → Keyboard → Enable Dictation). On a computer, use <b>Chrome</b>, <b>Edge</b> or <b>Safari</b>.</div>`;
+  return `<div class="saybar"><button type="button" class="saymode${cfg==='read'?' on':''}" data-saycfg="read">Read it</button><button type="button" class="saymode${cfg==='listen'?' on':''}" data-saycfg="listen">Repeat after the audio</button></div>
+    <div class="qsub">${cfg==='read' ? 'Read the sentence aloud, then check what came through.' : 'Listen (▶ as often as you like), then say the sentence.'}</div>
+    <div class="saytext${cfg==='listen'?' hidden':''}" id="sayText"><div class="jp">${jpHTML(o)}</div><div class="en">${escH(o.e)}</div></div>
+    <button type="button" class="micbig" id="micBtn" aria-label="Start speaking">🎤</button>
+    <div class="micnote" id="micNote">Tap 🎤 and say the whole sentence</div>
+    <div class="heard" id="heard"></div>
+    ${navigator.standalone ? '<div class="saynote small">If the microphone doesn’t start, open Kohikori in Safari itself: speech recognition may not work in home-screen apps.</div>' : ''}`;
+}
+let rec=null, recOn=false;
+function recStop(abort){ if (rec){ try { abort ? rec.abort() : rec.stop(); } catch(e){} } }
+function micToggle(){ if (recOn) recStop(false); else micStart(); }
+function setMic(on, note){ recOn=on; const b=$('micBtn'); if (b){ b.classList.toggle('on',on); b.setAttribute('aria-label', on?'Stop':'Start speaking'); } if (note!==undefined && $('micNote')) $('micNote').textContent=note; }
+function micStart(){
+  if (!SR || !current || current.m!=='say') return;
+  TTS.stop(); try { if (clipAudio) clipAudio.pause(); } catch(e){}
+  const o=current.o; let alts=null, errMsg=null;
+  rec=new SR(); rec.lang='ja-JP'; rec.interimResults=true; rec.maxAlternatives=5; rec.continuous=false;
+  rec.onresult=e=>{
+    const res=[...e.results], live=res.map(r=>r[0].transcript).join('');
+    if ($('heard')) $('heard').textContent=live;
+    if (res.length && res.every(r=>r.isFinal)){
+      const head=res.slice(0,-1).map(r=>r[0].transcript).join(''), last=res[res.length-1];
+      alts=[...last].map(a=>head+a.transcript).filter(Boolean);
+    }
+  };
+  rec.onerror=e=>{ errMsg = e.error==='no-speech' ? 'I didn’t hear anything. Tap 🎤 and try again.'
+      : (e.error==='not-allowed' || e.error==='service-not-allowed') ? 'The microphone or speech recognition is blocked. Allow microphone access for this site (and on iPhone, turn on Dictation in Settings), then try again.'
+      : e.error==='network' ? 'Speech recognition needs an internet connection. Check you’re online and try again.'
+      : e.error==='aborted' ? '' : 'Speech recognition stopped ('+e.error+'). Tap 🎤 to try again.'; };
+  rec.onend=()=>{ rec=null; setMic(false);
+    if (alts && alts.length && current && current.o===o) handleSay(o, alts);
+    else if ($('micNote')) $('micNote').textContent = errMsg===null ? 'I didn’t catch that. Tap 🎤 and try again.' : (errMsg || 'Tap 🎤 and say the whole sentence'); };
+  try { rec.start(); setMic(true, 'Listening… tap 🎤 again when you’re done'); if ($('heard')) $('heard').textContent=''; }
+  catch(e){ setMic(false, 'Couldn’t start the microphone. Tap 🎤 to try again.'); }
+}
+function handleSay(o, alts){
+  const g=gradeSay(o, alts), pct=Math.round(g.acc*100), ok=g.acc>=0.8, first=!answered;
+  if (first) finish(ok);
+  const t=$('sayText'); if (t) t.classList.remove('hidden');
+  const expLine = g.E.map((x,i)=>g.em[i]?`<span class="m">${escH(x.c)}</span>`:escH(x.c)).join('');
+  const head = g.acc>=0.95 ? 'Clear! Every part came through.' : ok ? `Good: ${pct}% came through.` : `${pct}% came through. Listen once more and try again.`;
+  $('micNote').textContent = 'Tap 🎤 to say it again'; if ($('heard')) $('heard').textContent='';
+  $('feedback').innerHTML=`<div class="feedback ${ok?'ok':'bad'}"><div class="head">${head}</div>
+    <div class="lbl">What the recognizer heard</div><div class="diff">${escH(g.raw)}</div>
+    <div class="lbl">The sentence${g.dist?' (parts that didn’t come through are marked)':''}</div><div class="diff">${expLine}</div>
+    ${first ? '' : '<div class="saynote small">Practice try: your score for this sentence was recorded on the first attempt.</div>'}
+    ${revealHTML(o)}</div>`;
+}
+$('qArea').addEventListener('click',e=>{
+  if (e.target.closest('#micBtn')){ userActed=true; micToggle(); return; }
+  const c=e.target.closest('[data-saycfg]'); if (c){ store.set(P+'saymode_v1', c.dataset.saycfg); recStop(true); nextQuestion(c.dataset.saycfg==='listen'); }
+});
+
 /* ---------- dictation grading ---------- */
 const VOWEL_OF={};
 [['あ','あかさたなはまやらわがざだばぱぁゃゎ'],['い','いきしちにひみりぎじぢびぴぃ'],['う','うくすつぬふむゆるぐずづぶぷぅゅ'],['え','えけせてねへめれげぜでべぺぇ'],['お','おこそとのほもよろをごぞどぼぽぉょ']]
@@ -535,7 +641,7 @@ $('feedback').addEventListener('click',e=>{ const b=e.target.closest('[data-act]
 document.addEventListener('keydown',e=>{
   if ($('tab-quiz').classList.contains('hidden') || !current) return;
   const typing = e.target && e.target.id==='answer';
-  if (e.key==='Enter'){ e.preventDefault(); userActed=true; if (answered) nextQuestion(true); else if (current.m==='dict') checkDict(false); return; }
+  if (e.key==='Enter'){ e.preventDefault(); userActed=true; if (current.m==='say' && !answered){ micToggle(); return; } if (answered) nextQuestion(true); else if (current.m==='dict') checkDict(false); return; }
   if (typing) return;
   if (e.key===' '){ e.preventDefault(); userActed=true; playSentence(current.o, e.shiftKey); return; }
   if (!answered && /^[1-4]$/.test(e.key)){ const b=document.querySelectorAll('.choice')[+e.key-1]; if (b) choose(b); }

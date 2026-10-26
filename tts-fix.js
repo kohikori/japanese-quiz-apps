@@ -21,8 +21,8 @@
 
   function play(u, retry){
     let started = false;
-    u.addEventListener('start', () => { started = true; });
-    u.addEventListener('end', () => { started = true; });
+    if (typeof u.addEventListener === 'function'){ u.addEventListener('start', () => { started = true; }); u.addEventListener('end', () => { started = true; }); }
+    else started = true;   // can't tell, so don't retry
     hold(u);
     if (ss.paused) try { ss.resume(); } catch(e){}
     origSpeak(u);
