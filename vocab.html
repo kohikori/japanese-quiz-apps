@@ -230,6 +230,7 @@
       <button class="btn small" id="wrapBtn" title="Finish with 5 more questions, then see a summary">Wrap up</button>
       <button class="btn small" id="listenBtn" title="Hear the word instead of reading it">🎧 Listening</button>
       <button class="btn small" id="revBtn" title="See the English, answer in Japanese">⇄ Answer in Japanese</button>
+      <button class="btn small hidden" id="mistakesBtn" title="Go over the words you missed this session as flashcards">🃏 Review mistakes</button>
     </div>
     <div class="modeinfo hidden" id="modeInfo"></div>
     <div id="quizBody">
@@ -251,6 +252,7 @@
       <div class="buttons" style="margin-top:20px">
         <button class="btn primary" id="newSessionBtn">Start new session</button>
         <button class="btn" id="keepGoingBtn">Keep going</button>
+        <button class="btn hidden" id="sumCardsBtn">🃏 Flashcards of my mistakes</button>
       </div>
     </div>
   </section>
@@ -640,7 +642,7 @@ function overrideCorrect(){
   updateScore(); setNextLabel(); updateModeUI();
 }
 
-function updateScore(){ $('sScore').textContent=`${session.c} / ${session.t}`; $('sStreak').textContent=streak; }
+function updateScore(){ $('sScore').textContent=`${session.c} / ${session.t}`; $('sStreak').textContent=streak; updateMistakesBtn(); }
 
 /* ---------- filters ---------- */
 function renderFilters(){
@@ -988,7 +990,7 @@ function fcSources(){
   const fresh=p.filter(w=>!quizzed(w) && !cardLog[w.id]);
   const unq=p.filter(w=>!quizzed(w));
   const hard=p.filter(w=>(cardLog[w.id]&&cardLog[w.id].again) || weakness(w)!==null);
-  return {new: fresh.length ? fresh : unq, hard, all:p, freshN:fresh.length};
+  return {new: fresh.length ? fresh : unq, hard, all:p, sess:sessionMisses(), freshN:fresh.length};
 }
 function fcShow(){
   if (fc && fc.cur) return;          // a deck is in progress
@@ -997,7 +999,7 @@ function fcShow(){
 }
 function fcRenderSetup(){
   const S=fcSources();
-  const srcs=[['new','New words',S.new.length],['hard','Words I find hard',S.hard.length],['all','Any words',S.all.length]];
+  const srcs=[['new','New words',S.new.length],['hard','Words I find hard',S.hard.length],['sess','Missed this session',S.sess.length],['all','Any words',S.all.length]];
   $('fcSrc').innerHTML=srcs.map(([k,l,n])=>`<button class="fcopt${fcCfg.src===k?' on':''}" data-src="${k}">${l}<span class="c">${n}</span></button>`).join('');
   $('fcSize').innerHTML=[5,10,20,30].map(n=>`<button class="fcopt${fcCfg.size===n?' on':''}" data-size="${n}">${n}</button>`).join('');
   $('fcDir').innerHTML=[['je','Japanese'],['ej','English']].map(([k,l])=>`<button class="fcopt${fcCfg.dir===k?' on':''}" data-dir="${k}">${l}</button>`).join('');
@@ -1006,6 +1008,8 @@ function fcRenderSetup(){
     : fcCfg.src==='new' && !S.freshN && S.new.length ? 'You have seen every word in your filters on a card already; these are the ones you haven’t been quizzed on yet.'
     : fcCfg.src==='new' && !n ? 'You have been quizzed on every word in your filters. Try “Any words”, or add a level on the Filters tab.'
     : fcCfg.src==='hard' && !n ? 'Nothing here yet: words show up once you miss them in the quiz or mark a card “Again”.'
+    : fcCfg.src==='sess' && !n ? 'No mistakes yet this session. Words you miss in the quiz show up here (all of them, whatever the deck size).'
+    : fcCfg.src==='sess' ? 'Every word you’ve missed in the quiz since you opened the page, regardless of filters or deck size.'
     : `New words are ones you haven't been quizzed on yet. Your filters: ${filters.levels.join(', ')}.`;
   $('fcStart').disabled = !n;
 }
@@ -1019,7 +1023,8 @@ function fcStart(words){
   let deck = words;
   if (!deck){
     const S=fcSources(), src=S[fcCfg.src];
-    deck = fcCfg.src==='hard' ? src.slice().sort((a,b)=>(weakness(b)||0.5)-(weakness(a)||0.5)).slice(0,fcCfg.size)
+    deck = fcCfg.src==='sess' ? src.slice()
+         : fcCfg.src==='hard' ? src.slice().sort((a,b)=>(weakness(b)||0.5)-(weakness(a)||0.5)).slice(0,fcCfg.size)
          : fcCfg.src==='new' ? shuffled(src.filter(w=>w.lvl===src[0].lvl).length>=fcCfg.size ? src.filter(w=>w.lvl===src[0].lvl) : src).slice(0,fcCfg.size)
          : shuffled(src).slice(0,fcCfg.size);
     deck=shuffled(deck);
@@ -1080,6 +1085,18 @@ function fcFinish(){
     <table><tr><th>Word</th><th>Meaning</th></tr>${words.map(w=>`<tr><td style="font-size:17px;white-space:nowrap" class="jpf">${wordRubyBase(w.w,w.r)}${fc.again.has(w.id)?' <span class="fcalso">↻</span>':''}</td><td>${esc(fcMeans(w))}</td></tr>`).join('')}</table>`;
 }
 $('fcStart').addEventListener('click',()=>fcStart());
+// words missed this session (an "I was right" override doesn't count as a miss), in the order they were missed
+function sessionMisses(){ const seen=new Set(), out=[]; for (const e of sessionLog) if (!e.ok && !seen.has(e.w.id)){ seen.add(e.w.id); out.push(e.w); } return out; }
+function updateMistakesBtn(){ const n=sessionMisses().length, b=$('mistakesBtn'); if (!b) return; b.classList.toggle('hidden', !n); b.textContent=`🃏 Review mistakes (${n})`;
+  const sb=$('sumCardsBtn'); if (sb) sb.classList.toggle('hidden', !n); }
+function cardsFromMistakes(){
+  const words=sessionMisses(); if (!words.length) return;
+  if (summaryOpen) closeSummary(false);
+  fc=null; document.querySelector('nav button[data-tab="cards"]').click();
+  fcStart(words);
+}
+$('mistakesBtn').addEventListener('click',cardsFromMistakes);
+$('sumCardsBtn').addEventListener('click',cardsFromMistakes);
 $('fcCard').addEventListener('click',e=>{ if (e.target.closest('.speak')){ TTS.say(e.target.closest('.speak').dataset.say); return; } fcFlip(); });
 $('fcFlip').addEventListener('click',fcFlip);
 $('fcAgain').addEventListener('click',()=>fcRate(false));

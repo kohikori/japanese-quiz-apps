@@ -174,6 +174,8 @@ const D = {
   "Listen":"聞く",
   "Transcribe":"書き取る",
   "Recognize":"見分ける",
+  'Missed this session':'今回間違えた単語',
+  '🃏 Flashcards of my mistakes':'🃏 間違えた単語をカードで復習',
   '🎤 Speak':'🎤 話す',
   'Speak':'話す',
   'Read it':'読む',
