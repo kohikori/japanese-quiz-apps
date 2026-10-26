@@ -387,7 +387,7 @@ const D = {
   // verb & adjective forms
   'Polite present':'丁寧・現在', 'Polite negative':'丁寧・否定', 'Polite past':'丁寧・過去', 'Polite past negative':'丁寧・過去否定', "Polite volitional (let's)":'丁寧・意向',
   'Casual present':'普通・現在', 'Casual negative':'普通・否定', 'Casual past':'普通・過去', 'Casual past negative':'普通・過去否定',
-  'て-form':'て形', 'Want to':'願望', "Volitional (let's / I'll)":'意向形', 'ば-conditional':'ば条件形', 'たら-conditional':'たら条件形',
+  'て-form':'て形', 'Want to':'願望', "Don't want to":'〜たくない', 'Wanted to':'〜たかった', "Didn't want to":'〜たくなかった', "Volitional (let's / I'll)":'意向形', 'ば-conditional':'ば条件形', 'たら-conditional':'たら条件形',
   'Potential (can)':'可能形', 'Passive':'受身形', 'Causative (make/let)':'使役形', 'Imperative (command)':'命令形', "Prohibitive (don't!)":'禁止形',
   'Before a noun':'名詞の前（連体形）', '〜な + noun':'〜な＋名詞', 'て-form (and…)':'て形', 'Adverb (…ly)':'副詞形', 'Conditional (if…)':'条件形', 'Become…':'〜になる', 'Looks…':'様態（〜そう）', 'Too…':'〜すぎる',
   // stats

@@ -1807,6 +1807,9 @@ const FORMS = [
   {id:'nakatta',cat:'Casual', label:'Casual past negative',    jp:'〜なかった'},
   {id:'te',     cat:'Other',  label:'て-form',                 jp:'〜て'},
   {id:'tai',    cat:'Other',  label:'Want to',                 jp:'〜たい'},
+  {id:'takunai',cat:'Other',  label:"Don't want to",           jp:'〜たくない'},
+  {id:'takatta',cat:'Other',  label:'Wanted to',               jp:'〜たかった'},
+  {id:'takunakatta',cat:'Other', label:"Didn't want to",       jp:'〜たくなかった'},
   {id:'vol',    cat:'Other',  label:'Volitional (let\'s / I\'ll)', jp:'〜よう / 〜おう'},
   {id:'ba',     cat:'Other',  label:'ば-conditional',          jp:'〜ば'},
   {id:'tara',   cat:'Other',  label:'たら-conditional',        jp:'〜たら'},
@@ -1817,7 +1820,7 @@ const FORMS = [
   {id:'proh',   cat:'N4 forms', label:'Prohibitive (don\'t!)', jp:'〜な'},
 ];
 const FORM_BY_ID = Object.fromEntries(FORMS.map(f => [f.id, f]));
-const NV_SKIP = ['mashou','tai','vol','pot','imp','proh'];
+const NV_SKIP = ['mashou','tai','takunai','takatta','takunakatta','vol','pot','imp','proh'];
 const NX_SKIP = ['pass','caus'];
 
 function allowed(v, fid){
@@ -1857,6 +1860,9 @@ function godan(v, f){
     case 'ta': return ta;
     case 'te': return te;
     case 'tai': return i+'たい';
+    case 'takunai': return i+'たくない';
+    case 'takatta': return i+'たかった';
+    case 'takunakatta': return i+'たくなかった';
     case 'vol': return pre+O_ROW[e]+'う';
     case 'ba': return pre+E_ROW[e]+'ば';
     case 'tara': return ta+'ら';
@@ -1868,17 +1874,17 @@ function godan(v, f){
   }
 }
 const RU_SUFFIX={masu:'ます',masen:'ません',mashita:'ました',masendeshita:'ませんでした',mashou:'ましょう',
-  nai:'ない',nakatta:'なかった',ta:'た',te:'て',tai:'たい',vol:'よう',ba:'れば',tara:'たら',
+  nai:'ない',nakatta:'なかった',ta:'た',te:'て',tai:'たい',takunai:'たくない',takatta:'たかった',takunakatta:'たくなかった',vol:'よう',ba:'れば',tara:'たら',
   pot:'られる',pass:'られる',caus:'させる',imp:'ろ'};
 function ichidan(v,f){ return f==='proh' ? v.b+'な' : v.b.slice(0,-1)+RU_SUFFIX[f]; }
 
 const SURU={masu:'します',masen:'しません',mashita:'しました',masendeshita:'しませんでした',mashou:'しましょう',
-  nai:'しない',nakatta:'しなかった',ta:'した',te:'して',tai:'したい',vol:'しよう',ba:'すれば',tara:'したら',
+  nai:'しない',nakatta:'しなかった',ta:'した',te:'して',tai:'したい',takunai:'したくない',takatta:'したかった',takunakatta:'したくなかった',vol:'しよう',ba:'すれば',tara:'したら',
   pot:'できる',pass:'される',caus:'させる',imp:'しろ',proh:'するな'};
 // 来る: [reading of 来, rest]
 const KURU={masu:['き','ます'],masen:['き','ません'],mashita:['き','ました'],masendeshita:['き','ませんでした'],
   mashou:['き','ましょう'],nai:['こ','ない'],nakatta:['こ','なかった'],ta:['き','た'],te:['き','て'],
-  tai:['き','たい'],vol:['こ','よう'],ba:['く','れば'],tara:['き','たら'],pot:['こ','られる'],
+  tai:['き','たい'],takunai:['き','たくない'],takatta:['き','たかった'],takunakatta:['き','たくなかった'],vol:['こ','よう'],ba:['く','れば'],tara:['き','たら'],pot:['こ','られる'],
   pass:['こ','られる'],caus:['こ','させる'],imp:['こ','い'],proh:['く','るな']};
 
 function conjugate(v,f){
@@ -1892,7 +1898,7 @@ function conjugate(v,f){
 /* ================= EXPLANATIONS ================= */
 const GODAN_RULE = {
   masu:['い','ます'], masen:['い','ません'], mashita:['い','ました'], masendeshita:['い','ませんでした'],
-  mashou:['い','ましょう'], tai:['い','たい'], nai:['あ','ない'], nakatta:['あ','なかった'],
+  mashou:['い','ましょう'], tai:['い','たい'], takunai:['い','たくない'], takatta:['い','たかった'], takunakatta:['い','たくなかった'], nai:['あ','ない'], nakatta:['あ','なかった'],
   vol:['お','う'], ba:['え','ば'], pot:['え','る'], pass:['あ','れる'], caus:['あ','せる'], imp:['え','']
 };
 const ROWMAP = {い:I_ROW, あ:A_ROW, お:O_ROW, え:E_ROW};
@@ -1902,6 +1908,9 @@ const FORM_USE = {
   mashou:'Polite "let\'s do" / "shall we?".', nai:'Plain negative: "don\'t".', nakatta:'Plain past negative: "didn\'t".',
   ta:'Plain past: "did".', te:'Connects actions, requests (〜てください), progressive (〜ている).',
   tai:'"Want to do" — conjugates like an い-adjective (〜たくない, 〜たかった).',
+  takunai:'"Don\'t want to" — drop the い of 〜たい and add くない, just like an い-adjective.',
+  takatta:'"Wanted to" — drop the い of 〜たい and add かった, just like an い-adjective.',
+  takunakatta:'"Didn\'t want to" — drop the い of 〜たい and add くなかった, just like an い-adjective.',
   vol:'Plain "let\'s" / "I think I\'ll" (〜ようと思う).', ba:'"If…" — general / hypothetical condition.',
   tara:'"If / when…" — happens after the condition is met.', pot:'"Can do". Object often takes が.',
   pass:'"Is done (to)". Agent marked with に.', caus:'"Make / let someone do".',
@@ -2066,6 +2075,14 @@ let streak = 0;
 let filters = loadJSON(LS_FILTERS) || {
   forms: FORMS.map(f=>f.id), levels:['N5','N4'], groups:['u','ru','irr']
 };
+// forms added after a user saved their filters get switched on once (later unticking sticks)
+(function(){
+  const known = filters.knownForms || ['masu','masen','mashita','masendeshita','mashou','nai','ta','nakatta','te','tai','vol','ba','tara','pot','pass','caus','imp','proh'];
+  let changed=false;
+  for (const f of FORMS) if (!known.includes(f.id)){ if (!filters.forms.includes(f.id)) filters.forms.push(f.id); changed=true; }
+  filters.knownForms = FORMS.map(f=>f.id);
+  if (changed) store.set(LS_FILTERS, JSON.stringify(filters));
+})();
 /* ---- Light spaced repetition ----
    Each verb+form pair has a level (0 = last missed, higher = correct streak).
    Weight decides how likely it is to be picked. Unseen pairs = 1.       */
