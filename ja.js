@@ -366,6 +366,7 @@ const D = {
   "Society & news":"社会・ニュース",
   "Science & technology":"科学・技術",
   "Colors & shapes":"色・形",
+  "Onomatopoeia":"オノマトペ",
   "Topic":"トピック",
   "clear":"解除",
   "Only words in the selected topics are asked.":"選んだトピックの単語だけが出題されます。",
