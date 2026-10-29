@@ -205,6 +205,7 @@
   }
   /* ---- typing on a phone: leave room to scroll the question to the top of the screen ---- */
   body.kbd{padding-bottom:70vh}
+  @media (hover:none){ .kbdonly{display:none} }
 </style>
 </head>
 <body>
@@ -288,8 +289,8 @@
       <div class="fccard" id="fcCard" tabindex="0" role="button" aria-label="Flip card"></div>
       <div class="buttons" id="fcFlipRow"><button class="btn primary" id="fcFlip">Show answer</button></div>
       <div class="buttons hidden" id="fcRateRow"><button class="btn fcagain" id="fcAgain">Again</button><button class="btn primary" id="fcGot">Got it</button></div>
-      <div class="buttons hidden" id="fcKnownRow" style="margin-top:6px"><button class="linkbtn2" id="fcKnown">I already know this word: mark it as learned</button></div>
-      <div class="hint" id="fcHint">Tap the card or press Space to flip · 1 = Again · 2 = Got it</div>
+      <div class="buttons hidden" id="fcKnownRow" style="margin-top:6px"><button class="linkbtn2" id="fcKnown">I already know this word: mark it as learned <span class="kbdonly">(3)</span></button></div>
+      <div class="hint" id="fcHint">Tap the card or press Space to flip · 1 = Again · 2 = Got it · 3 = I know it (mark as learned)</div>
     </div>
     <div id="fcDone" class="hidden">
       <h2>Deck done</h2>
@@ -1123,6 +1124,7 @@ document.addEventListener('keydown',e=>{
   if (!fc.flipped && (e.key===' '||e.key==='Enter')){ e.preventDefault(); fcFlip(); }
   else if (fc.flipped && (e.key==='1'||e.key==='ArrowLeft')) fcRate(false);
   else if (fc.flipped && (e.key==='2'||e.key==='ArrowRight'||e.key==='Enter'||e.key===' ')){ e.preventDefault(); fcRate(true); }
+  else if (e.key==='3' && wordState(fc.cur)!=='learned'){ e.preventDefault(); markKnown(fc.cur); fc.flipped=true; fcRate(true); }   // works on either side of the card
 });
 
 const exKana = s => s.replace(/([\u4e00-\u9fff々]+)\[([^\]]+)\]/g,'$2').replace(/\{([^|}]+)\|([^}]+)\}/g,'$2');
