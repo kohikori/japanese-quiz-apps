@@ -367,6 +367,8 @@ const D = {
   "Science & technology":"科学・技術",
   "Colors & shapes":"色・形",
   "Onomatopoeia":"オノマトペ",
+  "From My Conversations":"会話から",
+  "Slang & casual speech":"スラング・くだけた言葉",
   "Topic":"トピック",
   "clear":"解除",
   "Only words in the selected topics are asked.":"選んだトピックの単語だけが出題されます。",
