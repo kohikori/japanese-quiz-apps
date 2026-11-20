@@ -12,6 +12,7 @@
 <script>(function(){var d;try{d=localStorage.getItem('jkanji_dark_v1');}catch(e){}if(d==='on'||(d!=='off'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
 <title>Kanji Quiz</title>
 <script src="tts-fix.js"></script>
+<script src="wk.js"></script>
 <style>
   :root{--bg:#fafafa;--card:#fff;--text:#222;--muted:#777;--line:#e3e3e3;--accent:#3b5bdb;--ok:#2b8a3e;--okbg:#ebfbee;--bad:#c92a2a;--badbg:#fff5f5;
     --accentbg:#edf2ff;--okline:#b2f2bb;--badline:#ffc9c9;--pill:#f1f3f5;--warn:#8a5a00;--sub:#333;--hl:#fff3bf;--mid:#fff3bf;--midline:#e8a300}
@@ -65,6 +66,7 @@
   .lchip.done{border-color:var(--ok);background:var(--okbg)}
   .lchip.next{border-color:var(--accent);background:var(--accentbg)}
   .lchip.locked{opacity:.45;cursor:default}
+  .lchip{position:relative} .lchip .wkb{position:absolute;top:2px;right:4px;font-size:9px;font-weight:700;color:#a0f;opacity:.8}
   /* learn: lesson */
   .dots{display:flex;gap:6px;flex-wrap:wrap}
   .dot{min-width:30px;height:30px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-size:16px;cursor:pointer;background:var(--card);color:var(--text);padding:0 4px}
@@ -186,6 +188,8 @@
     </div>
     <div id="syncMsg" style="font-size:13px;margin-top:8px"></div>
     <div id="syncInfo" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+    <h3>WaniKani</h3>
+    <div id="wkBody" style="font-size:13.5px;line-height:1.6"></div>
     <div class="note" style="margin-top:14px">Words and many sentences come from the vocabulary quiz (OpenJLPT, CC BY-SA 4.0; Tatoeba, CC BY 2.0 FR). Kanji data from KANJIDIC (EDRDG, CC BY-SA 4.0). Mnemonics and some sentences were written with AI help: if something looks off, use the report link under any answer.</div>
     <button class="btn reset" id="resetBtn">Reset all progress</button>
   </section>
@@ -237,7 +241,21 @@ function addStats(a,b){ const o={c:a.c+b.c,t:a.t+b.t,modes:{},lvl:{},words:{}};
 let combined; const recombine=()=>{ combined=Object.values(peers).reduce((acc,p)=>addStats(acc,p.stats), addStats(blankStats(),lifetime)); }; recombine();
 const saveNotes=()=>store.set(LS.notes,JSON.stringify(notes));
 const noteOf = k => notes[k] && notes[k].t ? notes[k].t : '';
-const learnedKanji = () => new Set(LESSONS.slice(0,done.n).flatMap(l=>l.k));
+/* WaniKani (see wk.js): kanji you've reached Guru on there count as known here. That hides their furigana,
+   and lets you skip lessons whose kanji you already know. Turn it off in Stats. */
+const WK=window.KohiWK, LS_WKON=P+'wk_on_v1';
+const wkOn = () => !!(WK && WK.connected() && store.get(LS_WKON)!=='0');
+const wkKanji = () => { const d=wkOn() && WK.data(); return d ? Object.keys(d.kanji).filter(k=>d.kanji[k]>=WK.GURU && KANJI[k]) : []; };
+const learnedKanji = () => new Set([...LESSONS.slice(0,done.n).flatMap(l=>l.k), ...wkKanji()]);
+// how many lessons in a row, starting with the next one, teach only kanji you know from WaniKani
+function wkRun(){
+  if (!wkOn()) return 0;
+  const known=new Set(wkKanji()); let i=done.n;
+  while (i<LESSONS.length && LESSONS[i].k.every(k=>known.has(k))) i++;
+  // don't end the run on a lesson that has no new kanji (those only add words); stop at the last one that teaches kanji
+  while (i>done.n && !LESSONS[i-1].k.length) i--;
+  return i-done.n;
+}
 const learnedWords = () => LESSONS.slice(0,done.n).flatMap(l=>l.w);
 
 /* ================= SHARED RENDERING ================= */
@@ -299,6 +317,7 @@ function renderLearn(){
   }
   $('tab-learn').innerHTML=h;
 }
+const wkLesson = L => { if (!L.k.length || !wkOn()) return false; const s=new Set(wkKanji()); return L.k.every(k=>s.has(k)); };
 function renderLearnHome(){
   const nx=done.n, total=LESSONS.length, pool=learnedWords().length;
   let h=`<h2>Learn</h2><div class="sub">${nx} of ${total} lessons done · ${pool} words in your review pile</div>`;
@@ -306,9 +325,12 @@ function renderLearnHome(){
     h+=`<div class="nextcard"><div class="nextk jpf">${L.k.map(k=>`<span>${k}</span>`).join('')}</div>
       <div style="flex:1;min-width:180px"><div style="font-weight:600">Lesson ${nx+1}</div><div class="sub">${L.k.length?`${L.k.length} kanji · `:''}${L.w.length} words</div></div>
       <button class="btn primary" data-open="${nx}">${nx===0?'Start the first lesson':'Start lesson '+(nx+1)} ›</button></div>`;
+    const run=wkRun();
+    if (run){ const ks=LESSONS.slice(nx,nx+run).flatMap(l=>l.k), ws=LESSONS.slice(nx,nx+run).flatMap(l=>l.w).length;
+      h+=`<div class="callout">🟣 <b>WaniKani:</b> the next ${run===1?'lesson teaches':run+' lessons teach'} ${ks.length} kanji you've already reached Guru on. <button class="btn small primary" id="wkSkip" style="margin-left:6px">Skip to lesson ${nx+run+1} ›</button><div class="sub" style="margin-top:4px">Their ${ws} words go into your Review pile, and you can still open those lessons any time.</div></div>`; }
     if (nx>0) h+=`<div class="note">Tip: review the words you’ve learned (Review tab) until most feel easy, then come back for the next lesson.</div>`;
   } else h+=`<div class="nextcard"><div>🎉 You’ve finished every lesson. Keep reviewing to master them all.</div></div>`;
-  h+=`<h3>All lessons</h3><div class="lgrid">${LESSONS.map((L,i)=>`<button class="lchip${i<nx?' done':i===nx?' next':' locked'}" data-open="${i}" ${i>nx?'disabled':''}><div class="n">${i+1}</div><div class="ks jpf">${L.k.join('')||'＋'}</div></button>`).join('')}</div>
+  h+=`<h3>All lessons</h3><div class="lgrid">${LESSONS.map((L,i)=>`<button class="lchip${i<nx?' done':i===nx?' next':' locked'}" data-open="${i}" ${i>nx?'disabled':''}><div class="n">${i+1}</div><div class="ks jpf">${L.k.join('')||'＋'}</div>${wkLesson(L)?'<span class="wkb" title="You know these kanji from WaniKani">WK</span>':''}</button>`).join('')}</div>
     <div class="note" style="margin-top:8px">Finished lessons can be opened again any time to re-read the kanji, mnemonics and words.</div>`;
   $('tab-learn').innerHTML=h;
 }
@@ -325,6 +347,13 @@ $('tab-learn').addEventListener('click',e=>{
     $('tab-learn').insertAdjacentHTML('afterbegin',`<div class="callout" style="border-color:var(--ok);background:var(--okbg)">✓ Lesson done. ${added} words were added to your Review pile.</div>`);
     scrollTo(0,0); current=null; return; }
   if (e.target.id==='backHome'){ lessonView=null; renderLearn(); scrollTo(0,0); }
+  if (e.target.id==='wkSkip'){
+    const run=wkRun(); if (!run) return;
+    const from=done.n, added=LESSONS.slice(from,from+run).flatMap(l=>l.w).length;
+    done={n:from+run, at:Date.now()}; store.set(LS.done,JSON.stringify(done)); LEARNED=learnedKanji();
+    renderLearn(); current=null;
+    $('tab-learn').insertAdjacentHTML('afterbegin',`<div class="callout" style="border-color:var(--ok);background:var(--okbg)">✓ Skipped lessons ${from+1}–${from+run}. ${added} words were added to your Review pile.</div>`);
+    scrollTo(0,0); }
 });
 
 /* ================= REVIEW ================= */
@@ -642,6 +671,23 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) naviga
 })();
 </script>
 
+<script>
+/* WaniKani settings (Stats tab) */
+(function(){
+  if (!WK) return;
+  function render(){
+    const el=$('wkBody'); if (!el) return;
+    if (!WK.connected()){ el.innerHTML='<span style="color:var(--muted)">Not connected. Connect your WaniKani account in <a href="./#sync">Backup &amp; sync on the home page</a>, and kanji you\'ve reached Guru on there will count as known here.</span>'; return; }
+    const d=WK.data(), n=wkOn()?wkKanji().length:(d?Object.keys(d.kanji).filter(k=>KANJI[k]&&d.kanji[k]>=WK.GURU).length:0);
+    el.innerHTML=`<label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="wkOn" ${store.get(LS_WKON)!=='0'?'checked':''} style="margin-top:4px"> <span>Count kanji I've reached Guru on in WaniKani as known</span></label>
+      <div style="color:var(--muted);font-size:12.5px;margin-top:4px">${d?`Connected as ${String(d.user).replace(/[<>&"]/g,'')} (level ${d.level}). ${n} of the ${ORDER.length} kanji here are Guru or higher on WaniKani: their furigana is hidden, and lessons that only teach them can be skipped from the Learn tab. Updated ${WK.ago(d.at)}.`:'Loading your WaniKani progress…'}</div>`;
+    $('wkOn').onchange=e=>{ store.set(LS_WKON, e.target.checked?'1':'0'); LEARNED=learnedKanji(); render(); if (lessonView===null) renderLearn(); current=null; };
+  }
+  render();
+  window.addEventListener('kohikori-wk', ()=>{ LEARNED=learnedKanji(); render(); if (lessonView===null) renderLearn(); });
+  WK.refresh().catch(()=>{});
+})();
+</script>
 <script src="ja.js"></script>
 </body>
 </html>

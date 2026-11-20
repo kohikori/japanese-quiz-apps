@@ -77,6 +77,11 @@
   .codebox textarea{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);resize:vertical;min-width:0}
   .smsg{font-size:13.5px;margin-top:12px;line-height:1.55}
   .tips{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.55}
+  .wkbox{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+  .wkbox h3{margin:0 0 6px;font-size:15px}
+  .wkrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .wkrow input{flex:1;min-width:200px;font-family:ui-monospace,Menlo,monospace;font-size:13px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+  .wkstat{font-size:13.5px;line-height:1.6}
   .tips #lastBackup{display:block;margin-top:4px}
   @media (max-width:520px){ .syncrow{grid-template-columns:1fr} .codebox{flex-direction:column} }
 
@@ -218,6 +223,20 @@
     </div>
     <div id="syncMsg" class="smsg"></div>
     <div class="tips"><b>Share backup</b> opens your phone's share sheet: AirDrop, Messages, email or Save to Files. <b>Copy sync code</b> is the same backup as text, handy for pasting into a note or a message to yourself. <span id="lastBackup"></span></div>
+
+    <div class="wkbox" id="wkBox">
+      <h3>WaniKani</h3>
+      <p class="sub" style="margin-bottom:0">Connect your WaniKani account and the Vocabulary and Kanji quizzes will count what you've reached <b>Guru</b> on there as already known. Create a <b>read-only</b> key on wanikani.com → Settings → API Tokens. Your key stays on this device only: it isn't included in backups or sync codes, so connect once on each device.</p>
+      <div class="wkrow" id="wkConnectRow">
+        <input type="password" id="wkKey" placeholder="Paste your WaniKani API key" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="sbtn primary" id="wkConnect">Connect</button>
+      </div>
+      <div class="hidden" id="wkOnRow">
+        <div class="wkstat" id="wkStat"></div>
+        <div class="wkrow"><button class="sbtn" id="wkRefresh">↻ Refresh now</button><button class="sbtn" id="wkOff">Disconnect</button></div>
+      </div>
+      <div id="wkMsg" class="smsg"></div>
+    </div>
   </section>
 </main>
 
@@ -500,6 +519,36 @@ appsEl.addEventListener('click',e=>{
   saveOrder(); refreshArrows();
   const nb=a.querySelector(`.mvb[data-d="${b.dataset.d}"]`); if (nb && !nb.disabled) nb.focus({preventScroll:true});
 });
+</script>
+<script src="wk.js"></script>
+<script>
+/* ---- WaniKani connection (see wk.js) ---- */
+(function(){
+  const $=id=>document.getElementById(id), WK=window.KohiWK; if (!WK) return;
+  const n=x=>Number(x).toLocaleString();
+  function show(){
+    const d=WK.data(), on=WK.connected();
+    $('wkConnectRow').classList.toggle('hidden', on); $('wkOnRow').classList.toggle('hidden', !on);
+    if (on) $('wkStat').innerHTML = d
+      ? `✅ Connected as <b>${d.user.replace(/[<>&"]/g,'')}</b> · WaniKani level ${d.level}<br>${n(Object.keys(d.kanji).length)} kanji and ${n(Object.keys(d.vocab).length)} vocabulary at Guru or higher · updated ${WK.ago(d.at)}`
+      : 'Connected. Loading your WaniKani progress…';
+  }
+  const msg=(t,bad)=>{ $('wkMsg').innerHTML=t; $('wkMsg').style.color=bad?'var(--bad, #c0392b)':''; };
+  $('wkConnect').addEventListener('click', async ()=>{
+    const b=$('wkConnect'); b.disabled=true; msg('Connecting… this can take a few seconds the first time.');
+    try { await WK.connect($('wkKey').value); $('wkKey').value=''; msg('Connected. Open the Vocabulary or Kanji quiz to use it.'); }
+    catch(e){ msg(e.message||'Could not reach WaniKani. Check your connection and try again.', true); }
+    b.disabled=false; show();
+  });
+  $('wkKey').addEventListener('keydown', e=>{ if (e.key==='Enter') $('wkConnect').click(); });
+  $('wkRefresh').addEventListener('click', async ()=>{
+    msg('Refreshing…');
+    try { await WK.refresh(true); msg('Up to date.'); } catch(e){ msg(e.message||'Could not reach WaniKani.', true); }
+    show();
+  });
+  $('wkOff').addEventListener('click', ()=>{ WK.disconnect(); msg('Disconnected. Your key was removed from this device.'); show(); });
+  show(); WK.refresh().then(show).catch(()=>{});
+})();
 </script>
 <script src="ja.js"></script>
 </body>
